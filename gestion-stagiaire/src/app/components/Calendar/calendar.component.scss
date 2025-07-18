@@ -1,0 +1,665 @@
+// Variables SCSS
+$primary-color: #3b82f6;
+$success-color: #059669;
+$danger-color: #dc2626;
+$warning-color: #f59e0b;
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-200: #e5e7eb;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
+
+$border-radius: 6px;
+$border-radius-sm: 4px;
+$border-radius-lg: 8px;
+$shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+$shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin button-base {
+  padding: 6px 12px;
+  border-radius: $border-radius-sm;
+  border: 1px solid $gray-300;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+@mixin form-input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid $gray-300;
+  border-radius: $border-radius-sm;
+  font-size: 13px;
+  
+  &:focus {
+    outline: none;
+    border-color: $primary-color;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  }
+}
+
+// Styles principaux - Version compacte
+.calendar-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 15px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+// Header du calendrier - Plus compact
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding: 0 5px;
+  flex-shrink: 0;
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-btn {
+  @include button-base;
+  background: $gray-100;
+  padding: 6px;
+  
+  &:hover:not(:disabled) {
+    background: $gray-200;
+  }
+  
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.month-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $gray-800;
+  margin: 0;
+  min-width: 180px;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.today-btn {
+  @include button-base;
+  background: white;
+  
+  &:hover:not(:disabled) {
+    background: $gray-50;
+  }
+}
+
+.create-btn {
+  @include button-base;
+  background: $primary-color;
+  color: white;
+  border-color: $primary-color;
+  display: flex;
+  align-items: center;
+  
+  &:hover:not(:disabled) {
+    background: #2563eb;
+  }
+  
+  svg {
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+  }
+}
+
+// Filtres - Plus compacts
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  padding: 0 5px;
+  flex-shrink: 0;
+}
+
+.filter-select {
+  @include form-input;
+  min-width: 130px;
+  width: auto;
+}
+
+// Loading
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  color: $gray-500;
+  flex: 1;
+}
+
+.loading-spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid $gray-100;
+  border-top: 2px solid $primary-color;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 8px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Grille du calendrier - Hauteur optimisée
+.calendar-grid {
+  background: white;
+  border-radius: $border-radius-lg;
+  box-shadow: $shadow;
+  overflow: hidden;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: $gray-50;
+  border-bottom: 1px solid $gray-200;
+  flex-shrink: 0;
+}
+
+.weekday {
+  padding: 8px;
+  text-align: center;
+  font-weight: 600;
+  color: $gray-500;
+  font-size: 13px;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  flex: 1;
+  min-height: 0;
+}
+
+.day-cell {
+  height: 100%;
+  min-height: 85px;
+  max-height: 100px;
+  border-right: 1px solid $gray-200;
+  border-bottom: 1px solid $gray-200;
+  padding: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  
+  &:hover {
+    background-color: $gray-50;
+  }
+  
+  &.other-month {
+    color: $gray-400;
+    background-color: #fafafa;
+  }
+  
+  &.today {
+    background-color: #eff6ff;
+    
+    .day-number {
+      background: $primary-color;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 12px;
+    }
+  }
+}
+
+.day-number {
+  font-weight: 500;
+  margin-bottom: 3px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.meetings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.meeting-item {
+  background: $primary-color;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  line-height: 1.1;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: flex;
+  flex-direction: column;
+  min-height: 16px;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.meeting-time {
+  font-weight: 600;
+  font-size: 9px;
+}
+
+.meeting-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+}
+
+.more-meetings {
+  color: $gray-500;
+  font-size: 10px;
+  padding: 1px;
+  cursor: pointer;
+  text-align: center;
+  
+  &:hover {
+    color: $gray-700;
+  }
+}
+
+// Modals - Optimisées pour l'espace
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 15px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: $border-radius-lg;
+  max-width: 500px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid $gray-200;
+  
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: $gray-500;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    color: $gray-700;
+  }
+}
+
+// Formulaires - Plus compacts
+.meeting-form {
+  padding: 20px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+  
+  label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: $gray-700;
+    font-size: 13px;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.form-input, .form-select, .form-textarea {
+  @include form-input;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+// Participants - Version compacte
+.participants-list {
+  max-height: 120px;
+  overflow-y: auto;
+  border: 1px solid $gray-200;
+  border-radius: $border-radius-sm;
+  padding: 6px;
+}
+
+.participant-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  
+  input[type="checkbox"] {
+    margin: 0;
+  }
+  
+  label {
+    margin: 0;
+    font-weight: normal;
+    cursor: pointer;
+    flex: 1;
+    font-size: 13px;
+  }
+}
+
+// Actions des modals
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 15px 20px;
+  border-top: 1px solid $gray-200;
+}
+
+.cancel-btn, .submit-btn, .edit-btn, .delete-btn {
+  @include button-base;
+}
+
+.cancel-btn {
+  background: white;
+  color: $gray-700;
+  
+  &:hover {
+    background: $gray-50;
+  }
+}
+
+.submit-btn, .edit-btn {
+  background: $primary-color;
+  color: white;
+  border-color: $primary-color;
+  
+  &:hover {
+    background: #2563eb;
+  }
+}
+
+.delete-btn {
+  background: $danger-color;
+  color: white;
+  border-color: $danger-color;
+  
+  &:hover {
+    background: #b91c1c;
+  }
+}
+
+// Détails des meetings
+.meeting-details {
+  padding: 20px;
+}
+
+.detail-item {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 13px;
+  
+  strong {
+    min-width: 90px;
+    color: $gray-700;
+  }
+}
+
+.badge {
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status-badge {
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.status-0 { 
+  background: #fef3c7; 
+  color: #92400e; 
+}
+
+.status-1 { 
+  background: #d1fae5; 
+  color: #065f46; 
+}
+
+.status-2 { 
+  background: #fee2e2; 
+  color: #991b1b; 
+}
+
+.status-3 { 
+  background: #e0e7ff; 
+  color: #3730a3; 
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .calendar-container {
+    padding: 10px;
+    height: 100vh;
+  }
+
+  .calendar-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+    margin-bottom: 10px;
+  }
+
+  .header-controls {
+    justify-content: center;
+  }
+
+  .header-actions {
+    justify-content: center;
+  }
+
+  .filters {
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .day-cell {
+    min-height: 70px;
+    max-height: 80px;
+    padding: 3px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-content {
+    margin: 10px;
+    max-width: none;
+    max-height: 90vh;
+  }
+
+  .month-title {
+    font-size: 18px;
+    min-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-container {
+    padding: 5px;
+    height: 100vh;
+  }
+
+  .day-cell {
+    min-height: 60px;
+    max-height: 70px;
+    padding: 2px;
+  }
+
+  .meeting-item {
+    font-size: 9px;
+    padding: 1px 3px;
+    min-height: 14px;
+  }
+
+  .meeting-time {
+    font-size: 8px;
+  }
+
+  .meeting-title {
+    font-size: 9px;
+  }
+
+  .month-title {
+    font-size: 16px;
+    min-width: 130px;
+  }
+
+  .weekday {
+    padding: 6px;
+    font-size: 12px;
+  }
+}
+
+// Classes utilitaires pour les filtres des participants
+.participant-filters {
+  margin-bottom: 12px !important;
+  padding: 12px !important;
+  background: #f8f9fa !important;
+  border-radius: 6px !important;
+  border: 1px solid #e9ecef !important;
+  
+  .row {
+    display: flex !important;
+    gap: 12px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .col {
+    flex: 1 !important;
+  }
+  
+  label {
+    display: block !important;
+    margin-bottom: 4px !important;
+    font-weight: 500 !important;
+    color: #495057 !important;
+    font-size: 12px !important;
+  }
+  
+  input, select {
+    width: 100% !important;
+    padding: 6px 10px !important;
+    border: 1px solid #ced4da !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+  }
+  
+  small {
+    color: #6c757d !important;
+    font-size: 11px !important;
+  }
+  
+  button {
+    padding: 3px 8px !important;
+    background: #6c757d !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 3px !important;
+    cursor: pointer !important;
+    font-size: 11px !important;
+  }
+}

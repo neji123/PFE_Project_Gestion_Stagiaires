@@ -1,0 +1,305 @@
+<!-- <app-navbar></app-navbar> -->
+
+<!-- Hero Section -->
+<section class="hero-section" [ngClass]="{'no-navbar': !shouldShowHeader()}">
+  <div class="container">
+    <div class="hero-content animate__animated animate__fadeIn">
+      <h1>Bienvenue sur la plateforme de gestion <br><span class="highlight">des stages EY</span></h1>
+      <p class="hero-subtitle">Une solution complète pour optimiser l'expérience des stagiaires et simplifier le travail des encadrants</p>
+      
+      <div class="hero-buttons" *ngIf="!isAuthenticated">
+        <a href="/login" class="cta-button primary">Espace Stagiaires</a>
+        <a href="/log" class="cta-button secondary">Espace Tuteurs & RH</a>
+      </div>
+
+      <!-- Afficher un message différent pour les utilisateurs connectés -->
+<div class="welcome-message" *ngIf="isAuthenticated">
+  <p>Bienvenue sur votre espace de gestion des stages</p>
+  
+  <!-- Personnalisation du libellé en fonction du rôle -->
+  <a [routerLink]="dashboardUrl" class="cta-button primary">
+    <ng-container *ngIf="userRole === 'Stagiaire'">Accéder à mon projet</ng-container>
+    <ng-container *ngIf="userRole === 'Tuteur'">Gérer mes stagiaires</ng-container>
+    <ng-container *ngIf="userRole === 'RHs'">Voir tous les stagiaires</ng-container>
+    <ng-container *ngIf="!userRole">Accéder à mon tableau de bord</ng-container>
+  </a>
+</div>
+      
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number">500+</span>
+          <span class="stat-label">Stagiaires</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">50+</span>
+          <span class="stat-label">Tuteurs</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">95%</span>
+          <span class="stat-label">Satisfaction</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="image-container">
+        <div class="geometric-shape"></div>
+        <img src="/assets/images/hero-illustration.svg" alt="Gestion des stagiaires EY" class="hero-img">      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Une plateforme complète pour tous les acteurs</h2>
+      <p class="section-subtitle">Découvrez les avantages de notre solution pour chaque partie prenante</p>
+    </div>
+    
+    <div class="feature-tabs">
+      <div class="tab-navigation">
+        <button class="tab-button active" data-target="stagiaires">Pour les Stagiaires</button>
+        <button class="tab-button" data-target="tuteurs">Pour les Tuteurs</button>
+        <button class="tab-button" data-target="rh">Pour les RH</button>
+      </div>
+      
+      <div class="tab-content">
+        <div class="tab-pane active" id="stagiaires">
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-tasks"></i>
+              </div>
+              <h3>Suivi des projets</h3>
+              <p>Gardez une trace claire de vos missions et visualisez votre progression en temps réel</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <h3>Gestion documentaire</h3>
+              <p>Accédez à tous vos documents et ressources depuis une interface unique et intuitive</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-comments"></i>
+              </div>
+              <h3>Communication facile</h3>
+              <p>Échangez simplement avec votre tuteur et l'équipe RH pour un accompagnement optimal</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <h3>Évaluations et feedback</h3>
+              <p>Recevez des retours constructifs et suivez votre évolution professionnelle</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="tuteurs">
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-users-cog"></i>
+              </div>
+              <h3>Gestion des stagiaires</h3>
+              <p>Supervisez efficacement votre équipe de stagiaires depuis un tableau de bord centralisé</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-clipboard-check"></i>
+              </div>
+              <h3>Suivi personnalisé</h3>
+              <p>Définissez des objectifs clairs et suivez la progression de chaque stagiaire</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <h3>Planification simplifiée</h3>
+              <p>Organisez facilement les réunions et les points d'étape avec vos stagiaires</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-award"></i>
+              </div>
+              <h3>Évaluation efficace</h3>
+              <p>Utilisez des outils d'évaluation structurés pour donner un feedback constructif</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="tab-pane" id="rh">
+          <div class="feature-grid">
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-database"></i>
+              </div>
+              <h3>Base de données centralisée</h3>
+              <p>Accédez à toutes les informations des stagiaires dans un système unifié et sécurisé</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-file-contract"></i>
+              </div>
+              <h3>Gestion administrative</h3>
+              <p>Simplifiez la gestion des conventions et des documents administratifs</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+              <h3>Tableaux de bord analytiques</h3>
+              <p>Visualisez des statistiques précises sur les performances et la satisfaction</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">
+                <i class="fas fa-handshake"></i>
+              </div>
+              <h3>Coordination optimisée</h3>
+              <p>Améliorez la communication entre les tuteurs et les stagiaires</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Process Section -->
+<section class="process-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Un accompagnement complet du début à la fin</h2>
+      <p class="section-subtitle">Notre plateforme accompagne toutes les étapes du parcours des stagiaires</p>
+    </div>
+    
+    <div class="process-timeline">
+      <div class="timeline-item">
+        <div class="timeline-icon">
+          <span class="number">1</span>
+        </div>
+        <div class="timeline-content">
+          <h3>Intégration</h3>
+          <p>Accueil personnalisé et mise à disposition des ressources essentielles pour démarrer</p>
+        </div>
+      </div>
+      
+      <div class="timeline-item">
+        <div class="timeline-icon">
+          <span class="number">2</span>
+        </div>
+        <div class="timeline-content">
+          <h3>Définition des objectifs</h3>
+          <p>Établissement des missions et compétences à développer pendant le stage</p>
+        </div>
+      </div>
+      
+      <div class="timeline-item">
+        <div class="timeline-icon">
+          <span class="number">3</span>
+        </div>
+        <div class="timeline-content">
+          <h3>Suivi régulier</h3>
+          <p>Points d'étape et échanges constructifs tout au long du parcours</p>
+        </div>
+      </div>
+      
+      <div class="timeline-item">
+        <div class="timeline-icon">
+          <span class="number">4</span>
+        </div>
+        <div class="timeline-content">
+          <h3>Évaluation finale</h3>
+          <p>Bilan complet des compétences acquises et feedback personnalisé</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Ce qu'ils en disent</h2>
+      <p class="section-subtitle">Les retours de nos utilisateurs sur la plateforme</p>
+    </div>
+    
+    <div class="testimonials-slider">
+      <div class="testimonial-card">
+        <div class="testimonial-content">
+          <div class="quote-icon">
+            <i class="fas fa-quote-left"></i>
+          </div>
+          <p>"Cette plateforme a transformé mon expérience de stage. L'interface intuitive me permet de suivre mes projets efficacement et de communiquer facilement avec mon tuteur."</p>
+        </div>
+        <div class="testimonial-author">
+          <div class="author-avatar" data-initials="SD"></div>
+
+          <div class="author-info">
+            <div class="author-name">Sarah Dupont</div>
+            <div class="author-role">Stagiaire en Audit</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="testimonial-card">
+        <div class="testimonial-content">
+          <div class="quote-icon">
+            <i class="fas fa-quote-left"></i>
+          </div>
+          <p>"En tant que tuteur, la plateforme m'a permis de gagner un temps précieux dans le suivi de mes stagiaires. Les outils d'évaluation sont particulièrement pertinents et efficaces."</p>
+        </div>
+        <div class="testimonial-author">
+          <div class="author-avatar" data-initials="TM"></div>
+
+          <div class="author-info">
+            <div class="author-name">Thomas Martin</div>
+            <div class="author-role">Manager Consulting</div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="testimonial-card">
+        <div class="testimonial-content">
+          <div class="quote-icon">
+            <i class="fas fa-quote-left"></i>
+          </div>
+          <p>"La centralisation des informations et la digitalisation des processus nous ont fait gagner en efficacité. Notre équipe RH peut désormais se concentrer sur des tâches à plus forte valeur ajoutée."</p>
+        </div>
+        <div class="testimonial-author">
+          <div class="author-avatar" data-initials="ML"></div>
+
+          <div class="author-info">
+            <div class="author-name">Marie Lambert</div>
+            <div class="author-role">Responsable RH</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="testimonial-indicators">
+      <span class="indicator active"></span>
+      <span class="indicator"></span>
+      <span class="indicator"></span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section" *ngIf="!isAuthenticated">
+  <div class="container">
+    <div class="cta-content">
+      <h2>Prêt à transformer votre expérience de gestion des stages ?</h2>
+      <p>Connectez-vous maintenant à votre espace pour accéder à toutes les fonctionnalités de la plateforme</p>
+      <div class="cta-buttons">
+        <a href="/login" class="cta-button primary">Espace Stagiaires</a>
+        <a href="/log" class="cta-button secondary">Espace Tuteurs & RH</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--<app-footer></app-footer>-->

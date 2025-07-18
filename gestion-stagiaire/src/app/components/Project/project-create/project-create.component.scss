@@ -1,0 +1,39 @@
+/* src/app/components/project/project-create/project-create.component.scss */
+.image-upload-container {
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    text-align: center;
+  }
+  
+  .image-preview {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .image-placeholder {
+    min-height: 200px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+  }
+  
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .user-avatar-placeholder {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+  }

@@ -1,0 +1,41 @@
+<div class="university-list-container">
+  <h2>Liste des Universités</h2>
+
+  <button (click)="onAddClick()" *ngIf="!showForm && !loading">Ajouter une université</button>
+
+  <app-add-university
+    *ngIf="showForm"
+    [university]="editUniversity"
+    [loading]="loading"
+    (save)="onFormSave($event)"
+    (cancel)="onFormCancel()"
+  ></app-add-university>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="success" class="success">{{ success }}</div>
+  <div *ngIf="loading && !showForm" class="loading">Chargement...</div>
+
+  <table *ngIf="universities.length > 0 && !showForm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let u of universities">
+        <td>{{ u.id }}</td>
+        <td>{{ u.universityname }}</td>
+        <td>
+          <button (click)="onEditClick(u)">Modifier</button>
+          <button (click)="onDelete(u)">Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="universities.length === 0 && !loading && !showForm" class="no-result">
+    Aucune université à afficher.
+  </div>
+</div>

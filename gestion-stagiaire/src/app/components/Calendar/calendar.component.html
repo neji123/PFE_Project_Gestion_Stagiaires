@@ -1,0 +1,816 @@
+<div class="calendar-container">
+  <!-- Header -->
+  <div class="calendar-header">
+    <div class="header-controls">
+      <button 
+        class="nav-btn" 
+        (click)="previousMonth()"
+        [disabled]="isLoading()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      
+      <h2 class="month-title">
+        {{ getMonthYearText() }}
+      </h2>
+      
+      <button 
+        class="nav-btn" 
+        (click)="nextMonth()"
+        [disabled]="isLoading()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="header-actions">
+      <button 
+        class="today-btn" 
+        (click)="goToToday()"
+        [disabled]="isLoading()">
+        Aujourd'hui
+      </button>
+      
+      <button 
+        class="create-btn" *ngIf="hasAdminAccess()"
+        (click)="showCreateModal = true"
+        [disabled]="isLoading()">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        </svg>
+        Nouveau Meeting
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters">
+    <!-- Note: Le filtre par utilisateur n'est plus nécessaire car chaque utilisateur ne voit que ses meetings -->
+    <!-- Vous pouvez le supprimer ou le garder pour d'autres usages -->
+    <select 
+      [(ngModel)]="selectedUserId" 
+      (change)="onFilterChange()" 
+      class="filter-select"
+      style="display: none;"> <!-- Caché car plus nécessaire -->
+      <option value="">Tous les utilisateurs</option>
+      <option *ngFor="let user of users" [value]="user.id">
+        {{ user.firstName }} {{ user.lastName }}
+      </option>
+    </select>
+
+   <select 
+  [(ngModel)]="selectedType" 
+  (change)="onFilterChange()" 
+  class="filter-select">
+  <option value="">Tous les types</option>
+  <option [value]="MeetingTypes.TuteurStagiaire">Tuteur-Stagiaire</option>
+  <option [value]="MeetingTypes.RhStagiaire">RH-Stagiaire</option>
+  <option [value]="MeetingTypes.Evaluation">Évaluation</option>
+  <option [value]="MeetingTypes.Suivi">Suivi</option>
+</select>
+
+   <select 
+  [(ngModel)]="selectedStatus" 
+  (change)="onFilterChange()" 
+  class="filter-select">
+  <option value="">Tous les statuts</option>
+  <option [value]="MeetingStatuses.Planifie">Planifié</option>
+  <option [value]="MeetingStatuses.Confirme">Confirmé</option>
+  <option [value]="MeetingStatuses.Annule">Annulé</option>
+  <option [value]="MeetingStatuses.Termine">Terminé</option>
+</select>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="loading">
+    <div class="loading-spinner"></div>
+    <p>Chargement des meetings...</p>
+  </div>
+
+  <!-- Calendrier -->
+  <div class="calendar-grid" *ngIf="!isLoading()">
+    <!-- Jours de la semaine -->
+    <div class="weekdays">
+      <div class="weekday" *ngFor="let day of weekdays">{{ day }}</div>
+    </div>
+
+    <!-- Jours du mois -->
+    <div class="days-grid">
+      <div 
+        *ngFor="let day of calendarDays()" 
+        class="day-cell"
+        [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday"
+        (click)="selectDay(day)">
+        
+        <div class="day-number">{{ day.date.getDate() }}</div>
+        
+        <div class="meetings-list" *ngIf="day.meetings.length > 0">
+          <div 
+  *ngFor="let meeting of day.meetings.slice(0, 3)" 
+  class="meeting-item"
+  [style.background-color]="getMeetingColor(meeting.type)"
+  (click)="selectMeeting(meeting, $event)">
+  <span class="meeting-time">{{ formatTime(meeting.time) }}</span>
+  <span class="meeting-title">{{ meeting.title }}</span>
+</div>
+          
+          <div 
+            *ngIf="day.meetings.length > 3" 
+            class="more-meetings"
+            (click)="showMoreMeetings(day, $event)">
+            +{{ day.meetings.length - 3 }} autres
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MODAL CRÉATION/ÉDITION MEETING - VERSION CORRIGÉE -->
+  <div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <!-- ✅ TITRE DYNAMIQUE selon le mode -->
+        <h3>{{ isEditMode ? 'Modifier le Meeting' : 'Nouveau Meeting' }}</h3>
+        <button class="close-btn" (click)="closeCreateModal()">×</button>
+      </div>
+
+      <!-- ✅ CHANGEMENT: Appeler createOrUpdateMeeting() au lieu de createMeeting() -->
+      <form (ngSubmit)="createOrUpdateMeeting()" class="meeting-form">
+        <div class="form-group">
+          <label>Titre *</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newMeeting.title" 
+            name="title" 
+            required 
+            class="form-input"
+            placeholder="Entrez le titre du meeting">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type *</label>
+           <select 
+  [(ngModel)]="newMeeting.type" 
+  name="type" 
+  required 
+  class="form-select">
+  <option [value]="MeetingTypes.TuteurStagiaire">Tuteur-Stagiaire</option>
+  <option [value]="MeetingTypes.RhStagiaire">RH-Stagiaire</option>
+  <option [value]="MeetingTypes.Evaluation">Évaluation</option>
+  <option [value]="MeetingTypes.Suivi">Suivi</option>
+</select>
+          </div>
+
+          <div class="form-group">
+            <label>Date *</label>
+            <input 
+              type="date" 
+              [(ngModel)]="newMeeting.date" 
+              name="date" 
+              required 
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Heure *</label>
+            <input 
+              type="time" 
+              [(ngModel)]="newMeeting.time" 
+              name="time" 
+              required 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label>Durée (minutes) *</label>
+            <input 
+              type="number" 
+              [(ngModel)]="newMeeting.duration" 
+              name="duration" 
+              required 
+              min="15" 
+              step="15" 
+              class="form-input"
+              placeholder="60">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Lieu</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newMeeting.location" 
+            name="location" 
+            class="form-input"
+            placeholder="Salle de réunion, Teams, etc.">
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea 
+            [(ngModel)]="newMeeting.description" 
+            name="description" 
+            rows="3" 
+            class="form-textarea"
+            placeholder="Description du meeting..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Participants *</label>
+          
+          <!-- 🔍 SECTION FILTRES -->
+          <div class="participant-filters" style="margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+            <div class="row" style="display: flex; gap: 15px; margin-bottom: 10px;">
+              <!-- Recherche par nom -->
+              <div class="col" style="flex: 1;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #495057;">
+                  🔍 Rechercher par nom :
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="participantSearchText"
+                  (input)="onParticipantSearchChange()"
+                  name="participantSearchText"
+                  placeholder="Tapez un nom, prénom, username..."
+                  class="form-input"
+                  style="width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px;">
+              </div>
+              
+              <!-- Filtre par rôle -->
+              <div class="col" style="flex: 1;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #495057;">
+                  🎭 Filtrer par rôle :
+                </label>
+                <select 
+                  [(ngModel)]="participantRoleFilter"
+                  (change)="onParticipantRoleFilterChange()"
+                  name="participantRoleFilter"
+                  class="form-select"
+                  style="width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px;">
+                  <option value="">Tous les rôles</option>
+                  <option value="RHs">RH</option>
+                  <option value="Tuteur">Tuteur</option>
+                  <option value="Stagiaire">Stagiaire</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Bouton reset et statistiques -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <small style="color: #6c757d;">
+                📊 {{ filteredUsers.length }} participant(s) affiché(s) sur {{ users.length }} total
+              </small>
+              <button 
+                type="button"
+                (click)="resetParticipantFilters()"
+                style="padding: 4px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                🧹 Reset
+              </button>
+            </div>
+          </div>
+          
+          <!-- 📋 LISTE DES PARTICIPANTS FILTRÉS -->
+          <div class="participants-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 4px; padding: 10px;">
+            <div *ngFor="let user of filteredUsers" class="participant-item" style="display: flex; align-items: center; padding: 8px; margin-bottom: 5px; border-radius: 4px; background: #fff;">
+              <input 
+                type="checkbox" 
+                [id]="'user-' + user.id"
+                [checked]="newMeeting.participantIds.includes(user.id)"
+                (change)="toggleParticipant(user.id, $event)"
+                style="margin-right: 10px;">
+              <label [for]="'user-' + user.id" style="cursor: pointer; flex: 1; margin: 0;">
+                <span style="font-weight: 500;">{{ getDisplayNameFromUser(user) }}</span>
+                <span style="color: #6c757d; font-size: 12px; margin-left: 8px;">({{ getRoleName(user.role) }})</span>
+              </label>
+            </div>
+            
+            <!-- Message si aucun résultat -->
+            <div *ngIf="filteredUsers.length === 0 && users.length > 0" 
+                 style="text-align: center; padding: 20px; color: #6c757d;">
+              🔍 Aucun utilisateur ne correspond à vos critères de recherche
+            </div>
+          </div>
+          
+          <!-- Message si aucun utilisateur disponible -->
+          <p class="help-text" *ngIf="users.length === 0" style="color: #dc3545; font-style: italic; margin-top: 10px;">
+            ⚠️ Aucun utilisateur disponible pour programmer un meeting.
+          </p>
+        </div>
+
+        
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeCreateModal()">
+            Annuler
+          </button>
+          <!-- ✅ BOUTON DYNAMIQUE selon le mode -->
+          <button type="submit" class="submit-btn" [disabled]="isCreating">
+            {{ isCreating ? (isEditMode ? 'Mise à jour...' : 'Création...') : (isEditMode ? 'Mettre à jour' : 'Créer') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Détails Meeting -->
+  <div *ngIf="selectedMeeting" class="modal-overlay" (click)="closeDetailsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ selectedMeeting.title }}</h3>
+        <button class="close-btn" (click)="closeDetailsModal()">×</button>
+      </div>
+
+      <div class="meeting-details">
+      <div class="detail-item">
+  <strong>Type:</strong> 
+  <span class="badge" [style.background-color]="getMeetingColor(selectedMeeting.type)">
+    {{ getMeetingTypeLabel(selectedMeeting.type) }}
+  </span>
+</div>
+
+        <div class="detail-item">
+          <strong>Date:</strong> {{ formatDate(selectedMeeting.date) }}
+        </div>
+
+        <div class="detail-item">
+          <strong>Heure:</strong> {{ formatTime(selectedMeeting.time) }}
+        </div>
+
+        <div class="detail-item">
+          <strong>Durée:</strong> {{ selectedMeeting.duration }} minutes
+        </div>
+
+        <div class="detail-item" *ngIf="selectedMeeting.location">
+          <strong>Lieu:</strong> {{ selectedMeeting.location }}
+        </div>
+
+        <div class="detail-item" *ngIf="selectedMeeting.description">
+          <strong>Description:</strong> {{ selectedMeeting.description }}
+        </div>
+
+       <div class="detail-item">
+  <strong>Statut:</strong> 
+  <span class="status-badge" [class]="'status-' + selectedMeeting.status">
+    {{ getMeetingStatusLabel(selectedMeeting.status) }}
+  </span>
+</div>
+
+        <div class="detail-item" *ngIf="selectedMeeting.participants && selectedMeeting.participants.length > 0">
+          <strong>Participants:</strong>
+          <ul class="participants-list">
+            <li *ngFor="let participant of selectedMeeting.participants">
+              {{ participant.firstName }} {{ participant.lastName }}
+            </li>
+          </ul>
+        </div>
+
+      <div class="detail-item">
+  <strong>Organisateur:</strong>
+  <span>{{ getCleanUserDisplayName(selectedMeeting.organizerId) }}</span>
+
+
+<div class="calendar-container">
+  <!-- Header -->
+  <div class="calendar-header">
+    <div class="header-controls">
+      <button 
+        class="nav-btn" 
+        (click)="previousMonth()"
+        [disabled]="isLoading()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      
+      <h2 class="month-title">
+        {{ getMonthYearText() }}
+      </h2>
+      
+      <button 
+        class="nav-btn" 
+        (click)="nextMonth()"
+        [disabled]="isLoading()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="header-actions" >
+      <button 
+        class="today-btn" 
+        (click)="goToToday()"
+        [disabled]="isLoading()">
+        Aujourd'hui
+      </button>
+      
+    <button 
+  class="create-btn" *ngIf="hasAdminAccess()"
+  (click)="showCreateModal = true"
+  [disabled]="isLoading()">
+  ...
+  Nouveau Meet
+</button>
+
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="filters">
+    <!-- Note: Le filtre par utilisateur n'est plus nécessaire car chaque utilisateur ne voit que ses meetings -->
+    <!-- Vous pouvez le supprimer ou le garder pour d'autres usages -->
+    <select 
+      [(ngModel)]="selectedUserId" 
+      (change)="onFilterChange()" 
+      class="filter-select"
+      style="display: none;"> <!-- Caché car plus nécessaire -->
+      <option value="">Tous les utilisateurs</option>
+      <option *ngFor="let user of users" [value]="user.id">
+        {{ user.firstName }} {{ user.lastName }}
+      </option>
+    </select>
+
+   <select 
+  [(ngModel)]="selectedType" 
+  (change)="onFilterChange()" 
+  class="filter-select">
+  <option value="">Tous les types</option>
+  <option [value]="MeetingTypes.TuteurStagiaire">Tuteur-Stagiaire</option>
+  <option [value]="MeetingTypes.RhStagiaire">RH-Stagiaire</option>
+  <option [value]="MeetingTypes.Evaluation">Évaluation</option>
+  <option [value]="MeetingTypes.Suivi">Suivi</option>
+</select>
+
+   <select 
+  [(ngModel)]="selectedStatus" 
+  (change)="onFilterChange()" 
+  class="filter-select">
+  <option value="">Tous les statuts</option>
+  <option [value]="MeetingStatuses.Planifie">Planifié</option>
+  <option [value]="MeetingStatuses.Confirme">Confirmé</option>
+  <option [value]="MeetingStatuses.Annule">Annulé</option>
+  <option [value]="MeetingStatuses.Termine">Terminé</option>
+</select>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="loading">
+    <div class="loading-spinner"></div>
+    <p>Chargement des meetings...</p>
+  </div>
+
+  <!-- Calendrier -->
+  <div class="calendar-grid" *ngIf="!isLoading()">
+    <!-- Jours de la semaine -->
+    <div class="weekdays">
+      <div class="weekday" *ngFor="let day of weekdays">{{ day }}</div>
+    </div>
+
+    <!-- Jours du mois -->
+    <div class="days-grid">
+      <div 
+        *ngFor="let day of calendarDays()" 
+        class="day-cell"
+        [class.other-month]="!day.isCurrentMonth"
+        [class.today]="day.isToday"
+        (click)="selectDay(day)">
+        
+        <div class="day-number">{{ day.date.getDate() }}</div>
+        
+        <div class="meetings-list" *ngIf="day.meetings.length > 0">
+          <div 
+  *ngFor="let meeting of day.meetings.slice(0, 3)" 
+  class="meeting-item"
+  [style.background-color]="getMeetingColor(meeting.type)"
+  (click)="selectMeeting(meeting, $event)">
+  <span class="meeting-time">{{ formatTime(meeting.time) }}</span>
+  <span class="meeting-title">{{ meeting.title }}</span>
+</div>
+          
+          <div 
+            *ngIf="day.meetings.length > 3" 
+            class="more-meetings"
+            (click)="showMoreMeetings(day, $event)">
+            +{{ day.meetings.length - 3 }} autres
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ MODAL CRÉATION/ÉDITION MEETING - VERSION CORRIGÉE -->
+  <div *ngIf="showCreateModal" class="modal-overlay" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <!-- ✅ TITRE DYNAMIQUE selon le mode -->
+        <h3>{{ isEditMode ? 'Modifier le Meeting' : 'Nouveau Meeting' }}</h3>
+        <button class="close-btn" (click)="closeCreateModal()">×</button>
+      </div>
+
+      <!-- ✅ CHANGEMENT: Appeler createOrUpdateMeeting() au lieu de createMeeting() -->
+      <form (ngSubmit)="createOrUpdateMeeting()" class="meeting-form">
+        <div class="form-group">
+          <label>Titre *</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newMeeting.title" 
+            name="title" 
+            required 
+            class="form-input"
+            placeholder="Entrez le titre du meeting">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Type *</label>
+           <select 
+  [(ngModel)]="newMeeting.type" 
+  name="type" 
+  required 
+  class="form-select">
+  <option [value]="MeetingTypes.TuteurStagiaire">Tuteur-Stagiaire</option>
+  <option [value]="MeetingTypes.RhStagiaire">RH-Stagiaire</option>
+  <option [value]="MeetingTypes.Evaluation">Évaluation</option>
+  <option [value]="MeetingTypes.Suivi">Suivi</option>
+</select>
+          </div>
+
+          <div class="form-group">
+            <label>Date *</label>
+            <input 
+              type="date" 
+              [(ngModel)]="newMeeting.date" 
+              name="date" 
+              required 
+              class="form-input">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Heure *</label>
+            <input 
+              type="time" 
+              [(ngModel)]="newMeeting.time" 
+              name="time" 
+              required 
+              class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label>Durée (minutes) *</label>
+            <input 
+              type="number" 
+              [(ngModel)]="newMeeting.duration" 
+              name="duration" 
+              required 
+              min="15" 
+              step="15" 
+              class="form-input"
+              placeholder="60">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Lieu</label>
+          <input 
+            type="text" 
+            [(ngModel)]="newMeeting.location" 
+            name="location" 
+            class="form-input"
+            placeholder="Salle de réunion, Teams, etc.">
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea 
+            [(ngModel)]="newMeeting.description" 
+            name="description" 
+            rows="3" 
+            class="form-textarea"
+            placeholder="Description du meeting..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Participants *</label>
+          
+          <!-- 🔍 SECTION FILTRES -->
+          <div class="participant-filters" style="margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+            <div class="row" style="display: flex; gap: 15px; margin-bottom: 10px;">
+              <!-- Recherche par nom -->
+              <div class="col" style="flex: 1;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #495057;">
+                  🔍 Rechercher par nom :
+                </label>
+                <input 
+                  type="text" 
+                  [(ngModel)]="participantSearchText"
+                  (input)="onParticipantSearchChange()"
+                  name="participantSearchText"
+                  placeholder="Tapez un nom, prénom, username..."
+                  class="form-input"
+                  style="width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px;">
+              </div>
+              
+              <!-- Filtre par rôle -->
+              <div class="col" style="flex: 1;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 500; color: #495057;">
+                  🎭 Filtrer par rôle :
+                </label>
+                <select 
+                  [(ngModel)]="participantRoleFilter"
+                  (change)="onParticipantRoleFilterChange()"
+                  name="participantRoleFilter"
+                  class="form-select"
+                  style="width: 100%; padding: 8px 12px; border: 1px solid #ced4da; border-radius: 4px;">
+                  <option value="">Tous les rôles</option>
+                  <option value="RHs">RH</option>
+                  <option value="Tuteur">Tuteur</option>
+                  <option value="Stagiaire">Stagiaire</option>
+                </select>
+              </div>
+            </div>
+            
+            <!-- Bouton reset et statistiques -->
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <small style="color: #6c757d;">
+                📊 {{ filteredUsers.length }} participant(s) affiché(s) sur {{ users.length }} total
+              </small>
+              <button 
+                type="button"
+                (click)="resetParticipantFilters()"
+                style="padding: 4px 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                🧹 Reset
+              </button>
+            </div>
+          </div>
+          
+          <!-- 📋 LISTE DES PARTICIPANTS FILTRÉS -->
+          <div class="participants-list" style="max-height: 200px; overflow-y: auto; border: 1px solid #e9ecef; border-radius: 4px; padding: 10px;">
+            <div *ngFor="let user of filteredUsers" class="participant-item" style="display: flex; align-items: center; padding: 8px; margin-bottom: 5px; border-radius: 4px; background: #fff;">
+              <input 
+                type="checkbox" 
+                [id]="'user-' + user.id"
+                [checked]="newMeeting.participantIds.includes(user.id)"
+                (change)="toggleParticipant(user.id, $event)"
+                style="margin-right: 10px;">
+              <label [for]="'user-' + user.id" style="cursor: pointer; flex: 1; margin: 0;">
+                <span style="font-weight: 500;">{{ getDisplayNameFromUser(user) }}</span>
+                <span style="color: #6c757d; font-size: 12px; margin-left: 8px;">({{ getRoleName(user.role) }})</span>
+              </label>
+            </div>
+            
+            <!-- Message si aucun résultat -->
+            <div *ngIf="filteredUsers.length === 0 && users.length > 0" 
+                 style="text-align: center; padding: 20px; color: #6c757d;">
+              🔍 Aucun utilisateur ne correspond à vos critères de recherche
+            </div>
+          </div>
+          
+          <!-- Message si aucun utilisateur disponible -->
+          <p class="help-text" *ngIf="users.length === 0" style="color: #dc3545; font-style: italic; margin-top: 10px;">
+            ⚠️ Aucun utilisateur disponible pour programmer un meeting.
+          </p>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" (click)="closeCreateModal()">
+            Annuler
+          </button>
+          <!-- ✅ BOUTON DYNAMIQUE selon le mode -->
+          <button type="submit" class="submit-btn" [disabled]="isCreating">
+            {{ isCreating ? (isEditMode ? 'Mise à jour...' : 'Création...') : (isEditMode ? 'Mettre à jour' : 'Créer') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Détails Meeting -->
+  <div *ngIf="selectedMeeting" class="modal-overlay" (click)="closeDetailsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ selectedMeeting.title }}</h3>
+        <button class="close-btn" (click)="closeDetailsModal()">×</button>
+      </div>
+
+      <div class="meeting-details">
+      <div class="detail-item">
+  <strong>Type:</strong> 
+  <span class="badge" [style.background-color]="getMeetingColor(selectedMeeting.type)">
+    {{ getMeetingTypeLabel(selectedMeeting.type) }}
+  </span>
+</div>
+
+        <div class="detail-item">
+          <strong>Date:</strong> {{ formatDate(selectedMeeting.date) }}
+        </div>
+
+        <div class="detail-item">
+          <strong>Heure:</strong> {{ formatTime(selectedMeeting.time) }}
+        </div>
+
+        <div class="detail-item">
+          <strong>Durée:</strong> {{ selectedMeeting.duration }} minutes
+        </div>
+
+        <div class="detail-item" *ngIf="selectedMeeting.location">
+          <strong>Lieu:</strong> {{ selectedMeeting.location }}
+        </div>
+
+        <div class="detail-item" *ngIf="selectedMeeting.description">
+          <strong>Description:</strong> {{ selectedMeeting.description }}
+        </div>
+
+       <div class="detail-item">
+  <strong>Statut:</strong> 
+  <span class="status-badge" [class]="'status-' + selectedMeeting.status">
+    {{ getMeetingStatusLabel(selectedMeeting.status) }}
+  </span>
+</div>
+
+        <div class="detail-item" *ngIf="selectedMeeting.participants && selectedMeeting.participants.length > 0">
+          <strong>Participants:</strong>
+          <ul class="participants-list">
+            <li *ngFor="let participant of selectedMeeting.participants">
+              {{ participant.firstName }} {{ participant.lastName }}
+            </li>
+          </ul>
+        </div>
+
+      <div class="detail-item">
+  <strong>Organisateur:</strong>
+  <span>{{ getCleanUserDisplayName(selectedMeeting.organizerId) }}</span>
+
+
+
+
+
+
+</div>
+
+
+<div *ngIf="isEditMode" style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px;">
+  <p style="margin: 0 0 10px 0; font-weight: bold; color: #666;">🧪 Tests de debug :</p>
+  
+  <button type="button" (click)="testUpdateWithoutParticipants()" 
+          style="background: #007bff; color: white; padding: 8px 12px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+    Test SANS participants
+  </button>
+  
+  <button type="button" (click)="testUpdateOnlyParticipants()" 
+          style="background: #28a745; color: white; padding: 8px 12px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+    Test participants SEULEMENT
+  </button>
+  
+  <button type="button" (click)="updateMeetingInTwoSteps()" 
+          style="background: #ffc107; color: black; padding: 8px 12px; margin: 5px; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">
+    Update en 2 étapes
+  </button>
+  
+ 
+</div>
+      <div class="modal-actions">
+        <button 
+          class="edit-btn" 
+          (click)="editMeeting(selectedMeeting)"
+          *ngIf="canEditMeeting(selectedMeeting)">
+          Modifier
+        </button>
+        <button 
+          class="delete-btn" 
+          (click)="deleteMeeting(selectedMeeting.id!)"
+          *ngIf="canDeleteMeeting(selectedMeeting)">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  
+
+</div>
+      <div class="modal-actions">
+        <button 
+          class="edit-btn" 
+          (click)="editMeeting(selectedMeeting)"
+          *ngIf="canEditMeeting(selectedMeeting)">
+          Modifier
+        </button>
+        <button 
+          class="delete-btn" 
+          (click)="deleteMeeting(selectedMeeting.id!)"
+          *ngIf="canDeleteMeeting(selectedMeeting)">
+          Supprimer
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

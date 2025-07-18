@@ -1,0 +1,456 @@
+// Variables
+$ey-black: #2e2e38;
+$ey-yellow: #ffe600;
+$ey-gray: #c4c4cd;
+$ey-light-gray: #f6f6fa;
+$ey-white: #ffffff;
+$shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+.main-content {
+  margin-left: 280px;
+  padding: 30px;
+  transition: margin-left 0.3s ease;
+  min-height: calc(100vh - 80px);
+  background-color: $ey-light-gray;
+  
+  &.sidebar-open {
+    margin-left: 250px;
+  }
+  
+  .content-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
+    
+    button {
+      margin-right: 16px;
+    }
+    
+    h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: $ey-black;
+      margin: 0;
+    }
+  }
+  
+  .tuteur-detail-container {
+    .profile-header {
+      display: flex;
+      background-color: $ey-white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: $shadow-sm;
+      margin-bottom: 24px;
+      
+      .profile-image {
+        flex: 0 0 250px;
+        
+        img {
+          width: 100%;
+          height: 250px;
+          object-fit: cover;
+          border-right: 3px solid $ey-yellow;
+        }
+      }
+      
+      .profile-info {
+        flex: 1;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        
+        .name-position {
+          h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            color: $ey-black;
+          }
+          
+          h3 {
+            font-size: 18px;
+            font-weight: 500;
+            margin: 0 0 16px 0;
+            color: $ey-gray;
+          }
+          
+          .tags {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            
+            .department-tag, .experience-tag {
+              padding: 6px 12px;
+              border-radius: 16px;
+              font-size: 14px;
+              font-weight: 500;
+            }
+            
+            .department-tag {
+              background-color: $ey-light-gray;
+              color: $ey-black;
+            }
+            
+            .experience-tag {
+              background-color: #e8f5e9;
+              color: #2e7d32;
+            }
+          }
+        }
+        
+        .stats {
+          margin: 16px 0;
+          
+          .stat-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 16px;
+            background-color: #e3f2fd;
+            color: #0d47a1;
+            font-size: 14px;
+            font-weight: 500;
+            
+            mat-icon {
+              font-size: 16px;
+              height: 16px;
+              width: 16px;
+              margin-right: 8px;
+            }
+          }
+        }
+        
+        .actions {
+          display: flex;
+          gap: 16px;
+          
+          button {
+            &:first-child {
+              background-color: $ey-yellow;
+              color: $ey-black;
+            }
+            
+            &:last-child {
+              color: goldenrod;
+            }
+          }
+        }
+      }
+    }
+    
+    .contact-card {
+      margin-bottom: 24px;
+      
+      .contact-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+        
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
+        mat-icon {
+          margin-right: 16px;
+          color: $ey-black;
+        }
+        
+        span {
+          font-size: 16px;
+          color: $ey-black;
+        }
+      }
+    }
+    
+    .info-tabs {
+      background-color: $ey-white;
+      border-radius: 8px;
+      box-shadow: $shadow-sm;
+      
+      .tab-content {
+        padding: 24px;
+        
+        h3 {
+          font-size: 20px;
+          font-weight: 600;
+          color: $ey-black;
+          margin-top: 0;
+          margin-bottom: 16px;
+        }
+        
+        p {
+          font-size: 16px;
+          line-height: 1.6;
+          color: $ey-black;
+          margin-bottom: 24px;
+        }
+        
+        .skills-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          
+          .skill-tag {
+            background-color: $ey-light-gray;
+            color: $ey-black;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+          }
+        }
+        
+        .stagiaires-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+          gap: 16px;
+          
+          .stagiaire-card {
+            background-color: $ey-light-gray;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: $shadow-sm;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            
+            &:hover {
+              transform: translateY(-3px);
+              box-shadow: $shadow-md;
+            }
+            
+            .stagiaire-header {
+              display: flex;
+              align-items: center;
+              
+              img {
+                width: 60px;
+                height: 60px;
+                border-radius: 30px;
+                object-fit: cover;
+                margin-right: 16px;
+              }
+              
+              .stagiaire-info {
+                flex: 1;
+                
+                h4 {
+                  margin: 0 0 4px 0;
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: $ey-black;
+                }
+                
+                p {
+                  margin: 0 0 8px 0;
+                  font-size: 14px;
+                  color: $ey-gray;
+                }
+                
+                .stagiaire-period {
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: 8px;
+                  
+                  .period-badge, .duration-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    font-size: 12px;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                    
+                    mat-icon {
+                      font-size: 14px;
+                      height: 14px;
+                      width: 14px;
+                      margin-right: 4px;
+                    }
+                  }
+                  
+                  .period-badge {
+                    background-color: #e3f2fd;
+                    color: #0d47a1;
+                  }
+                  
+                  .duration-badge {
+                    background-color: #ffebee;
+                    color: #b71c1c;
+                  }
+                }
+              }
+              
+              .stagiaire-rating {
+                display: flex;
+                align-items: center;
+                background-color: $ey-yellow;
+                color: $ey-black;
+                border-radius: 16px;
+                padding: 4px 8px;
+                
+                span {
+                  font-size: 14px;
+                  font-weight: 600;
+                  margin-right: 4px;
+                }
+                
+                mat-icon {
+                  font-size: 14px;
+                  height: 14px;
+                  width: 14px;
+                }
+              }
+            }
+          }
+        }
+        
+        .no-content-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 64px 0;
+          
+          mat-icon {
+            font-size: 48px;
+            height: 48px;
+            width: 48px;
+            color: $ey-gray;
+            margin-bottom: 16px;
+          }
+          
+          p {
+            font-size: 18px;
+            color: $ey-gray;
+            margin: 0;
+          }
+        }
+      }
+    }
+  }
+  
+  .not-found {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 64px 0;
+    
+    mat-icon {
+      font-size: 64px;
+      height: 64px;
+      width: 64px;
+      color: $ey-gray;
+      margin-bottom: 16px;
+    }
+    
+    h2 {
+      font-size: 24px;
+      font-weight: 600;
+      color: $ey-black;
+      margin: 0 0 16px 0;
+    }
+    
+    p {
+      font-size: 16px;
+      color: $ey-gray;
+      margin: 0 0 24px 0;
+    }
+  }
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  
+  p {
+    margin-top: 20px;
+    font-size: 16px;
+    color: $ey-gray;
+  }
+}
+
+// Responsive styles
+@media (max-width: 1024px) {
+  .main-content {
+    margin-left: 240px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+    padding: 20px;
+    
+    &.sidebar-open {
+      margin-left: 280px;
+    }
+    
+    .tuteur-detail-container {
+      .profile-header {
+        flex-direction: column;
+        
+        .profile-image {
+          flex: 0 0 auto;
+          
+          img {
+            height: 200px;
+            border-right: none;
+            border-bottom: 3px solid $ey-yellow;
+          }
+        }
+        
+        .profile-info {
+          .actions {
+            flex-direction: column;
+            
+            button {
+              width: 100%;
+              margin-bottom: 8px;
+            }
+          }
+        }
+      }
+      
+      .info-tabs {
+        .tab-content {
+          .stagiaires-container {
+            grid-template-columns: 1fr;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content {
+    padding: 15px;
+    
+    .tuteur-detail-container {
+      .profile-header {
+        .profile-info {
+          padding: 15px;
+          
+          .name-position {
+            h1 {
+              font-size: 24px;
+            }
+            
+            h3 {
+              font-size: 16px;
+            }
+            
+            .tags {
+              flex-wrap: wrap;
+            }
+          }
+        }
+      }
+    }
+  }
+}

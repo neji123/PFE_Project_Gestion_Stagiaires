@@ -1,0 +1,112 @@
+<!-- src/app/components/project/project-create/project-create.component.html -->
+<div class="container mt-4">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white">
+        <h3 class="mb-0">Créer un nouveau projet</h3>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="projectForm" (ngSubmit)="onSubmit()">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label for="title" class="form-label">Titre <span class="text-danger">*</span></label>
+                <input type="text" id="title" formControlName="title" class="form-control" 
+                       [ngClass]="{'is-invalid': projectForm.get('title')?.invalid && projectForm.get('title')?.touched}">
+                <div class="invalid-feedback" *ngIf="projectForm.get('title')?.invalid && projectForm.get('title')?.touched">
+                  <span *ngIf="projectForm.get('title')?.errors?.['required']">Le titre est obligatoire</span>
+                  <span *ngIf="projectForm.get('title')?.errors?.['minlength']">Le titre doit contenir au moins 3 caractères</span>
+                </div>
+              </div>
+  
+              <div class="mb-3">
+                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                <textarea id="description" formControlName="description" class="form-control" rows="5"
+                          [ngClass]="{'is-invalid': projectForm.get('description')?.invalid && projectForm.get('description')?.touched}"></textarea>
+                <div class="invalid-feedback" *ngIf="projectForm.get('description')?.invalid && projectForm.get('description')?.touched">
+                  <span *ngIf="projectForm.get('description')?.errors?.['required']">La description est obligatoire</span>
+                  <span *ngIf="projectForm.get('description')?.errors?.['minlength']">La description doit contenir au moins 10 caractères</span>
+                </div>
+              </div>
+  
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="startDate" class="form-label">Date de début</label>
+                  <input type="date" id="startDate" formControlName="startDate" class="form-control">
+                  <small class="form-text text-muted">Facultatif</small>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="endDate" class="form-label">Date de fin</label>
+                  <input type="date" id="endDate" formControlName="endDate" class="form-control">
+                  <small class="form-text text-muted">Facultatif</small>
+                </div>
+              </div>
+  
+              <div class="mb-3">
+                <label class="form-label">Membres du projet</label>
+                <ng-select 
+                  [items]="users"
+                  bindLabel="username"
+                  bindValue="id"
+                  [multiple]="true"
+                  placeholder="Sélectionner des utilisateurs"
+                  (change)="onUserSelectionChange($event)"
+                  appendTo="body">
+                  <ng-template ng-label-tmp let-item="item">
+                    <div class="d-flex align-items-center">
+                      <img *ngIf="item.profilePictureUrl" [src]="item.profilePictureUrl" class="user-avatar me-2">
+                      <span *ngIf="!item.profilePictureUrl" class="user-avatar-placeholder me-2">
+                        {{ item.firstName?.charAt(0) || item.username?.charAt(0) || 'U' }}
+                      </span>
+                      <span>{{ item.firstName }} {{ item.lastName }} ({{ item.role }})</span>
+                    </div>
+                  </ng-template>
+                  <ng-template ng-option-tmp let-item="item">
+                    <div class="d-flex align-items-center">
+                      <img *ngIf="item.profilePictureUrl" [src]="item.profilePictureUrl" class="user-avatar me-2">
+                      <span *ngIf="!item.profilePictureUrl" class="user-avatar-placeholder me-2">
+                        {{ item.firstName?.charAt(0) || item.username?.charAt(0) || 'U' }}
+                      </span>
+                      <div>
+                        <span>{{ item.firstName }} {{ item.lastName }}</span>
+                        <small class="text-muted d-block">{{ item.role }}</small>
+                      </div>
+                    </div>
+                  </ng-template>
+                </ng-select>
+                <small class="form-text text-muted">Facultatif - Vous pourrez ajouter des membres plus tard</small>
+              </div>
+            </div>
+  
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="image" class="form-label">Image du projet</label>
+                <div class="image-upload-container">
+                  <div class="image-preview">
+                    <img *ngIf="imagePreview" [src]="imagePreview" alt="Image preview" class="img-fluid rounded">
+                    <div *ngIf="!imagePreview" class="image-placeholder d-flex justify-content-center align-items-center">
+                      <i class="bi bi-image text-muted display-4"></i>
+                    </div>
+                  </div>
+                  <div class="mt-2">
+                    <label for="image" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-upload"></i> Choisir une image
+                    </label>
+                    <input type="file" id="image" accept="image/*" (change)="onImageSelected($event)" class="d-none">
+                    <small class="form-text text-muted d-block">Facultatif - Formats acceptés: JPG, PNG</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-secondary" routerLink="/projects">Annuler</button>
+            <button type="submit" class="btn btn-primary" [disabled]="projectForm.invalid || submitting">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+              Créer le projet
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>

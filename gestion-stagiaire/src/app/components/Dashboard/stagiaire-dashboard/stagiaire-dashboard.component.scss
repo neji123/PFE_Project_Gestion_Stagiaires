@@ -1,0 +1,1415 @@
+// =========================================
+// EY DASHBOARD COMPLET - DESIGN INNOVANT MODERNE
+// =========================================
+
+// =========================================
+// VARIABLES EY
+// =========================================
+
+// EY Brand Colors
+$ey-yellow: #FFE600;
+$ey-dark-blue: #2E2E38;
+$ey-blue: #41535f;
+$ey-light-gray: #F6F6FA;
+$ey-gray: #747480;
+$ey-white: #FFFFFF;
+$ey-green: #36B37E;
+$ey-red: #FF5630;
+
+// Extended Color Palette
+$ey-yellow-light: lighten($ey-yellow, 15%);
+$ey-yellow-dark: darken($ey-yellow, 15%);
+$ey-blue-light: lighten($ey-blue, 20%);
+$ey-dark-blue-light: lighten($ey-dark-blue, 10%);
+
+// Gradient Definitions
+$ey-gradient-primary: linear-gradient(135deg, $ey-yellow 0%, $ey-yellow-dark 100%);
+$ey-gradient-secondary: linear-gradient(135deg, $ey-blue 0%, $ey-dark-blue 100%);
+$ey-gradient-glass: linear-gradient(135deg, rgba($ey-white, 0.1) 0%, rgba($ey-white, 0.05) 100%);
+$ey-gradient-success: linear-gradient(135deg, $ey-green 0%, lighten($ey-green, 15%) 100%);
+$ey-gradient-danger: linear-gradient(135deg, $ey-red 0%, lighten($ey-red, 15%) 100%);
+
+// Shadows & Effects
+$shadow-soft: 0 2px 20px rgba($ey-dark-blue, 0.08);
+$shadow-medium: 0 4px 30px rgba($ey-dark-blue, 0.12);
+$shadow-strong: 0 8px 40px rgba($ey-dark-blue, 0.16);
+$shadow-glass: 0 8px 32px rgba($ey-dark-blue, 0.06);
+$shadow-inset: inset 0 1px 3px rgba($ey-dark-blue, 0.1);
+
+// Border Radius
+$radius-sm: 8px;
+$radius-md: 12px;
+$radius-lg: 16px;
+$radius-xl: 24px;
+
+// Animation Variables
+$transition-fast: 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+$transition-smooth: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+$transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+$transition-elastic: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+// =========================================
+// MIXINS UTILITAIRES
+// =========================================
+
+@mixin glassmorphism($opacity: 0.1) {
+  background: rgba($ey-white, $opacity);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba($ey-white, 0.2);
+  box-shadow: $shadow-glass;
+}
+
+@mixin neumorphism-light {
+  background: $ey-light-gray;
+  box-shadow: 
+    6px 6px 12px rgba($ey-gray, 0.15),
+    -6px -6px 12px rgba($ey-white, 0.8);
+}
+
+@mixin neumorphism-dark {
+  background: $ey-dark-blue;
+  box-shadow: 
+    6px 6px 12px rgba(black, 0.3),
+    -6px -6px 12px rgba($ey-dark-blue-light, 0.1);
+}
+
+@mixin hover-lift($scale: 1.02) {
+  transition: all $transition-smooth;
+  
+  &:hover {
+    transform: translateY(-4px) scale($scale);
+    box-shadow: $shadow-strong;
+  }
+}
+
+@mixin pulse-animation($color: $ey-yellow) {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba($color, 0.3) 0%, transparent 70%);
+    border-radius: inherit;
+    transform: translate(-50%, -50%) scale(0);
+    animation: pulse 2s infinite;
+  }
+}
+
+@mixin gradient-text($gradient) {
+  background: $gradient;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 600;
+}
+
+// =========================================
+// ANIMATIONS KEYFRAMES
+// =========================================
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes rotateIn {
+  from {
+    transform: rotate(-10deg) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes pulse {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+// =========================================
+// DASHBOARD CONTAINER
+// =========================================
+
+.dashboard-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, $ey-light-gray 0%, rgba($ey-blue, 0.05) 100%);
+  position: relative;
+  overflow-x: hidden;
+  padding: 2rem;
+  
+  // Animated background elements
+  &::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba($ey-yellow, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba($ey-blue, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba($ey-green, 0.02) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+    z-index: -1;
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// =========================================
+// HEADER SECTION
+// =========================================
+
+.dashboard-header {
+  margin-bottom: 2rem;
+  animation: slideInUp $transition-smooth ease-out;
+  
+  .header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+  
+  .title-section {
+    .dashboard-title {
+      @include gradient-text($ey-gradient-secondary);
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.02em;
+      
+      @media (max-width: 768px) {
+        font-size: 2rem;
+      }
+
+      @media (max-width: 480px) {
+        font-size: 1.8rem;
+      }
+    }
+    
+    .dashboard-subtitle {
+      color: $ey-gray;
+      font-size: 1.1rem;
+      font-weight: 400;
+    }
+  }
+  
+  .header-actions {
+    .refresh-btn {
+      @include glassmorphism(0.15);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: $radius-lg;
+      color: $ey-dark-blue;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all $transition-smooth;
+      position: relative;
+      overflow: hidden;
+      
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: $ey-gradient-primary;
+        transition: left $transition-smooth;
+        z-index: -1;
+      }
+      
+      &:hover {
+        transform: translateY(-2px);
+        color: $ey-dark-blue;
+        
+        &::before {
+          left: 0;
+        }
+      }
+      
+      &.refreshing {
+        .fa-sync-alt {
+          animation: spin 1s linear infinite;
+        }
+      }
+    }
+  }
+}
+
+// =========================================
+// LOADING & ERROR STATES
+// =========================================
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  
+  .loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba($ey-yellow, 0.2);
+    border-top: 3px solid $ey-yellow;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  
+  .loading-text {
+    color: $ey-gray;
+    font-weight: 500;
+    animation: pulse 2s ease-in-out infinite alternate;
+  }
+}
+
+.error-container {
+  animation: slideInUp $transition-bounce;
+  
+  .error-card {
+    @include glassmorphism(0.1);
+    border-left: 4px solid $ey-red;
+    padding: 1.5rem;
+    border-radius: $radius-md;
+    margin-bottom: 2rem;
+    
+    .error-icon {
+      color: $ey-red;
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .error-title {
+      color: $ey-dark-blue;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .error-message {
+      color: $ey-gray;
+      margin-bottom: 1rem;
+    }
+    
+    .retry-btn {
+      background: $ey-gradient-danger;
+      border: none;
+      color: $ey-white;
+      padding: 0.5rem 1rem;
+      border-radius: $radius-sm;
+      cursor: pointer;
+      transition: all $transition-smooth;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: $shadow-medium;
+      }
+    }
+  }
+}
+
+// =========================================
+// STATS GRID
+// =========================================
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .stat-card {
+    @include glassmorphism(0.08);
+    @include hover-lift(1.02);
+    border-radius: $radius-lg;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    animation: fadeInScale $transition-smooth ease-out;
+    animation-delay: calc(var(--delay, 0) * 0.1s);
+    animation-fill-mode: both;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: $ey-gradient-primary;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform $transition-smooth;
+    }
+    
+    &:hover::before {
+      transform: scaleX(1);
+    }
+
+    @media (max-width: 480px) {
+      padding: 1rem;
+    }
+    
+    .stat-content {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      @media (max-width: 480px) {
+        flex-direction: column;
+        text-align: center;
+        gap: 0.75rem;
+      }
+      
+      .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: $radius-md;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        background: $ey-gradient-primary;
+        color: $ey-dark-blue;
+        position: relative;
+        
+        &::after {
+          content: '';
+          position: absolute;
+          inset: -2px;
+          border-radius: inherit;
+          background: conic-gradient(from 0deg, $ey-yellow, $ey-blue, $ey-yellow);
+          z-index: -1;
+          opacity: 0;
+          transition: opacity $transition-smooth;
+        }
+
+        .notification-badge {
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: $ey-red;
+          color: $ey-white;
+          border-radius: 50%;
+          width: 20px;
+          height: 20px;
+          font-size: 0.7rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          animation: pulse 2s infinite;
+        }
+      }
+      
+      .stat-details {
+        flex: 1;
+        
+        .stat-title {
+          color: $ey-gray;
+          font-size: 0.9rem;
+          font-weight: 500;
+          margin-bottom: 0.25rem;
+        }
+        
+        .stat-value {
+          font-size: 2rem;
+          font-weight: 700;
+          color: $ey-dark-blue;
+          line-height: 1;
+          margin-bottom: 0.25rem;
+        }
+        
+        .stat-change {
+          font-size: 0.8rem;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 0.25rem;
+          
+          &.positive {
+            color: $ey-green;
+          }
+          
+          &.urgent {
+            color: $ey-red;
+            animation: pulse 2s infinite;
+          }
+        }
+      }
+    }
+    
+    // Couleurs spécifiques par type de carte
+    &.stagiaires-card .stat-icon {
+      background: linear-gradient(135deg, $ey-blue 0%, $ey-blue-light 100%);
+      color: $ey-white;
+    }
+    
+    &.reports-card .stat-icon {
+      background: $ey-gradient-primary;
+      color: $ey-dark-blue;
+    }
+    
+    &.tasks-card .stat-icon {
+      background: $ey-gradient-success;
+      color: $ey-white;
+    }
+    
+    &.messages-card .stat-icon {
+      background: $ey-gradient-danger;
+      color: $ey-white;
+    }
+  }
+}
+
+// =========================================
+// MAIN CONTENT SECTIONS
+// =========================================
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    gap: 1.5rem;
+  }
+}
+
+.charts-section {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+.chart-card, .progress-card, .projects-section, .tasks-section, .documents-section, .activities-section {
+  @include glassmorphism(0.08);
+  border-radius: $radius-xl;
+  padding: 2rem;
+  animation: slideInRight $transition-smooth ease-out;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $ey-gradient-primary;
+    transform: scaleX(0);
+    transition: transform $transition-smooth;
+  }
+  
+  &:hover::before {
+    transform: scaleX(1);
+  }
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
+  
+  .chart-header, .progress-header, .section-header {
+    margin-bottom: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .chart-title, .progress-title, .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $ey-dark-blue;
+    }
+
+    .chart-subtitle, .section-subtitle {
+      font-size: 0.9rem;
+      color: $ey-gray;
+    }
+
+    .section-badge {
+      background: rgba($ey-blue, 0.1);
+      color: $ey-blue;
+      padding: 0.375rem 0.75rem;
+      border-radius: $radius-lg;
+      font-size: 0.8rem;
+      font-weight: 600;
+
+      &.urgent {
+        background: rgba($ey-red, 0.1);
+        color: $ey-red;
+        animation: pulse 2s infinite;
+      }
+    }
+  }
+  
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: $ey-gray;
+    text-align: center;
+    
+    .empty-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-text {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-subtext {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  }
+}
+
+// =========================================
+// TUTEUR INFO
+// =========================================
+
+.tuteur-info {
+  text-align: center;
+
+  .tuteur-avatar {
+    margin-bottom: 1rem;
+
+    .avatar-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: $ey-gradient-primary;
+      color: $ey-dark-blue;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 auto;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: -3px;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, $ey-yellow, $ey-blue, $ey-yellow);
+        z-index: -1;
+        animation: spin 3s linear infinite;
+      }
+    }
+  }
+
+  .tuteur-details {
+    .tuteur-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: $ey-dark-blue;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .tuteur-department {
+      color: $ey-gray;
+      margin: 0 0 1rem 0;
+    }
+
+    .tuteur-contact {
+      margin-bottom: 1.5rem;
+
+      .contact-item {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        color: $ey-gray;
+
+        i {
+          color: $ey-blue;
+        }
+      }
+    }
+
+    .tuteur-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+
+      .action-btn {
+        border: none;
+        padding: 0.6rem 1rem;
+        border-radius: $radius-sm;
+        font-size: 0.8rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all $transition-smooth;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        &.primary {
+          background: $ey-gradient-secondary;
+          color: $ey-white;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: $shadow-soft;
+          }
+        }
+
+        &.secondary {
+          background: $ey-gradient-success;
+          color: $ey-white;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: $shadow-soft;
+          }
+        }
+      }
+    }
+  }
+}
+
+// =========================================
+// PROJETS SECTION
+// =========================================
+
+.projects-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.project-card {
+  background: rgba($ey-white, 0.5);
+  border: 1px solid rgba($ey-gray, 0.1);
+  border-radius: $radius-md;
+  padding: 1.5rem;
+  transition: all $transition-smooth;
+  position: relative;
+
+  &:hover {
+    background: rgba($ey-white, 0.8);
+    transform: translateY(-2px);
+    box-shadow: $shadow-medium;
+  }
+
+  .project-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+
+    .project-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: $ey-dark-blue;
+      margin: 0;
+    }
+
+    .project-date {
+      font-size: 0.8rem;
+      color: $ey-gray;
+      background: rgba($ey-gray, 0.1);
+      padding: 0.25rem 0.5rem;
+      border-radius: $radius-sm;
+    }
+  }
+
+  .project-progress {
+    margin-bottom: 1rem;
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+
+      .progress-label {
+        font-weight: 600;
+        color: $ey-dark-blue;
+        font-size: 0.9rem;
+      }
+
+      .progress-details {
+        font-size: 0.8rem;
+        color: $ey-gray;
+      }
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: rgba($ey-gray, 0.2);
+      border-radius: 4px;
+      overflow: hidden;
+
+      .progress-bar {
+        height: 100%;
+        background: $ey-gradient-primary;
+        border-radius: 4px;
+        transition: width $transition-smooth;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            rgba($ey-white, 0.4),
+            transparent
+          );
+          animation: shimmer 2s infinite;
+        }
+      }
+    }
+  }
+
+  .project-actions {
+    .project-link {
+      color: $ey-blue;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all $transition-smooth;
+
+      &:hover {
+        color: $ey-dark-blue;
+        transform: translateX(4px);
+      }
+    }
+  }
+}
+
+// =========================================
+// TÂCHES SECTION
+// =========================================
+
+.tasks-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba($ey-white, 0.4);
+  border: 1px solid rgba($ey-gray, 0.1);
+  border-radius: $radius-md;
+  transition: all $transition-smooth;
+
+  &:hover {
+    background: rgba($ey-white, 0.7);
+    transform: translateX(4px);
+  }
+
+  &.completed {
+    opacity: 0.7;
+    background: rgba($ey-gray, 0.05);
+
+    .task-title {
+      text-decoration: line-through;
+      color: $ey-gray;
+    }
+  }
+
+  .task-checkbox {
+    margin-top: 0.125rem;
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: $ey-green;
+      border-radius: 4px;
+    }
+  }
+
+  .task-details {
+    flex: 1;
+
+    .task-title {
+      font-weight: 600;
+      color: $ey-dark-blue;
+      margin: 0 0 0.5rem 0;
+      font-size: 0.95rem;
+
+      &.completed {
+        text-decoration: line-through;
+        color: $ey-gray;
+      }
+    }
+
+    .task-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+
+      .task-date, .task-priority {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        color: $ey-gray;
+
+        i {
+          font-size: 0.7rem;
+        }
+      }
+
+      .task-priority {
+        &.text-red-600 {
+          color: $ey-red;
+        }
+        &.text-orange-600 {
+          color: #FF8C00;
+        }
+        &.text-blue-600 {
+          color: $ey-blue;
+        }
+      }
+    }
+  }
+}
+
+// =========================================
+// PROGRESS ITEMS
+// =========================================
+
+.progress-content {
+  .progress-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-radius: $radius-md;
+    margin-bottom: 1rem;
+    background: rgba($ey-white, 0.5);
+    border: 1px solid rgba($ey-gray, 0.1);
+    transition: all $transition-smooth;
+    
+    &:hover {
+      background: rgba($ey-white, 0.8);
+      transform: translateX(4px);
+    }
+
+    @media (max-width: 480px) {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    
+    .stagiaire-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      
+      .stagiaire-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: $ey-gradient-primary;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $ey-dark-blue;
+        font-weight: 600;
+        font-size: 0.9rem;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          border-radius: 50%;
+          object-fit: cover;
+        }
+        
+        .avatar-placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: $ey-gradient-secondary;
+          color: $ey-white;
+          border-radius: 50%;
+          font-weight: 600;
+        }
+      }
+      
+      .stagiaire-details {
+        .stagiaire-name {
+          font-weight: 600;
+          color: $ey-dark-blue;
+          margin-bottom: 0.25rem;
+        }
+        
+        .stagiaire-department {
+          font-size: 0.8rem;
+          color: $ey-gray;
+        }
+      }
+    }
+    
+    .progress-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      
+      .progress-percentage {
+        font-weight: 600;
+        color: $ey-dark-blue;
+        min-width: 40px;
+        text-align: right;
+      }
+      
+      .progress-bar-container {
+        width: 80px;
+        height: 6px;
+        background: rgba($ey-gray, 0.2);
+        border-radius: 3px;
+        overflow: hidden;
+        
+        .progress-bar {
+          height: 100%;
+          border-radius: 3px;
+          background: $ey-gradient-primary;
+          transition: width $transition-smooth;
+          position: relative;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+              90deg,
+              transparent,
+              rgba($ey-white, 0.4),
+              transparent
+            );
+            animation: shimmer 2s infinite;
+          }
+        }
+      }
+    }
+  }
+}
+
+// =========================================
+// DOCUMENTS SECTION
+// =========================================
+
+.documents-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.document-card {
+  background: rgba($ey-white, 0.5);
+  border: 1px solid rgba($ey-gray, 0.1);
+  border-radius: $radius-md;
+  padding: 1.5rem;
+  transition: all $transition-smooth;
+
+  &:hover {
+    background: rgba($ey-white, 0.8);
+    transform: translateY(-2px);
+    box-shadow: $shadow-medium;
+  }
+
+  .document-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    .document-icon {
+      width: 40px;
+      height: 40px;
+      background: $ey-gradient-primary;
+      border-radius: $radius-sm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: $ey-dark-blue;
+      font-size: 1.1rem;
+    }
+
+    .document-meta {
+      .document-date {
+        font-size: 0.8rem;
+        color: $ey-gray;
+        background: rgba($ey-gray, 0.1);
+        padding: 0.25rem 0.5rem;
+        border-radius: $radius-sm;
+      }
+    }
+  }
+
+  .document-content {
+    .document-title {
+      font-weight: 600;
+      color: $ey-dark-blue;
+      margin: 0 0 0.5rem 0;
+      font-size: 1rem;
+    }
+
+    .document-date-full {
+      font-size: 0.8rem;
+      color: $ey-gray;
+      margin: 0 0 0.75rem 0;
+    }
+
+    .document-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: $radius-lg;
+      font-size: 0.75rem;
+      font-weight: 600;
+
+      &.bg-green-100 {
+        background: rgba($ey-green, 0.1);
+        color: $ey-green;
+      }
+
+      &.bg-yellow-100 {
+        background: rgba($ey-yellow, 0.3);
+        color: darken($ey-yellow, 40%);
+      }
+
+      &.bg-red-100 {
+        background: rgba($ey-red, 0.1);
+        color: $ey-red;
+      }
+    }
+  }
+}
+
+// =========================================
+// ACTIVITIES TIMELINE
+// =========================================
+
+.activities-timeline {
+  .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba($ey-gray, 0.1);
+    transition: all $transition-smooth;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    &:hover {
+      background: rgba($ey-white, 0.5);
+      margin: 0 -1rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      border-radius: $radius-sm;
+    }
+    
+    .timeline-marker {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      
+      &[data-type="completion"] {
+        background: $ey-gradient-success;
+        color: $ey-white;
+      }
+      
+      &[data-type="message"] {
+        background: linear-gradient(135deg, $ey-blue 0%, $ey-blue-light 100%);
+        color: $ey-white;
+      }
+      
+      &[data-type="user"] {
+        background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+        color: $ey-white;
+      }
+      
+      &[data-type="document"] {
+        background: $ey-gradient-primary;
+        color: $ey-dark-blue;
+      }
+    }
+    
+    .timeline-content {
+      flex: 1;
+      
+      .activity-text {
+        font-weight: 500;
+        color: $ey-dark-blue;
+        margin-bottom: 0.25rem;
+      }
+      
+      .activity-time {
+        font-size: 0.8rem;
+        color: $ey-gray;
+      }
+    }
+  }
+}
+
+// =========================================
+// UTILITIES & ANIMATIONS
+// =========================================
+
+.fade-in-up {
+  animation: slideInUp $transition-smooth ease-out;
+}
+
+.fade-in-scale {
+  animation: fadeInScale $transition-smooth ease-out;
+  animation-delay: calc(var(--delay, 0) * 0.1s);
+  animation-fill-mode: both;
+}
+
+.rotate-in {
+  animation: rotateIn $transition-bounce ease-out;
+}
+
+.pulse-glow {
+  @include pulse-animation($ey-yellow);
+}
+
+.shimmer-effect {
+  background: linear-gradient(
+    90deg,
+    rgba($ey-gray, 0.1) 25%,
+    rgba($ey-white, 0.5) 50%,
+    rgba($ey-gray, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+// Scroll animations
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all $transition-smooth;
+  
+  &.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Loading states
+.loading-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba($ey-gray, 0.1) 25%,
+    rgba($ey-gray, 0.2) 50%,
+    rgba($ey-gray, 0.1) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: $radius-sm;
+}
+
+// Focus states for accessibility
+.focus-visible:focus {
+  outline: 2px solid $ey-yellow;
+  outline-offset: 2px;
+}
+
+// =========================================
+// RESPONSIVE DESIGN
+// =========================================
+
+@media (max-width: 1200px) {
+  .charts-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 1rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .main-content {
+    gap: 1.5rem;
+  }
+  
+  .chart-card, .progress-card,
+  .documents-section, .activities-section,
+  .projects-section, .tasks-section {
+    padding: 1.5rem;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-title {
+    font-size: 1.8rem !important;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+    
+    .stat-content {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.75rem;
+    }
+  }
+  
+  .progress-item {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
+
+// =========================================
+// PRINT STYLES
+// =========================================
+
+@media print {
+  .dashboard-container {
+    background: $ey-white !important;
+    
+    &::before {
+      display: none;
+    }
+  }
+  
+  .header-actions,
+  .document-actions,
+  .refresh-btn,
+  .action-btn {
+    display: none !important;
+  }
+  
+  .stat-card,
+  .chart-card,
+  .progress-card,
+  .project-card,
+  .document-card {
+    box-shadow: none !important;
+    border: 1px solid $ey-gray !important;
+  }
+}

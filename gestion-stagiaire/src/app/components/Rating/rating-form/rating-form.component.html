@@ -1,0 +1,355 @@
+<div class="form-container">
+  <div class="form-wrapper">
+    <!-- Header Section -->
+    <header class="form-header">
+      <div class="header-content">
+        <div class="header-text">
+          <h1 class="main-title">
+            <span class="title-icon">
+              {{ isEditMode() ? '✏️' : '➕' }}
+            </span>
+            {{ isEditMode() ? 'Modifier l\'évaluation' : 'Nouvelle évaluation' }}
+          </h1>
+          <p class="subtitle">
+            {{ isEditMode() ? 'Modifiez votre évaluation existante' : 'Créez une nouvelle évaluation professionnelle' }}
+          </p>
+        </div>
+        <button class="back-btn" (click)="goBack()" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+          </svg>
+          Retour
+        </button>
+      </div>
+    </header>
+
+    <!-- Form -->
+    <form [formGroup]="ratingForm" (ngSubmit)="onSubmit()" class="evaluation-form">
+      
+      <!-- 🔧 USER SELECTION SECTION - STRUCTURE CORRIGÉE -->
+      @if (!isEditMode()) {
+        <section class="form-section user-selection-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="section-icon">👤</span>
+              Qui évaluez-vous ?
+            </h2>
+            <div class="section-decoration"></div>
+          </div>
+          
+          <!-- 🔧 CORRECTION 1: Form group TYPE D'ÉVALUATION séparée -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">🎯</span>
+              Type d'évaluation
+            </label>
+            <div class="select-wrapper">
+              <select 
+                formControlName="type" 
+                (change)="onEvaluationTypeChange()"
+                class="form-select"
+                id="evaluation-type-select">
+                <option value="" disabled>-- Sélectionnez le type d'évaluation --</option>
+                @for (type of availableTypes(); track type.value) {
+                  <option [value]="type.value">{{ type.label }}</option>
+                }
+              </select>
+              <div class="select-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
+            </div>
+            
+            
+          </div>
+
+          <!-- 🔧 CORRECTION 2: Form group UTILISATEUR complètement séparée -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">👥</span>
+              Utilisateur à évaluer
+              @if (availableUsers().length > 0) {
+          <span class="available-count">({{ availableUsers().length }} disponible{{ availableUsers().length > 1 ? 's' : '' }})</span>
+        }
+            </label>
+            <div class="select-wrapper">
+              <select 
+                formControlName="evaluatedUserId"
+                class="form-select">
+                <option value="">Sélectionnez un utilisateur</option>
+                @for (user of availableUsers(); track user.id) {
+                  <option [value]="user.id">
+                    {{ user.firstName }} {{ user.lastName }}
+                    @if (user.role) {
+                      <span class="user-role">({{ user.role }})</span>
+                    }
+                  </option>
+                }
+              </select>
+              <div class="select-arrow">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <!-- General Evaluation Section -->
+      <section class="form-section general-evaluation-section">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">⭐</span>
+            Évaluation générale
+          </h2>
+          <div class="section-decoration"></div>
+        </div>
+        
+        <div class="evaluation-content">
+          <div class="score-group">
+            <label class="form-label">
+              <span class="label-icon">📊</span>
+              Note générale
+              <span class="score-indicator" [class]="getScoreColor(ratingForm.get('score')?.value)">
+                {{ ratingForm.get('score')?.value | number:'1.1-1' }}/5
+              </span>
+            </label>
+            
+            <div class="score-slider-container">
+              <input 
+                type="range" 
+                min="1" 
+                max="5" 
+                step="0.1"
+                formControlName="score"
+                class="score-slider">
+              
+              <div class="score-labels">
+                <span class="score-label">1</span>
+                <span class="score-label">2</span>
+                <span class="score-label">3</span>
+                <span class="score-label">4</span>
+                <span class="score-label">5</span>
+              </div>
+              
+              <div class="score-descriptions">
+                <span class="score-desc">Très faible</span>
+                <span class="score-desc">Faible</span>
+                <span class="score-desc">Moyen</span>
+                <span class="score-desc">Bien</span>
+                <span class="score-desc">Excellent</span>
+              </div>
+            </div>
+            
+            <div class="score-feedback">
+              <span class="feedback-text" [class]="getScoreColor(ratingForm.get('score')?.value)">
+                {{ getScoreLabel(ratingForm.get('score')?.value) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              <span class="label-icon">💬</span>
+              Commentaire général
+            </label>
+            <div class="textarea-wrapper">
+              <textarea 
+                formControlName="comment"
+                rows="4"
+                placeholder="Décrivez votre évaluation en détail. Partagez vos observations, points forts et axes d'amélioration..."
+                class="form-textarea"></textarea>
+              <div class="textarea-footer">
+                <span class="char-count">
+                  {{ ratingForm.get('comment')?.value?.length || 0 }} caractères
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 🔧 DETAILED CRITERIA SECTION - CORRIGÉE AVEC formGroupName -->
+      @if (showDetailedCriteria()) {
+        <section class="form-section criteria-section">
+          <div class="section-header">
+            <h2 class="section-title">
+              <span class="section-icon">📊</span>
+              {{ isEvaluatingTutor() ? 'Évaluation du tuteur' : 'Critères détaillés' }}
+            </h2>
+            <div class="section-decoration"></div>
+            
+          
+          
+          </div>
+          
+          <div class="criteria-grid">
+            <!-- 👨‍🏫 ÉVALUATION TUTEUR (Stagiaire → Tuteur) -->
+            @if (isEvaluatingTutor()) {
+              <div formGroupName="tutorScores">
+                @for (criterion of tutorCriteria; track criterion.key; let i = $index) {
+                  <div class="criterion-item" [style.animation-delay]="getAnimationDelay(i)">
+                    <div class="criterion-header">
+                      <div class="criterion-title">
+                        <span class="criterion-icon">{{ criterion.icon }}</span>
+                        <label class="criterion-label">{{ criterion.label }}</label>
+                      </div>
+                      <span class="criterion-score" [class]="getScoreColor(getTutorCriterionValue(criterion.key))">
+                        {{ getTutorCriterionValue(criterion.key) | number:'1.1-1' }}/5
+                      </span>
+                    </div>
+                    
+                    <div class="criterion-slider">
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="5" 
+                        step="0.1"
+                        [formControlName]="criterion.key"
+                        class="form-range"
+                        [id]="'tutor-' + criterion.key">
+                      <div class="range-track"></div>
+                      
+                      <div class="range-labels">
+                        <span class="range-label">1</span>
+                        <span class="range-label">2</span>
+                        <span class="range-label">3</span>
+                        <span class="range-label">4</span>
+                        <span class="range-label">5</span>
+                      </div>
+                    </div>
+                    
+                    <div class="criterion-description">
+                      <small class="criterion-help">{{ getTutorCriterionDescription(criterion.key) }}</small>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <!-- 📊 ÉVALUATION STANDARD (Tuteur → Stagiaire / RH → Stagiaire) -->
+              <div formGroupName="detailedScores">
+                @for (criterion of detailedCriteria; track criterion.key; let i = $index) {
+                  <div class="criterion-item" [style.animation-delay]="getAnimationDelay(i)">
+                    <div class="criterion-header">
+                      <div class="criterion-title">
+                        <span class="criterion-icon">{{ criterion.icon }}</span>
+                        <label class="criterion-label">{{ criterion.label }}</label>
+                      </div>
+                      <span class="criterion-score" [class]="getScoreColor(getDetailedCriterionValue(criterion.key))">
+                        {{ getDetailedCriterionValue(criterion.key) | number:'1.1-1' }}/5
+                      </span>
+                    </div>
+                    
+                    <div class="criterion-slider">
+                      <input 
+                        type="range" 
+                        min="1" 
+                        max="5" 
+                        step="0.1"
+                        [formControlName]="criterion.key"
+                        class="form-range"
+                        [id]="'detailed-' + criterion.key">
+                      <div class="range-track"></div>
+                      
+                      <div class="range-labels">
+                        <span class="range-label">1</span>
+                        <span class="range-label">2</span>
+                        <span class="range-label">3</span>
+                        <span class="range-label">4</span>
+                        <span class="range-label">5</span>
+                      </div>
+                    </div>
+                    
+                    <div class="criterion-description">
+                      <small class="criterion-help">{{ getDetailedCriterionDescription(criterion.key) }}</small>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          
+          <!-- Score suggéré -->
+          <div class="suggested-score-section">
+            <div class="suggested-score-card">
+              <div class="suggested-score-content">
+                <div class="suggested-score-info">
+                  <span class="suggested-label">💡 Score général suggéré :</span>
+                  <span class="suggested-value" [class]="getScoreColor(suggestedGeneralScore())">
+                    {{ suggestedGeneralScore() | number:'1.1-1' }}/5
+                  </span>
+                  <span class="suggested-description">
+                    ({{ getScoreLabel(suggestedGeneralScore()) }})
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  class="accept-suggestion-btn"
+                  (click)="acceptSuggestedScore()"
+                  [class.active]="isSuggestedScoreActive()">
+                  <span class="btn-icon">✨</span>
+                  Utiliser ce score
+                </button>
+              </div>
+              <div class="suggested-help">
+                <small>
+                  Ce score est calculé automatiquement à partir de la moyenne de vos critères détaillés.
+                </small>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+
+
+      <!-- Actions Section -->
+      <section class="form-actions">
+        <div class="actions-container">
+       
+     
+          
+          <button 
+            type="submit"
+            [disabled]="ratingForm.invalid || isLoading()"
+            class="btn btn--primary">
+            @if (isLoading()) {
+              <div class="btn-spinner">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" opacity="0.25"/>
+                  <path fill="currentColor" opacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                </svg>
+              </div>
+              Traitement en cours...
+            } @else {
+              <span class="btn-icon">{{ isEditMode() ? '✏️' : '🚀' }}</span>
+              {{ isEditMode() ? 'Modifier l\'évaluation' : 'Soumettre l\'évaluation' }}
+            }
+          </button>
+        </div>
+      </section>
+    </form>
+  </div>
+</div>
+
+<!-- Classes utilitaires pour debug -->
+<style>
+.debug-info {
+  background: #f0f8ff;
+  border: 1px solid #cce7ff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #0066cc;
+  margin-top: 0.5rem;
+  display: block;
+  line-height: 1.3;
+}
+
+.debug-info strong {
+  color: #003d7a;
+}
+</style>

@@ -1,0 +1,6 @@
+<app-navbar   *ngIf="shouldShowHeader()"></app-navbar>
+<main [ngClass]="{'no-header': !shouldShowHeader()}">
+  <router-outlet></router-outlet>
+  <app-toast></app-toast>
+</main>
+<!--<app-footer></app-footer> -->

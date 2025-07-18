@@ -1,0 +1,17 @@
+<form (ngSubmit)="submitForm()" class="add-department-form">
+  <input
+    type="text"
+    [(ngModel)]="departmentName"
+    name="departmentName"
+    required
+    placeholder="Nom du département"
+    [disabled]="loading"
+  />
+  <button type="submit" [disabled]="loading">
+    {{ department ? 'Modifier' : 'Ajouter' }}
+  </button>
+  <button type="button" *ngIf="department" (click)="reset()" [disabled]="loading">
+    Annuler
+  </button>
+  <div *ngIf="error" class="error">{{ error }}</div>
+</form>

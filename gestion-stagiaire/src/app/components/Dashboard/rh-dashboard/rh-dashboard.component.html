@@ -1,0 +1,317 @@
+<!-- rh-dashboard.component.html -->
+<div class="dashboard-container p-6 bg-gray-50 min-h-screen">
+  <h1 class="text-2xl font-bold mb-6">Tableau de Bord Ressources Humaines</h1>
+  
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="hasError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+    <strong class="font-bold">Erreur!</strong>
+    <span class="block sm:inline"> {{ errorMessage }}</span>
+    <button (click)="loadDashboardData()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded text-xs ml-2">
+      Réessayer
+    </button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && !hasError">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <app-stat-card 
+        icon="users" 
+        bgColor="bg-indigo-100" 
+        iconColor="text-indigo-600" 
+        label="Stagiaires Actifs" 
+        [value]="rhKPIs?.activeStagiaires || rhStats.activeStages">
+      </app-stat-card>
+      
+      <app-stat-card 
+        icon="user-check" 
+        bgColor="bg-pink-100" 
+        iconColor="text-pink-600" 
+        label="Tuteurs Actifs" 
+        [value]="rhKPIs?.activeTuteurs || rhStats.activeTuteurs">
+      </app-stat-card>
+      
+      <app-stat-card 
+        icon="bell" 
+        bgColor="bg-yellow-100" 
+        iconColor="text-yellow-600" 
+        label="Comptes en Attente" 
+        [value]="rhStats.pendingAccounts">
+      </app-stat-card>
+      
+      <app-stat-card 
+        icon="file-check" 
+        bgColor="bg-green-100" 
+        iconColor="text-green-600" 
+        label="Documents Validés" 
+        [value]="rhStats.validatedDocuments">
+      </app-stat-card>
+    </div>
+
+    <!-- Additional KPIs Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Types de Stage</h2>
+        <div class="flex justify-between items-center mb-2">
+          <span>Stage PFE</span>
+          <span class="font-bold">{{ rhKPIs?.stagePFE || 0 }}</span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span>Stage d'été</span>
+          <span class="font-bold">{{ rhKPIs?.stageEte || 0 }}</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Niveaux d'Études</h2>
+        <div class="flex justify-between items-center mb-2">
+          <span>Ingénierie</span>
+          <span class="font-bold">{{ rhKPIs?.ingenierie || 0 }}</span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span>Licence</span>
+          <span class="font-bold">{{ rhKPIs?.licence || 0 }}</span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span>Master</span>
+          <span class="font-bold">{{ rhKPIs?.master || 0 }}</span>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-3">Mouvements du Mois</h2>
+        <div class="flex justify-between items-center mb-2">
+          <span>Nouveaux stagiaires</span>
+          <span class="font-bold text-green-600">{{ rhKPIs?.nouveauxCeMois || 0 }}</span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span>Stages se terminant</span>
+          <span class="font-bold text-red-600">{{ rhKPIs?.finissantCeMois || 0 }}</span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span>Stagiaires sans tuteur</span>
+          <span class="font-bold text-orange-600">{{ rhKPIs?.stagiairesSansTuteur || 0 }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Charts Section: Multiple Distributions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <!-- Department Distribution -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-4">Distribution par Département</h2>
+        <app-chart 
+          *ngIf="departmentDistribution.labels?.length > 0"
+          type="pie" 
+          [data]="departmentDistribution" 
+          [options]="pieChartOptions || {}">
+        </app-chart>
+        <div *ngIf="!departmentDistribution.labels?.length" class="flex justify-center items-center h-64 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+      
+      <!-- Stage Type Distribution -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-4">Types de Stage</h2>
+        <app-chart 
+          *ngIf="stageTypeDistribution.labels?.length > 0"
+          type="pie" 
+          [data]="stageTypeDistribution" 
+          [options]="pieChartOptions || {}">
+        </app-chart>
+        <div *ngIf="!stageTypeDistribution.labels?.length" class="flex justify-center items-center h-64 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+      
+      <!-- Education Level Distribution -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-4">Niveaux d'Études</h2>
+        <app-chart 
+          *ngIf="educationLevelDistribution.labels?.length > 0"
+          type="pie" 
+          [data]="educationLevelDistribution" 
+          [options]="pieChartOptions || {}">
+        </app-chart>
+        <div *ngIf="!educationLevelDistribution.labels?.length" class="flex justify-center items-center h-64 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+      
+      <!-- University Distribution -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-4">Distribution par Université</h2>
+        <app-chart 
+          *ngIf="universityDistribution.labels?.length > 0"
+          type="pie" 
+          [data]="universityDistribution" 
+          [options]="pieChartOptions || {}">
+        </app-chart>
+        <div *ngIf="!universityDistribution.labels?.length" class="flex justify-center items-center h-64 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Stage Distribution -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+      <h2 class="text-lg font-semibold mb-4">Mouvements de Stagiaires par Mois</h2>
+      <app-chart 
+        *ngIf="monthlyStageDistribution.labels?.length > 0"
+        type="bar" 
+        [data]="monthlyStageDistribution" 
+        [options]="barChartOptions || {}">
+      </app-chart>
+      <div *ngIf="!monthlyStageDistribution.labels?.length" class="flex justify-center items-center h-64 text-gray-500">
+        Aucune donnée disponible
+      </div>
+    </div>
+    
+    <!-- Stagiaires Ending Soon Section -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+      <h2 class="text-lg font-semibold mb-4">Stagiaires Terminant Bientôt (30 jours)</h2>
+      <div *ngIf="endingSoonStagiaires.length > 0" class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nom</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Département</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Type de Stage</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Université</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date de Fin</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Jours Restants</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stagiaire of endingSoonStagiaires" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200">
+                <div class="flex items-center">
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ stagiaire.firstName }} {{ stagiaire.lastName }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm text-gray-500">
+                {{ stagiaire.department }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm text-gray-500">
+                {{ stagiaire.stageType }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm text-gray-500">
+                {{ stagiaire.university }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm text-gray-500">
+                {{ stagiaire.endDate | date:'dd/MM/yyyy' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200">
+                <span [ngClass]="{
+                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800': stagiaire.daysLeft <= 7,
+                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800': stagiaire.daysLeft > 7 && stagiaire.daysLeft <= 14,
+                  'px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800': stagiaire.daysLeft > 14
+                }">
+                  {{ stagiaire.daysLeft }} jours
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="endingSoonStagiaires.length === 0" class="flex justify-center items-center h-32 text-gray-500">
+        Aucun stagiaire ne termine son stage dans les 30 prochains jours
+      </div>
+    </div>
+    
+    <!-- Pending Accounts Section -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+      <h2 class="text-lg font-semibold mb-4">Comptes en Attente d'Activation</h2>
+      <div *ngIf="pendingAccounts.length > 0" class="overflow-x-auto">
+        <table class="min-w-full bg-white">
+          <thead>
+            <tr>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Nom</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Rôle</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Département</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date d'inscription</th>
+              <th class="px-6 py-3 border-b-2 border-gray-200 bg-gray-50 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let account of pendingAccounts" class="hover:bg-gray-50">
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200">
+                <div class="flex items-center">
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ account.firstName }} {{ account.lastName }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm text-gray-500">
+                {{ account.email }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" 
+                  [ngClass]="{'bg-indigo-100 text-indigo-800': account.role === 'Stagiaire', 'bg-green-100 text-green-800': account.role === 'Tuteur'}">
+                  {{ account.role }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm text-gray-500">
+                {{ account.departmentName }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm text-gray-500">
+                {{ account.registerDate | date:'dd/MM/yyyy' }}
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap border-b border-gray-200 text-sm font-medium">
+                <button (click)="approveAccount(account.id)" class="text-green-600 hover:text-green-900 mr-3">Approuver</button>
+                <button (click)="rejectAccount(account.id)" class="text-red-600 hover:text-red-900">Rejeter</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="pendingAccounts.length === 0" class="flex justify-center items-center h-32 text-gray-500">
+        Aucun compte en attente d'activation
+      </div>
+    </div>
+    
+    <!-- Recent Activities Section -->
+    <div class="bg-white rounded-lg shadow p-4">
+      <h2 class="text-lg font-semibold mb-4">Activités Récentes</h2>
+      <div *ngIf="recentActivities.length > 0" class="space-y-4">
+        <div *ngFor="let activity of recentActivities" class="flex items-center border-b pb-3">
+          <div [ngClass]="{'bg-green-100': activity.type === 'completion', 
+                         'bg-blue-100': activity.type === 'message',
+                         'bg-purple-100': activity.type === 'user',
+                         'bg-yellow-100': activity.type === 'document',
+                         'bg-red-100': activity.type === 'notification'}" 
+              class="p-2 rounded">
+            <span [ngClass]="{'text-green-600': activity.type === 'completion', 
+                            'text-blue-600': activity.type === 'message',
+                            'text-purple-600': activity.type === 'user',
+                            'text-yellow-600': activity.type === 'document',
+                            'text-red-600': activity.type === 'notification'}">
+              {{ activity.type === 'completion' ? '✓' : 
+                activity.type === 'message' ? '💬' : 
+                activity.type === 'user' ? '👤' : 
+                activity.type === 'notification' ? '⚠️' : '📄' }}
+            </span>
+          </div>
+          <div class="ml-3">
+            <p class="font-medium">{{ activity.text }}</p>
+            <p class="text-xs text-gray-500">{{ activity.time }}</p>
+          </div>
+        </div>
+      </div>
+      <div *ngIf="recentActivities.length === 0" class="flex justify-center items-center h-32 text-gray-500">
+        Aucune activité récente
+      </div>
+    </div>
+  </div>
+</div>

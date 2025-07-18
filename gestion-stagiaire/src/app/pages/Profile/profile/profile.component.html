@@ -1,0 +1,543 @@
+<div class="profile-page-container" [class.sidebar-visible]="isSidebarVisible">
+  <!-- Sidebar Component -->
+  <app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+  
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Overlay de chargement -->
+    <div class="loading-overlay" *ngIf="isLoading">
+      <mat-spinner diameter="50" color="accent"></mat-spinner>
+      <span>Chargement en cours...</span>
+    </div>
+    
+    <div class="page-header">
+      <h1>Mon Profil</h1>
+      <p>Consultez et modifiez vos informations personnelles</p>
+    </div>
+    
+    <div class="profile-container" *ngIf="!isLoading && user">
+      <!-- Section supérieure - Carte de profil -->
+      <mat-card class="profile-card">
+        <div class="profile-header">
+          <div class="profile-image-container">
+            <div class="image-wrapper">
+              <img [src]="imagePreview || getImageUrl(user.profilePictureUrl) || 'assets/images/default-profile.jpg'" 
+                  alt="Photo de profil" 
+                  class="profile-image">
+              
+              <div class="image-overlay" *ngIf="isEditing">
+                <label for="profile-image-upload" class="upload-label">
+                  <mat-icon>add_a_photo</mat-icon>
+                  <span>Modifier</span>
+                </label>
+                <input 
+                  type="file" 
+                  id="profile-image-upload" 
+                  accept="image/*" 
+                  (change)="onFileSelected($event)" 
+                  style="display: none;">
+              </div>
+            </div>
+            
+            <div class="role-badge" [ngClass]="{
+              'admin-badge': user.role === 'Admin',
+              'tutor-badge': user.role === 'Tuteur',
+              'hr-badge': user.role === 'RHs',
+              'intern-badge': user.role === 'Stagiaire'
+            }">
+              {{ getRoleName(user.role) }}
+            </div>
+          </div>
+          
+          <div class="profile-summary">
+            <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+            <p class="username">{{'@'}}{{ user.username }}</p>
+            
+            <div class="profile-actions">
+              <button mat-flat-button color="primary" (click)="toggleEditMode()" [disabled]="isLoading">
+                <mat-icon>{{ isEditing ? 'close' : 'edit' }}</mat-icon>
+                {{ isEditing ? 'Annuler' : 'Modifier le profil' }}
+              </button>
+              
+              <button mat-stroked-button color="accent" (click)="togglePasswordChange()" 
+                [disabled]="isLoading || isEditing">
+                <mat-icon>lock</mat-icon>
+                {{ isChangingPassword ? 'Annuler' : 'Changer le mot de passe' }}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Informations de base -->
+        <div class="profile-info-section" *ngIf="!isEditing && !isChangingPassword">
+          <h3>Informations personnelles</h3>
+          
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Email</span>
+              <span class="value">{{ user.email }}</span>
+            </div>
+            
+            <div class="info-item">
+              <span class="label">Téléphone</span>
+              <span class="value">{{ user.phoneNumber }}</span>
+            </div>
+            
+            <div class="info-item">
+              <span class="label">Département</span>
+              <span class="value">{{ getDepartmentName(user.departmentId) }}</span>
+            </div>
+            
+            <!-- Informations spécifiques aux stagiaires -->
+            <ng-container *ngIf="user.role === 'Stagiaire'">
+              <div class="info-item">
+                <span class="label">Tuteur</span>
+                <span class="value">{{ getTuteurName(user.tuteurId) }}</span>
+              </div>
+              
+              <div class="info-item">
+                <span class="label">Date de début</span>
+                <span class="value">{{ user.startDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+              
+              <div class="info-item">
+                <span class="label">Date de fin</span>
+                <span class="value">{{ user.endDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+              
+              <div class="info-item">
+                <span class="label">Université</span>
+                <span class="value">{{ getUniversityName(user.universityId) }}</span>
+              </div>
+              
+              <div class="info-item">
+                <span class="label">Type de stage</span>
+                <span class="value">{{ user.stage || 'Non spécifié' }}</span>
+              </div>
+              
+              <div class="info-item">
+                <span class="label">Niveau d'études</span>
+                <span class="value">{{ user.etudiant || 'Non spécifié' }}</span>
+              </div>
+            </ng-container>
+            
+            <!-- Informations spécifiques aux tuteurs -->
+            <ng-container *ngIf="user.role === 'Tuteur'">
+              <div class="info-item">
+                <span class="label">Années d'expérience</span>
+                <span class="value">{{ user.yearsExperience || 'Non spécifié' }}</span>
+              </div>
+              
+              <div class="info-item">
+                <span class="label">Stagiaires supervisés</span>
+                <span class="value">{{ user.stagiaires?.length || 0 }}</span>
+              </div>
+            </ng-container>
+          </div>
+
+          <!-- Section Compétences et CV pour Stagiaires et Tuteurs -->
+          <div class="skills-cv-section" *ngIf="canUserHaveSkillsAndCv()">
+            <mat-divider style="margin: 32px 0;"></mat-divider>
+            
+            <!-- Section Compétences -->
+            <div class="skills-section">
+              <div class="section-header">
+                <h4>
+                  <mat-icon>psychology</mat-icon>
+                  Compétences
+                </h4>
+                <button mat-icon-button (click)="toggleSkillsEdit()" 
+                  [disabled]="isEditingSkills" 
+                  matTooltip="Modifier les compétences">
+                  <mat-icon>edit</mat-icon>
+                </button>
+              </div>
+              
+              <!-- Affichage des compétences -->
+              <div class="skills-display" *ngIf="!isEditingSkills">
+                <div class="skills-chips" *ngIf="userSkills.length > 0">
+                  <mat-chip 
+                    *ngFor="let skill of userSkills" 
+                    [color]="getSkillChipColor(skill)"
+                    selected>
+                    {{ skill }}
+                  </mat-chip>
+                </div>
+                <div class="empty-skills" *ngIf="userSkills.length === 0">
+                  <mat-icon>psychology_alt</mat-icon>
+                  <p>Aucune compétence renseignée</p>
+                  <small>Ajoutez vos compétences pour enrichir votre profil</small>
+                </div>
+              </div>
+              
+              <!-- Édition des compétences -->
+              <form [formGroup]="skillsForm" *ngIf="isEditingSkills" class="skills-edit-form">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Compétences (séparées par des virgules)</mat-label>
+                  <textarea 
+                    matInput 
+                    formControlName="skills" 
+                    placeholder="Ex: Angular, Java, SQL, Docker, Git..."
+                    rows="3"
+                    (blur)="onSkillsBlur()">
+                  </textarea>
+                  <mat-hint>Séparez vos compétences par des virgules</mat-hint>
+                  <mat-error *ngIf="skillsForm.get('skills')?.hasError('required')">
+                    Les compétences sont requises
+                  </mat-error>
+                </mat-form-field>
+                
+                <!-- Prévisualisation des compétences -->
+                <div class="skills-preview" *ngIf="userSkills.length > 0">
+                  <small>Aperçu :</small>
+                  <div class="skills-chips">
+                    <mat-chip 
+                      *ngFor="let skill of userSkills" 
+                      [color]="getSkillChipColor(skill)"
+                      (removed)="removeSkill(skill)">
+                      {{ skill }}
+                      <mat-icon matChipRemove>cancel</mat-icon>
+                    </mat-chip>
+                  </div>
+                </div>
+                
+                <div class="skills-actions">
+                  <button type="button" mat-stroked-button (click)="toggleSkillsEdit()">
+                    Annuler
+                  </button>
+                  <button type="button" mat-flat-button color="primary" 
+                    (click)="saveSkills()" 
+                    [disabled]="skillsForm.invalid">
+                    <mat-icon>save</mat-icon>
+                    Sauvegarder
+                  </button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- Section CV -->
+            <div class="cv-section">
+              <div class="section-header">
+                <h4>
+                  <mat-icon>description</mat-icon>
+                  Curriculum Vitae
+                </h4>
+              </div>
+              
+              <!-- État de chargement CV -->
+              <div class="cv-loading" *ngIf="loadingCvInfo">
+                <mat-spinner diameter="32"></mat-spinner>
+                <span>Chargement des informations CV...</span>
+              </div>
+              
+              <!-- CV existant -->
+              <div class="cv-display" *ngIf="!loadingCvInfo && userCvInfo?.hasCv">
+                <div class="cv-card">
+                  <div class="cv-info">
+                    <mat-icon [class]="'cv-icon'">{{ getCvFileIcon(userCvInfo.originalFileName) }}</mat-icon>
+                    <div class="cv-details">
+                      <h5>{{ userCvInfo.originalFileName }}</h5>
+                      <small>{{ formatCvUploadDate(userCvInfo.uploadedAt) }}</small>
+                    </div>
+                  </div>
+                  <div class="cv-actions">
+                    <button mat-icon-button (click)="downloadCv()" matTooltip="Télécharger le CV">
+                      <mat-icon>download</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="deleteCv()" matTooltip="Supprimer le CV">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Pas de CV -->
+              <div class="cv-empty" *ngIf="!loadingCvInfo && !userCvInfo?.hasCv">
+                <mat-icon>description</mat-icon>
+                <p>Aucun CV uploadé</p>
+                <small>Ajoutez votre CV pour compléter votre profil</small>
+              </div>
+              
+              <!-- Upload CV -->
+              <div class="cv-upload" *ngIf="!loadingCvInfo">
+                <input 
+                  type="file" 
+                  id="cv-file-input" 
+                  accept=".pdf,.doc,.docx" 
+                  (change)="onCvFileSelected($event)" 
+                  style="display: none;">
+                
+                <button mat-stroked-button 
+                  color="primary" 
+                  (click)="triggerCvFileInput()"
+                  [disabled]="isUploadingCv">
+                  <mat-icon>{{ userCvInfo?.hasCv ? 'refresh' : 'upload' }}</mat-icon>
+                  {{ userCvInfo?.hasCv ? 'Remplacer le CV' : 'Uploader un CV' }}
+                </button>
+                
+                <!-- Indicateur d'upload -->
+                <div class="upload-progress" *ngIf="isUploadingCv">
+                  <mat-spinner diameter="20"></mat-spinner>
+                  <span>Upload en cours...</span>
+                </div>
+              </div>
+              
+              <small class="cv-hint">
+                Formats acceptés : PDF, DOC, DOCX (max 5MB)
+              </small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Formulaire de modification -->
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="isEditing" class="edit-form">
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Nom d'utilisateur</mat-label>
+              <input matInput formControlName="username" placeholder="Nom d'utilisateur">
+              <mat-error *ngIf="profileForm.get('username')?.hasError('required')">Le nom d'utilisateur est requis</mat-error>
+              <mat-error *ngIf="profileForm.get('username')?.hasError('minlength')">Le nom d'utilisateur doit comporter au moins 4 caractères</mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" placeholder="Email" type="email">
+              <mat-error *ngIf="profileForm.get('email')?.hasError('required')">L'email est requis</mat-error>
+              <mat-error *ngIf="profileForm.get('email')?.hasError('email')">Format d'email invalide</mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Prénom</mat-label>
+              <input matInput formControlName="firstName" placeholder="Prénom">
+              <mat-error *ngIf="profileForm.get('firstName')?.hasError('required')">Le prénom est requis</mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Nom de famille</mat-label>
+              <input matInput formControlName="lastName" placeholder="Nom de famille">
+              <mat-error *ngIf="profileForm.get('lastName')?.hasError('required')">Le nom de famille est requis</mat-error>
+            </mat-form-field>
+            
+            <mat-form-field appearance="outline">
+              <mat-label>Téléphone</mat-label>
+              <input matInput formControlName="phoneNumber" placeholder="+21612345678">
+              <mat-error *ngIf="profileForm.get('phoneNumber')?.hasError('required')">Le numéro de téléphone est requis</mat-error>
+              <mat-error *ngIf="profileForm.get('phoneNumber')?.hasError('pattern')">Format de téléphone invalide (ex: +21612345678)</mat-error>
+            </mat-form-field>
+            
+          
+            
+            <!-- Champs spécifiques aux stagiaires -->
+            <ng-container *ngIf="user.role === 'Stagiaire'">
+              <mat-form-field appearance="outline">
+                <mat-label>Tuteur</mat-label>
+                <mat-select formControlName="tuteurId">
+                  <mat-option [value]="null">Non assigné</mat-option>
+                  <mat-option *ngFor="let tuteur of tuteurs" [value]="tuteur.id">
+                    {{ tuteur.firstName }} {{ tuteur.lastName }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline">
+                <mat-label>Date de début</mat-label>
+                <input matInput [matDatepicker]="pickerStart" formControlName="startDate">
+                <mat-datepicker-toggle matSuffix [for]="pickerStart"></mat-datepicker-toggle>
+                <mat-datepicker #pickerStart></mat-datepicker>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline">
+                <mat-label>Date de fin</mat-label>
+                <input matInput [matDatepicker]="pickerEnd" formControlName="endDate">
+                <mat-datepicker-toggle matSuffix [for]="pickerEnd"></mat-datepicker-toggle>
+                <mat-datepicker #pickerEnd></mat-datepicker>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline">
+                <mat-label>Université</mat-label>
+                <mat-select formControlName="universityId">
+                  <mat-option [value]="null">Non assignée</mat-option>
+                  <mat-option *ngFor="let univ of universities" [value]="univ.id">
+                    {{ univ.universityname }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline">
+                <mat-label>Type de stage</mat-label>
+                <mat-select formControlName="stage">
+                  <mat-option [value]="null">Non spécifié</mat-option>
+                  <mat-option value="stage_été">Stage d'été</mat-option>
+                  <mat-option value="stage_pfe">Stage PFE</mat-option>
+                </mat-select>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline">
+                <mat-label>Niveau d'études</mat-label>
+                <mat-select formControlName="etudiant">
+                  <mat-option [value]="null">Non spécifié</mat-option>
+                  <mat-option value="licence">Licence</mat-option>
+                  <mat-option value="master">Master</mat-option>
+                  <mat-option value="ingénierie">Ingénierie</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </ng-container>
+            
+            <!-- Champs spécifiques aux tuteurs -->
+            <ng-container *ngIf="user.role === 'Tuteur'">
+              <mat-form-field appearance="outline">
+                <mat-label>Années d'expérience</mat-label>
+                <input matInput type="number" formControlName="yearsExperience" min="0">
+              </mat-form-field>
+            </ng-container>
+          </div>
+          
+          <div class="form-actions">
+            <button type="button" mat-stroked-button color="warn" (click)="toggleEditMode()">Annuler</button>
+            <button type="submit" mat-flat-button color="primary" [disabled]="profileForm.invalid || isLoading">
+              <mat-icon>save</mat-icon> Enregistrer les modifications
+            </button>
+          </div>
+        </form>
+        
+        <!-- Formulaire de changement de mot de passe -->
+        <form [formGroup]="passwordForm" (ngSubmit)="onSubmitPassword()" *ngIf="isChangingPassword" class="password-form">
+          <h3>Changer le mot de passe</h3>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mot de passe actuel</mat-label>
+            <input matInput type="password" formControlName="currentPassword">
+            <mat-error *ngIf="passwordForm.get('currentPassword')?.hasError('required')">Le mot de passe actuel est requis</mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Nouveau mot de passe</mat-label>
+            <input matInput type="password" formControlName="newPassword">
+            <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('required')">Le nouveau mot de passe est requis</mat-error>
+            <mat-error *ngIf="passwordForm.get('newPassword')?.hasError('minlength')">Le mot de passe doit comporter au moins 8 caractères</mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Confirmer le mot de passe</mat-label>
+            <input matInput type="password" formControlName="confirmPassword">
+            <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('required')">La confirmation du mot de passe est requise</mat-error>
+          </mat-form-field>
+          
+          <mat-error *ngIf="passwordForm.hasError('mismatch')" class="password-mismatch">
+            Les mots de passe ne correspondent pas
+          </mat-error>
+          
+          <div class="form-actions">
+            <button type="button" mat-stroked-button color="warn" (click)="togglePasswordChange()">Annuler</button>
+            <button type="submit" mat-flat-button color="primary" [disabled]="passwordForm.invalid || isLoading">
+              <mat-icon>lock_reset</mat-icon> Mettre à jour le mot de passe
+            </button>
+          </div>
+        </form>
+      </mat-card>
+      
+   
+
+      <!-- Section des stagiaires pour les tuteurs UNIQUEMENT -->
+       <ng-container >
+
+<div class="tuteur-section" >
+  <div class="section-divider"></div>
+  
+  <div class="section-header">
+    <h3>
+      <mat-icon>groups</mat-icon>
+      Mes Stagiaires
+    </h3>
+  </div>
+  
+  <app-tuteur-stagiaires [tuteurId]="user?.id"></app-tuteur-stagiaires>
+</div>
+</ng-container>
+      <!-- Section projet pour les stagiaires -->
+      <div class="stagiaire-projet-section" *ngIf="!isEditing && !isChangingPassword && user.role === 'Stagiaire'">
+        <div class="section-divider"></div>
+        
+        <div class="section-header">
+          <h3>Mon Projet</h3>
+        </div>
+        
+        <!-- État de chargement -->
+        <div class="ey-loading-container" *ngIf="loadingProjets">
+          <mat-spinner diameter="36" color="accent"></mat-spinner>
+          <p>Chargement du projet...</p>
+        </div>
+        
+        <!-- État vide -->
+        <div class="ey-empty-state" *ngIf="!loadingProjets && !projetDuStagiaire">
+          <div class="ey-empty-icon">
+            <mat-icon>work_off</mat-icon>
+          </div>
+          <h3>Aucun projet assigné</h3>
+          <p>Vous n'avez pas encore été assigné à un projet.</p>
+        </div>
+        
+        <!-- Affichage du projet -->
+        <mat-card class="ey-projet-card" *ngIf="!loadingProjets && projetDuStagiaire">
+          <mat-card-header>
+            <div class="ey-projet-status">{{ projetDuStagiaire.status || 'En cours' }}</div>
+            <mat-card-title>{{ projetDuStagiaire.title }}</mat-card-title>
+            <mat-card-subtitle *ngIf="projetDuStagiaire.description">
+              {{ projetDuStagiaire.description | slice:0:120 }}{{ projetDuStagiaire.description.length > 120 ? '...' : '' }}
+            </mat-card-subtitle>
+          </mat-card-header>
+          
+          <mat-card-content>
+            <div class="ey-projet-progress">
+              <div class="ey-progress-header">
+                <span>Progression globale</span>
+                <span class="ey-progress-percent">{{ projetDuStagiaire.progress }}%</span>
+              </div>
+              <mat-progress-bar mode="determinate" [value]="projetDuStagiaire.progress" color="accent"></mat-progress-bar>
+            </div>
+            
+            <div class="ey-projet-details">
+              <div class="ey-detail-item">
+                <mat-icon>today</mat-icon>
+                <div>
+                  <span class="ey-detail-label">Date de début</span>
+                  <span class="ey-detail-value">{{ projetDuStagiaire.startDate ? (projetDuStagiaire.startDate | date:'dd/MM/yyyy') : 'Non spécifiée' }}</span>
+                </div>
+              </div>
+              
+              <div class="ey-detail-item">
+                <mat-icon>event</mat-icon>
+                <div>
+                  <span class="ey-detail-label">Date de fin prévue</span>
+                  <span class="ey-detail-value">{{ projetDuStagiaire.endDate ? (projetDuStagiaire.endDate | date:'dd/MM/yyyy') : 'Non spécifiée' }}</span>
+                </div>
+              </div>
+              
+              <div class="ey-detail-item">
+                <mat-icon>assignment</mat-icon>
+                <div>
+                  <span class="ey-detail-label">Nombre de sprints</span>
+                  <span class="ey-detail-value">{{ projetDuStagiaire.sprints?.length || 0 }}</span>
+                </div>
+              </div>
+            </div>
+          </mat-card-content>
+          
+          <mat-card-actions>
+            <button mat-flat-button color="primary" [routerLink]="['/projets', projetDuStagiaire.id]">
+              <mat-icon>visibility</mat-icon> Voir les détails du projet
+            </button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+    
+    <!-- État vide -->
+    <div class="empty-state" *ngIf="!isLoading && !user">
+      <mat-icon>error_outline</mat-icon>
+      <h2>Utilisateur non trouvé</h2>
+      <p>Nous n'avons pas pu récupérer vos informations de profil.</p>
+      <button mat-flat-button color="primary" routerLink="/login">Retour à la connexion</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,602 @@
+<app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+
+<div class="main-content" [class.sidebar-open]="isSidebarVisible">
+  <!-- Header avec navigation -->
+  <div class="content-header">
+    <div class="header-navigation">
+      <button mat-icon-button color="primary" [routerLink]="['/stagiaires']" matTooltip="Retour à la liste">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="breadcrumb">
+        <span class="breadcrumb-item">Stagiaires</span>
+        <mat-icon class="breadcrumb-separator">chevron_right</mat-icon>
+        <span class="breadcrumb-current">{{ stagiaire?.name || 'Détails' }}</span>
+      </div>
+    </div>
+    <div class="header-actions" *ngIf="stagiaire && !isLoading">
+      <button mat-raised-button color="primary" (click)="contactStagiaire()" matTooltip="Envoyer un email">
+        <mat-icon>email</mat-icon>
+        Contacter
+      </button>
+      <button mat-stroked-button color="primary" (click)="callStagiaire()" matTooltip="Appeler">
+        <mat-icon>phone</mat-icon>
+        Appeler
+      </button>
+    </div>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="60"></mat-spinner>
+    <p>Chargement des données détaillées...</p>
+  </div>
+
+  <!-- Contenu principal -->
+  <div class="stagiaire-detail-container" *ngIf="stagiaire && !isLoading">
+    
+    <!-- En-tête du profil amélioré -->
+    <mat-card class="profile-header-card">
+      <div class="profile-header-content">
+        <div class="profile-image-section">
+          <div class="profile-image">
+            <img [src]="stagiaire.image" [alt]="stagiaire.name + ' photo'">
+            <div class="status-indicator" [ngClass]="getStatusChipClass(stagiaire.statuts)">
+              <mat-icon>{{ stagiaire.statuts ? 'verified' : 'pending' }}</mat-icon>
+            </div>
+          </div>
+        </div>
+        
+        <div class="profile-info-section">
+          <div class="profile-header-main">
+            <div class="name-and-role">
+              <h1 class="profile-name">{{ stagiaire.name }}</h1>
+              <div class="profile-meta">
+                <span class="role-badge">{{ stagiaire.position }}</span>
+                <span class="username">~{{"@"}}{{ stagiaire.username }}</span>
+              </div>
+            </div>
+            
+            <div class="profile-tags">
+              <span class="tag department-tag">
+                <mat-icon>business</mat-icon>
+                {{ stagiaire.departmentName }}
+              </span>
+              <span class="tag university-tag">
+                <mat-icon>school</mat-icon>
+                {{ stagiaire.universityName }}
+              </span>
+              <span class="tag stage-tag">
+                <mat-icon>work</mat-icon>
+                {{ stagiaire.stage }}
+              </span>
+              <span class="tag level-tag">
+                <mat-icon>school</mat-icon>
+                {{ stagiaire.etudiant }}
+              </span>
+            </div>
+
+            <div class="profile-stats-quick">
+              <div class="stat-item">
+                <span class="stat-number">{{ stagiaire.stats.totalReports }}</span>
+                <span class="stat-label">Rapports</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ stagiaire.stats.averageRating | number:'1.1-1' }}</span>
+                <span class="stat-label">Note moy.</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number">{{ stagiaire.progressValue }}%</span>
+                <span class="stat-label">Progression</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="profile-progress-section">
+            <div class="progress-header">
+              <span class="progress-title">Progression du stage</span>
+              <span class="progress-details">
+                {{ stagiaire.daysRemaining ? stagiaire.daysRemaining + ' jours restants' : 'Terminé' }}
+              </span>
+            </div>
+            <mat-progress-bar 
+              [value]="stagiaire.progressValue" 
+              [color]="getProgressColor()"
+              mode="determinate">
+            </mat-progress-bar>
+            <div class="progress-dates" *ngIf="stagiaire.startDate && stagiaire.endDate">
+              <span class="start-date">{{ stagiaire.startDate | date:'dd/MM/yyyy' }}</span>
+              <span class="end-date">{{ stagiaire.endDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button mat-fab color="accent" (click)="toggleFavorite()" 
+                    [matTooltip]="stagiaire.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+              <mat-icon>{{ stagiaire.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Statistiques rapides -->
+    <div class="stats-grid">
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon">
+            <mat-icon>assessment</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stagiaire.stats.totalReports }}</h3>
+            <p>Rapports soumis</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon approved">
+            <mat-icon>check_circle</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stagiaire.stats.approvedReports }}</h3>
+            <p>Rapports approuvés</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon pending">
+            <mat-icon>pending</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stagiaire.stats.pendingReports }}</h3>
+            <p>En attente</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content>
+          <div class="stat-icon rating">
+            <mat-icon>star</mat-icon>
+          </div>
+          <div class="stat-info">
+            <h3>{{ stagiaire.stats.averageRating | number:'1.1-1' }}</h3>
+            <p>Note moyenne</p>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Informations de contact -->
+    <mat-card class="contact-info-card">
+      <mat-card-header>
+        <mat-card-title>
+          <mat-icon>contact_page</mat-icon>
+          Informations de contact
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="contact-grid">
+          <div class="contact-item">
+            <mat-icon>email</mat-icon>
+            <span class="contact-label">Email</span>
+            <span class="contact-value">{{ stagiaire.email }}</span>
+            <button mat-icon-button (click)="contactStagiaire()" matTooltip="Envoyer un email">
+              <mat-icon>launch</mat-icon>
+            </button>
+          </div>
+          
+          <div class="contact-item">
+            <mat-icon>phone</mat-icon>
+            <span class="contact-label">Téléphone</span>
+            <span class="contact-value">{{ stagiaire.phone }}</span>
+            <button mat-icon-button (click)="callStagiaire()" matTooltip="Appeler">
+              <mat-icon>call</mat-icon>
+            </button>
+          </div>
+          
+          <div class="contact-item">
+            <mat-icon>person_outline</mat-icon>
+            <span class="contact-label">Tuteur</span>
+            <span class="contact-value">{{ stagiaire.tuteurName }}</span>
+            <button mat-icon-button *ngIf="stagiaire.tuteurId" matTooltip="Voir le profil du tuteur">
+              <mat-icon>open_in_new</mat-icon>
+            </button>
+          </div>
+          
+          <div class="contact-item">
+            <mat-icon>business</mat-icon>
+            <span class="contact-label">Département</span>
+            <span class="contact-value">{{ stagiaire.departmentName }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Onglets détaillés -->
+    <mat-tab-group class="enhanced-tabs" [(selectedIndex)]="selectedTabIndex" animationDuration="300ms">
+      
+      <!-- Onglet Profil -->
+      <mat-tab label="Profil & Compétences">
+        <div class="tab-content">
+          <div class="content-grid">
+            
+            <!-- Informations personnelles -->
+            <mat-card class="info-section">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>person</mat-icon>
+                  Informations personnelles
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="info-list">
+                  <div class="info-item">
+                    <span class="info-label">Nom complet</span>
+                    <span class="info-value">{{ stagiaire.firstName }} {{ stagiaire.lastName }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Nom d'utilisateur</span>
+                    <span class="info-value">{{ stagiaire.username }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Statut</span>
+                    <span class="info-value">
+                      <mat-chip [ngClass]="getStatusChipClass(stagiaire.statuts)">
+                        <mat-icon>{{ stagiaire.statuts ? 'verified' : 'pending' }}</mat-icon>
+                        {{ stagiaire.statuts ? 'Actif' : 'Inactif' }}
+                      </mat-chip>
+                    </span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Note d'évaluation</span>
+                    <span class="info-value" *ngIf="stagiaire.note">
+                      <div class="rating-display">
+                        <span class="rating-value">{{ stagiaire.note }}/5</span>
+                        <div class="stars">
+                          <mat-icon *ngFor="let star of getStarArray(stagiaire.note!); let i = index" 
+                                   [ngClass]="{ 'star-filled': isStarFilled(i, stagiaire.note!), 'star-empty': !isStarFilled(i, stagiaire.note!) }">
+                            star
+                          </mat-icon>
+                        </div>
+                      </div>
+                    </span>
+                    <span class="info-value" *ngIf="!stagiaire.note">Non évalué</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Informations académiques -->
+            <mat-card class="info-section">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>school</mat-icon>
+                  Informations académiques
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="info-list">
+                  <div class="info-item">
+                    <span class="info-label">Université</span>
+                    <span class="info-value">{{ stagiaire.universityName }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Niveau d'études</span>
+                    <span class="info-value">{{ stagiaire.etudiant }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Type de stage</span>
+                    <span class="info-value">{{ stagiaire.stage }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Durée du stage</span>
+                    <span class="info-value">{{ stagiaire.totalDuration }} jours</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Compétences -->
+            <mat-card class="skills-section">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>code</mat-icon>
+                  Compétences techniques
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="skills-container" *ngIf="stagiaire.skillsArray && stagiaire.skillsArray.length > 0">
+                  <mat-chip-listbox>
+                    <mat-chip-option *ngFor="let skill of stagiaire.skillsArray" 
+                                   [disabled]="true" 
+                                   class="skill-chip">
+                      <mat-icon matChipAvatar>star</mat-icon>
+                      {{ skill }}
+                    </mat-chip-option>
+                  </mat-chip-listbox>
+                </div>
+                <div class="no-content-placeholder" *ngIf="!stagiaire.skillsArray || stagiaire.skillsArray.length === 0">
+                  <mat-icon>code_off</mat-icon>
+                  <p>Aucune compétence renseignée</p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- CV -->
+            <mat-card class="cv-section">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>description</mat-icon>
+                  Curriculum Vitae
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="cv-info" *ngIf="stagiaire.cvUrl">
+                  <div class="cv-file-info">
+                    <mat-icon class="cv-icon">picture_as_pdf</mat-icon>
+                    <div class="cv-details">
+                      <h4>{{ stagiaire.cvOriginalFileName }}</h4>
+                      <p>Uploadé le {{ stagiaire.cvUploadedAt | date:'dd/MM/yyyy à HH:mm' }}</p>
+                    </div>
+                  </div>
+                  <button mat-raised-button color="primary" (click)="downloadCv()">
+                    <mat-icon>download</mat-icon>
+                    Télécharger
+                  </button>
+                </div>
+                <div class="no-content-placeholder" *ngIf="!stagiaire.cvUrl">
+                  <mat-icon>description</mat-icon>
+                  <p>Aucun CV uploadé</p>
+                </div>
+              </mat-card-content>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Onglet Évaluations -->
+      <mat-tab label="Évaluations">
+        <div class="tab-content">
+          <div class="evaluations-section">
+            
+            <!-- Résumé des évaluations -->
+            <mat-card class="evaluation-summary">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>assessment</mat-icon>
+                  Résumé des évaluations
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <h3>{{ stagiaire.stats.totalRatings }}</h3>
+                    <p>Évaluations reçues</p>
+                  </div>
+                  <div class="summary-item">
+                    <h3>{{ stagiaire.stats.averageRating | number:'1.1-1' }}</h3>
+                    <p>Note moyenne</p>
+                  </div>
+                  <div class="summary-item">
+                    <h3>{{ stagiaire.stats.lastActivityDate | date:'dd/MM' }}</h3>
+                    <p>Dernière évaluation</p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Liste des évaluations -->
+            <div class="evaluations-list" *ngIf="stagiaire.ratings && stagiaire.ratings.length > 0">
+              <mat-card *ngFor="let rating of stagiaire.ratings" class="evaluation-card">
+                <mat-card-header>
+                  <div mat-card-avatar class="evaluation-avatar">
+                    <mat-icon>{{ getEvaluationIcon(rating.type) }}</mat-icon>
+                  </div>
+                  <mat-card-title>
+                    {{ rating.evaluatorName }}
+                  </mat-card-title>
+                  <mat-card-subtitle>
+                    {{ getEvaluationTypeDisplay(rating.type) }}
+                    • {{ rating.createdAt | date:'dd/MM/yyyy' }}
+                  </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="evaluation-score">
+                    <span class="score-value">{{ rating.score }}/5</span>
+                    <div class="score-stars">
+                      <mat-icon *ngFor="let star of getStarArray(rating.score); let i = index" 
+                               [ngClass]="{ 'star-filled': isStarFilled(i, rating.score), 'star-empty': !isStarFilled(i, rating.score) }">
+                        star
+                      </mat-icon>
+                    </div>
+                  </div>
+                  <p class="evaluation-comment" *ngIf="rating.comment">{{ rating.comment }}</p>
+                  
+                  <!-- Critères détaillés si disponibles -->
+                  <div class="detailed-criteria" *ngIf="rating.detailedScores">
+                    <h4>Critères d'évaluation</h4>
+                    <div class="criteria-grid">
+                      <div class="criteria-item" *ngFor="let criteria of getCriteriaItems(rating.detailedScores)">
+                        <span>{{ criteria.name }}</span>
+                        <mat-progress-bar [value]="criteria.value * 20" color="primary"></mat-progress-bar>
+                        <span>{{ criteria.value }}/5</span>
+                      </div>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Aucune évaluation -->
+            <div class="no-content-placeholder" *ngIf="!stagiaire.ratings || stagiaire.ratings.length === 0">
+              <mat-icon>star_border</mat-icon>
+              <h3>Aucune évaluation</h3>
+              <p>Ce stagiaire n'a pas encore été évalué</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Onglet Rapports -->
+      <mat-tab label="Rapports">
+        <div class="tab-content">
+          <div class="reports-section">
+            
+            <!-- Statistiques des rapports -->
+            <mat-card class="reports-summary">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>description</mat-icon>
+                  Statut des rapports
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="reports-stats-grid">
+                  <div class="report-stat approved">
+                    <mat-icon>check_circle</mat-icon>
+                    <span class="stat-number">{{ stagiaire.stats.approvedReports }}</span>
+                    <span class="stat-label">Approuvés</span>
+                  </div>
+                  <div class="report-stat pending">
+                    <mat-icon>pending</mat-icon>
+                    <span class="stat-number">{{ stagiaire.stats.pendingReports }}</span>
+                    <span class="stat-label">En attente</span>
+                  </div>
+                  <div class="report-stat rejected">
+                    <mat-icon>cancel</mat-icon>
+                    <span class="stat-number">{{ stagiaire.stats.rejectedReports }}</span>
+                    <span class="stat-label">Rejetés</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Liste des rapports -->
+            <div class="reports-list" *ngIf="stagiaire.reports && stagiaire.reports.length > 0">
+              <mat-card *ngFor="let report of stagiaire.reports" class="report-card">
+                <mat-card-header>
+                  <div mat-card-avatar [ngClass]="getReportStatusClass(report)">
+                    <mat-icon>{{ getReportStatusIcon(report) }}</mat-icon>
+                  </div>
+                  <mat-card-title>{{ report.title }}</mat-card-title>
+                  <mat-card-subtitle>
+                    {{ report.reportTypeName }} • {{ report.submissionDate | date:'dd/MM/yyyy' }}
+                  </mat-card-subtitle>
+                </mat-card-header>
+                <mat-card-content>
+                  <p class="report-description" *ngIf="report.description">{{ report.description }}</p>
+                  
+                  <div class="report-status">
+                    <mat-chip [ngClass]="getReportStatusChipClass(report)">
+                      {{ getReportStatusText(report) }}
+                    </mat-chip>
+                  </div>
+
+                  <div class="report-feedback" *ngIf="report.feedbackComments">
+                    <h4>Commentaires</h4>
+                    <p>{{ report.feedbackComments }}</p>
+                  </div>
+                </mat-card-content>
+                <mat-card-actions>
+                  <button mat-button color="primary" (click)="viewReport(report)">
+                    <mat-icon>visibility</mat-icon>
+                    Voir
+                  </button>
+                  <button mat-button color="accent" (click)="downloadReport(report)">
+                    <mat-icon>download</mat-icon>
+                    Télécharger
+                  </button>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+
+            <!-- Aucun rapport -->
+            <div class="no-content-placeholder" *ngIf="!stagiaire.reports || stagiaire.reports.length === 0">
+              <mat-icon>description</mat-icon>
+              <h3>Aucun rapport</h3>
+              <p>Aucun rapport n'a encore été soumis</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Onglet Tâches -->
+      <mat-tab label="Suivi des tâches">
+        <div class="tab-content">
+          <div class="tasks-section">
+            
+            <!-- Aperçu des tâches -->
+            <mat-card class="tasks-overview">
+              <mat-card-header>
+                <mat-card-title>
+                  <mat-icon>task_alt</mat-icon>
+                  Aperçu des tâches
+                </mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <div class="tasks-progress">
+                  <div class="progress-circle">
+                    <span>{{ getCompletedTasksPercentage() }}%</span>
+                  </div>
+                  <div class="progress-details">
+                    <p>{{ getCompletedTasksCount() }} sur {{ getTotalTasksCount() }} tâches terminées</p>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            <!-- Liste des tâches -->
+            <div class="tasks-list" *ngIf="stagiaire.tasks && stagiaire.tasks.length > 0">
+              <mat-card *ngFor="let task of stagiaire.tasks" class="task-card" [ngClass]="getTaskStatusClass(task.status)">
+                <mat-card-content>
+                  <div class="task-header">
+                    <div class="task-status-icon">
+                      <mat-icon [ngClass]="getTaskStatusClass(task.status)">{{ getTaskStatusIcon(task.status) }}</mat-icon>
+                    </div>
+                    <div class="task-info">
+                      <h3 class="task-title">{{ task.title }}</h3>
+                      <p class="task-description">{{ task.description }}</p>
+                    </div>
+                    <div class="task-priority">
+                      <mat-chip [color]="getPriorityColor(task.priority)" selected>
+                        {{ getPriorityText(task.priority) }}
+                      </mat-chip>
+                    </div>
+                  </div>
+                  
+                  <div class="task-footer" *ngIf="task.completedDate">
+                    <div class="completion-info">
+                      <mat-icon>event</mat-icon>
+                      <span>Terminé le {{ task.completedDate | date:'dd/MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <!-- Page d'erreur -->
+  <div class="error-container" *ngIf="error && !isLoading">
+    <mat-card class="error-card">
+      <mat-card-content>
+        <div class="error-content">
+          <mat-icon class="error-icon">error_outline</mat-icon>
+          <h2>Stagiaire non trouvé</h2>
+          <p>Le profil que vous recherchez n'existe pas ou a été supprimé.</p>
+          <button mat-raised-button color="primary" [routerLink]="['/stagiaires']">
+            <mat-icon>arrow_back</mat-icon>
+            Retour à la liste
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

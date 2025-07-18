@@ -1,0 +1,50 @@
+<div class="app-container" [class.sidebar-expanded]="isSidebarVisible">
+    <!-- Navbar -->
+    <app-navbar></app-navbar>
+    
+    <!-- Sidebar -->
+    <app-sidebar 
+      [isVisible]="isSidebarVisible" 
+      (visibilityChange)="onSidebarVisibilityChange($event)">
+    </app-sidebar>
+  
+    <!-- Main Content -->
+    <main class="main-content" [class.sidebar-expanded]="isSidebarVisible">
+      <div class="section-card profile-section">
+        <div class="info">
+          <img [src]="stagiaire.photo" alt="Photo du stagiaire">
+          <div>
+            <p><strong>Nom :</strong> {{ stagiaire.nom }}</p>
+            <p><strong>Département :</strong> {{ stagiaire.departement }}</p>
+            <p><strong>Tuteur :</strong> {{ stagiaire.tuteur }}</p>
+            <p><strong>Date de Début :</strong> {{ stagiaire.dateDebut }}</p>
+            <p><strong>Date de Fin :</strong> {{ stagiaire.dateFin }}</p>
+          </div>
+        </div>
+      </div>
+  
+      <div class="section-card tasks-section">
+        <h2>Mes Tâches</h2>
+        <div class="task-item" *ngFor="let tache of taches">
+          <div>
+            <p><strong>Tâche :</strong> {{ tache.titre }}</p>
+            <p><strong>Description :</strong> {{ tache.description }}</p>
+          </div>
+          <span class="task-status" [class]="tache.statut">{{ getStatusLabel(tache.statut) }}</span>
+        </div>
+      </div>
+  
+      <div class="section-card evaluation-section">
+        <h2>Évaluations</h2>
+        <p>Votre performance est évaluée régulièrement par votre tuteur. Voici vos dernières notes :</p>
+        <ul>
+          <li *ngFor="let evaluation of evaluations">
+            <strong>{{ evaluation.semaine }} :</strong> {{ evaluation.note }}
+          </li>
+        </ul>
+      </div>
+    </main>
+  
+    <!-- Footer -->
+    <app-footer></app-footer>
+  </div>

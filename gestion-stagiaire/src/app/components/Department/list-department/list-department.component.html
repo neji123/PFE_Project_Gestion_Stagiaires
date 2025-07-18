@@ -1,0 +1,41 @@
+<div class="department-list-container">
+  <h2>Liste des Départements</h2>
+
+  <button (click)="onAddClick()" *ngIf="!showForm && !loading">Ajouter un département</button>
+
+  <app-add-department
+    *ngIf="showForm"
+    [department]="editDepartment"
+    [loading]="loading"
+    (save)="onFormSave($event)"
+    (cancel)="onFormCancel()"
+  ></app-add-department>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="success" class="success">{{ success }}</div>
+  <div *ngIf="loading && !showForm" class="loading">Chargement...</div>
+
+  <table *ngIf="departments.length > 0 && !showForm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nom</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let dept of departments">
+        <td>{{ dept.id }}</td>
+        <td>{{ dept.departmentName }}</td>
+        <td>
+          <button (click)="onEditClick(dept)">Modifier</button>
+          <button (click)="onDelete(dept)">Supprimer</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="departments.length === 0 && !loading && !showForm" class="no-result">
+    Aucun département à afficher.
+  </div>
+</div>

@@ -1,0 +1,324 @@
+<div class="publication-card" style="
+    border-radius: 5%;
+">
+  <!-- Header Section -->
+  <div class="post-header">
+    <div class="author-info">
+      <div class="avatar-wrapper">
+        <img
+          class="author-avatar"
+          [src]="getUserImageUrl(post.author)"
+          [alt]="(post.author?.firstName || '') + ' ' + (post.author?.lastName || '')"
+          (error)="handleImageError($event, post.author?.id?.toString())"
+        />
+        <ng-container *ngIf="imageError[post.author?.id?.toString() || '']">
+          <div class="avatar-fallback">
+            <mat-icon>person</mat-icon>
+          </div>
+        </ng-container>
+      </div>
+      <div class="author-details">
+        <div class="author-name">
+          <span class="full-name">{{post.author?.firstName}} {{post.author?.lastName}}</span>
+          <span class="username" *ngIf="post.author?.username">{{"@"}}{{post.author.username}}</span>
+        </div>
+        <div class="post-timestamp">
+          <mat-icon class="time-icon">access_time</mat-icon>
+          <span>{{post.createdAt | date:'dd MMM yyyy, HH:mm'}}</span>
+          <mat-icon style="font-size: 12px; margin-left: 4px;">public</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="post-content">
+    <p class="content-text">{{post.content}}</p>
+    
+    <!-- Attachments Section -->
+    <div class="attachments-grid" *ngIf="post.attachments?.length">
+      <div *ngFor="let att of post.attachments" class="attachment-item">
+        <!-- Image Attachments -->
+        <ng-container *ngIf="isImageAttachment(att); else nonImageAttachment">
+          <div class="image-container" (click)="openImageModal(att)">
+            <img 
+              [src]="getAttachmentUrl(att)" 
+              alt="image attachment" 
+              class="attachment-image"
+              (error)="hideFailedImage($event)"
+            />
+            <div class="image-overlay">
+              <mat-icon class="expand-icon">zoom_in</mat-icon>
+            </div>
+          </div>
+        </ng-container>
+        
+        <!-- Non-Image Attachments -->
+        <ng-template #nonImageAttachment>
+          <ng-container *ngIf="isPdfAttachment(att); else otherFileBlock">
+            <div class="pdf-attachment" (click)="openPdfInNewWindow(att)">
+              <div class="file-icon-wrapper">
+                <mat-icon class="file-icon pdf-icon">picture_as_pdf</mat-icon>
+              </div>
+              <div class="file-details">
+                <span class="file-name">{{ getFileName(att.fileUrl) }}</span>
+                <span class="file-type">Document PDF</span>
+              </div>
+              <mat-icon class="action-icon">open_in_new</mat-icon>
+            </div>
+          </ng-container>
+          <ng-template #otherFileBlock>
+            <a [href]="getAttachmentUrl(att)" target="_blank" class="other-file-attachment">
+              <div class="file-icon-wrapper">
+                <mat-icon class="file-icon">insert_drive_file</mat-icon>
+              </div>
+              <div class="file-details">
+                <span class="file-name">{{ getFileName(att.fileUrl) }}</span>
+                <span class="file-type">Fichier</span>
+              </div>
+              <mat-icon class="action-icon">download</mat-icon>
+            </a>
+          </ng-template>
+        </ng-template>
+      </div>
+    </div>
+  </div>
+
+  <!-- Post Statistics -->
+  <div class="post-stats" *ngIf="post.likesCount > 0 || post.comments?.length">
+    <div class="likes-count" *ngIf="post.likesCount > 0" (click)="openLikesModal()">
+      <mat-icon style="color: #1877f2; font-size: 16px;">thumb_up</mat-icon>
+      <span>{{post.likesCount}} J'aime</span>
+    </div>
+    <div class="comments-count" *ngIf="post.comments?.length">
+      {{post.comments.length}} commentaire{{post.comments.length > 1 ? 's' : ''}}
+    </div>
+  </div>
+
+  <!-- Actions Section -->
+  <div class="post-actions">
+    <button
+      class="action-button like-button"
+      (click)="toggleLike()"
+      [disabled]="likeLoading"
+      [class.liked]="isLikedByCurrentUser"
+      [class.loading]="likeLoading">
+      <div class="action-content">
+        <mat-icon class="action-icon">{{isLikedByCurrentUser ? 'thumb_up' : 'thumb_up_off_alt'}}</mat-icon>
+        <span class="action-text">J'aime</span>
+        <span class="action-count" *ngIf="post.likesCount > 0">{{post.likesCount}}</span>
+      </div>
+    </button>
+     <!-- Boutons Modifier/Supprimer visibles RH auteur -->
+  <ng-container *ngIf="showEditDelete()">
+    <button class="action-button edit-btn" (click)="openEditModal()">
+      <mat-icon>edit</mat-icon>
+      Modifier
+    </button>
+    <button class="action-button delete-btn" (click)="openDeleteConfirm()">
+      <mat-icon>delete</mat-icon>
+      Supprimer
+    </button>
+  </ng-container>
+  </div>
+
+<!-- Modal édition -->
+<div class="edit-modal-overlay" *ngIf="isEditMode">
+  <div class="edit-modal-content" (click)="$event.stopPropagation()">
+    <div class="edit-modal-header">
+      <h3>Modifier la publication</h3>
+      <button class="close-modal-btn" (click)="cancelEdit()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <form (ngSubmit)="submitEdit()" class="edit-form">
+      <textarea
+        [(ngModel)]="editContent"
+        name="editContent"
+        rows="4"
+        [disabled]="editSubmitting"
+        required
+        maxlength="2000"
+        placeholder="Contenu de la publication"></textarea>
+      <div class="edit-file-input">
+        <input type="file" multiple (change)="onEditFilesSelected($event)" [disabled]="editSubmitting"/>
+      </div>
+      <div class="edit-actions">
+        <button type="submit" [disabled]="editSubmitting">Enregistrer</button>
+        <button type="button" (click)="cancelEdit()" [disabled]="editSubmitting">Annuler</button>
+      </div>
+      <div *ngIf="editError" class="edit-error">{{editError}}</div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal confirmation suppression -->
+<div class="delete-modal-overlay" *ngIf="showDeleteConfirm">
+  <div class="delete-modal-content" (click)="$event.stopPropagation()">
+    <div class="delete-modal-header">
+      <mat-icon color="warn">warning</mat-icon>
+      <span>Confirmer la suppression de cette publication ?</span>
+    </div>
+    <div class="delete-actions">
+      <button (click)="confirmDelete()" class="confirm-delete-btn">Oui, supprimer</button>
+      <button (click)="cancelDelete()" class="cancel-delete-btn">Annuler</button>
+    </div>
+    <div *ngIf="deleteError" class="delete-error">{{deleteError}}</div>
+  </div>
+</div>
+
+
+  <!-- Comments Section -->
+  <div class="comments-section" *ngIf="post.comments?.length || canComment()">
+    <div class="comments-header" *ngIf="post.comments?.length">
+      <h4 class="comments-title">
+        <mat-icon>chat_bubble_outline</mat-icon>
+        Commentaires ({{post.comments.length}})
+      </h4>
+    </div>
+
+    <div class="comments-list" *ngIf="post.comments?.length">
+      <div *ngFor="let comment of getVisibleComments()" class="comment-item">
+        <div class="comment-avatar">
+          <img
+            class="avatar"
+            [src]="getUserImageUrl(comment.user)"
+            [alt]="(comment.user?.firstName || '') + ' ' + (comment.user?.lastName || '')"
+            (error)="handleImageError($event, comment.user?.id?.toString())"
+          />
+          <ng-container *ngIf="imageError[comment.user?.id?.toString()|| '']">
+            <div class="avatar-fallback small">
+              <mat-icon>person</mat-icon>
+            </div>
+          </ng-container>
+        </div>
+        <div class="comment-content">
+          <div class="comment-header">
+            <span class="commenter-name">{{comment.user?.firstName}} {{comment.user?.lastName}}</span>
+            <span class="comment-username" *ngIf="comment.user?.username">{{"@"}}{{comment.user.username}}</span>
+            <span class="comment-time">{{comment.commentedAt | date:'dd MMM, HH:mm'}}</span>
+          </div>
+          <div class="comment-text">{{comment.comment}}</div>
+        </div>
+      </div>
+
+      <!-- Show More Comments Button -->
+      <button 
+        *ngIf="hasMoreComments() && !showAllComments" 
+        class="show-more-btn"
+        (click)="toggleShowAllComments()">
+        <mat-icon>expand_more</mat-icon>
+        Voir {{getRemainingCommentsCount()}} commentaires supplémentaires
+      </button>
+
+      <!-- Show Less Comments Button -->
+      <button 
+        *ngIf="showAllComments && hasMoreComments()" 
+        class="show-less-btn"
+        (click)="toggleShowAllComments()">
+        <mat-icon>expand_less</mat-icon>
+        Masquer les commentaires supplémentaires
+      </button>
+    </div>
+
+    <!-- Add Comment Section -->
+    <div class="add-comment-section" *ngIf="canComment()">
+      <div class="comment-input-wrapper">
+        <div class="current-user-avatar">
+          <img
+            class="avatar"
+            [src]="getUserImageUrl(currentUser)"
+            [alt]="currentUser?.firstName + ' ' + currentUser?.lastName"
+          />
+        </div>
+        <div class="input-container">
+          <textarea
+            class="comment-input"
+            [(ngModel)]="commentText"
+            placeholder="Écrivez un commentaire..."
+            maxlength="1000"
+            [disabled]="commentLoading"
+            (keydown.enter)="onEnterKeyDown($event)"
+            rows="1"></textarea>
+        </div>
+      </div>
+      
+      <div class="input-actions">
+        <span class="char-count">{{commentText.length}}/1000</span>
+        <button
+          class="submit-comment-btn"
+          (click)="addComment()"
+          [disabled]="commentLoading || !commentText.trim()">
+          <mat-icon *ngIf="!commentLoading">send</mat-icon>
+          <mat-icon *ngIf="commentLoading" class="spinning">hourglass_empty</mat-icon>
+          <span>{{commentLoading ? 'Envoi...' : 'Publier'}}</span>
+        </button>
+      </div>
+      
+      <div *ngIf="commentError" class="error-message">
+        <mat-icon>error</mat-icon>
+        {{commentError}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="image-modal-overlay" *ngIf="showImageModal" (click)="closeImageModal()">
+  <div class="image-modal-content" (click)="$event.stopPropagation()">
+    <button class="close-modal-btn" (click)="closeImageModal()">
+      <mat-icon>close</mat-icon>
+    </button>
+    <img [src]="selectedImage" alt="Image agrandie" class="modal-image" />
+  </div>
+</div>
+
+<!-- Likes Modal -->
+<div class="likes-modal-overlay" *ngIf="showLikesModal" (click)="closeLikesModal()">
+  <div class="likes-modal-content" (click)="$event.stopPropagation()">
+    <div class="likes-modal-header">
+      <h3>Personnes qui aiment cette publication</h3>
+      <button class="close-modal-btn" (click)="closeLikesModal()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    
+    <div class="likes-modal-body">
+      <!-- Loading state -->
+      <div *ngIf="likesLoading" class="likes-loading">
+        <mat-icon class="spinning">hourglass_empty</mat-icon>
+        <span>Chargement...</span>
+      </div>
+      
+      <!-- Likes list -->
+      <div *ngIf="!likesLoading && postLikes.length > 0" class="likes-list">
+        <div *ngFor="let like of postLikes" class="like-item">
+          <div class="like-avatar">
+            <img
+              class="avatar"
+              [src]="getUserImageUrl(like.user)"
+              [alt]="like.user.firstName + ' ' + like.user.lastName"
+              (error)="handleImageError($event, like.user.id?.toString())"
+            />
+            <ng-container *ngIf="imageError[like.user.id?.toString() || '']">
+              <div class="avatar-fallback">
+                <mat-icon>person</mat-icon>
+              </div>
+            </ng-container>
+          </div>
+          <div class="like-user-info">
+            <div class="like-user-name">{{like.user.firstName}} {{like.user.lastName}}</div>
+            <div class="like-user-username" *ngIf="like.user.username">{{"@"}}{{like.user.username}}</div>
+          </div>
+          <div class="like-time">{{like.likedAt | date:'dd MMM, HH:mm'}}</div>
+        </div>
+      </div>
+      
+      <!-- Empty state -->
+      <div *ngIf="!likesLoading && postLikes.length === 0" class="likes-empty">
+        <mat-icon>sentiment_neutral</mat-icon>
+        <span>Aucun like trouvé</span>
+      </div>
+    </div>
+  </div>
+</div>

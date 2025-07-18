@@ -1,0 +1,455 @@
+<div class="project-container">
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40" class="ey-spinner"></mat-spinner>
+    <p class="loading-text">Chargement du projet...</p>
+  </div>
+
+  <div *ngIf="error" class="error-alert">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <div *ngIf="!loading && !error && project" class="project-content">
+    <!-- En-tête du projet avec design EY épuré et moderne -->
+    <div class="project-header-section">
+      <div class="project-header-overlay">
+        <div class="project-header-content">
+          <div class="project-title-section">
+            <h1 class="project-title">{{ project.title }}</h1>
+            <p class="project-description">{{ project.description }}</p>
+            
+            <div class="project-stats">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <mat-icon>calendar_today</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value" *ngIf="project.startDate && project.endDate">
+                    {{ project.startDate | date:'dd MMM' }} - {{ project.endDate | date:'dd MMM yyyy' }}
+                  </div>
+                  <div class="stat-value" *ngIf="project.startDate && !project.endDate">
+                    Depuis {{ project.startDate | date:'dd MMM yyyy' }}
+                  </div>
+                  <div class="stat-value" *ngIf="!project.startDate">
+                    Non planifié
+                  </div>
+                  <div class="stat-label">Période</div>
+                </div>
+              </div>
+
+              <div class="stat-divider"></div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <mat-icon>people</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ stagiaireUsers.length }}</div>
+                  <div class="stat-label">Stagiaires</div>
+                </div>
+              </div>
+
+              <div class="stat-divider"></div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <mat-icon>view_kanban</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ sprints.length }}</div>
+                  <div class="stat-label">Sprints</div>
+                </div>
+              </div>
+
+              <div class="stat-divider"></div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <mat-icon>check_circle</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ doneSprints.length }}/{{ sprints.length }}</div>
+                  <div class="stat-label">Complétés</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section des stagiaires avec design cohérent -->
+    <div class="stagiaires-section">
+      <div class="section-header">
+        <div class="section-title">
+          <mat-icon>school</mat-icon>
+          <h2>Stagiaires assignés</h2>
+        </div>
+        
+        <div class="header-actions">
+          <!-- Bouton pour générer son propre rapport (pour les stagiaires) -->
+          <button 
+            mat-button 
+            class="ey-btn ey-btn-secondary"
+            (click)="generateMySprintReport()"
+            [disabled]="isGeneratingReport"
+            *ngIf="isCurrentUserStagiaire()">
+            <mat-icon *ngIf="!isGeneratingReport">description</mat-icon>
+            <mat-spinner *ngIf="isGeneratingReport" diameter="20" class="spinner-button"></mat-spinner>
+            <span *ngIf="!isGeneratingReport">Mon Rapport Sprint</span>
+            <span *ngIf="isGeneratingReport">Génération...</span>
+          </button>
+
+          <!-- Bouton pour gérer les stagiaires (pour les tuteurs) -->
+          <button 
+            mat-button 
+            class="ey-btn ey-btn-primary" 
+            (click)="openAssignStagiairesDialog()"
+            *ngIf="authService.hasRole('Tuteur')">
+            <mat-icon>person_add</mat-icon> Gérer les stagiaires
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="stagiaireUsers.length === 0" class="empty-state">
+        <div class="empty-illustration">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="120" height="120" rx="60" fill="#F5F5F5"/>
+            <circle cx="60" cy="45" r="20" fill="#E0E0E0"/>
+            <rect x="30" y="70" width="60" height="30" rx="5" fill="#E0E0E0"/>
+            <path d="M50 80H70V85H50V80Z" fill="#FFE600"/>
+            <path d="M45 90H75V95H45V90Z" fill="#2E2E38" fill-opacity="0.5"/>
+          </svg>
+        </div>
+        <h3>Aucun stagiaire assigné</h3>
+        <p>Affectez des stagiaires à ce projet pour les voir apparaître ici.</p>
+        <button mat-button class="ey-btn ey-btn-primary" (click)="openAssignStagiairesDialog()">
+          <mat-icon>person_add</mat-icon> Affecter des stagiaires
+        </button>
+      </div>
+
+      <div *ngIf="stagiaireUsers.length > 0" class="stagiaires-grid">
+        <div *ngFor="let user of stagiaireUsers; let i = index" class="stagiaire-card" 
+             [routerLink]="['/stagiaire', getUserId(user)]">
+          <!-- Utilisation conditionnelle d'image ou d'avatar avec initiales -->
+          <div class="stagiaire-header">
+            <ng-container *ngIf="user.profilePictureUrl || user.user?.profilePictureUrl; else defaultAvatar">
+              <div class="stagiaire-avatar-img">
+                <img [src]="getImageUrl(user.profilePictureUrl || user.user?.profilePictureUrl)" 
+                     [alt]="getUserFullName(user)"
+                     (error)="handleImageError($event)">
+              </div>
+            </ng-container>
+            <ng-template #defaultAvatar>
+              <div class="stagiaire-avatar" [style.background]="getAvatarGradient(i)">
+                {{ getInitials(user) }}
+              </div>
+            </ng-template>
+          </div>
+          
+          <div class="stagiaire-body">
+            <h3 class="stagiaire-name">{{ getUserFullName(user) }}</h3>
+            <p class="stagiaire-email">{{ getUserEmail(user) }}</p>
+          </div>
+          
+          <div class="stagiaire-footer">
+            <button 
+              mat-icon-button 
+              class="view-button" 
+              title="Voir le profil" 
+              (click)="viewStagiaire(getUserId(user)); $event.stopPropagation()">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            
+            <!-- Nouveau bouton pour générer le rapport -->
+            <button 
+              mat-icon-button 
+              class="report-button" 
+              title="Générer rapport Sprint" 
+              (click)="generateSprintReportForStagiaire(getUserId(user), getUserFullName(user)); $event.stopPropagation()"
+              [disabled]="isGeneratingReport"
+              *ngIf="canGenerateReportsForOthers()">
+              <mat-icon *ngIf="!isGeneratingReport">description</mat-icon>
+              <mat-spinner *ngIf="isGeneratingReport" diameter="16" class="mini-spinner"></mat-spinner>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire d'ajout de sprint avec effet d'apparition -->
+    <div *ngIf="showSprintForm" class="sprint-form-section slide-up">
+      <div class="section-header">
+        <div class="section-title">
+          <mat-icon>add_task</mat-icon>
+          <h2>Nouveau sprint</h2>
+        </div>
+        <button mat-icon-button class="close-button" (click)="toggleSprintForm()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <form [formGroup]="sprintForm" (ngSubmit)="onSubmitSprint()" class="sprint-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Nom du sprint</mat-label>
+            <input matInput formControlName="name" required>
+            <mat-error *ngIf="sprintForm.get('name')?.errors?.['required']">Le nom est obligatoire</mat-error>
+            <mat-error *ngIf="sprintForm.get('name')?.errors?.['minlength']">Le nom doit contenir au moins 3 caractères</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" required rows="1"></textarea>
+            <mat-error *ngIf="sprintForm.get('description')?.errors?.['required']">La description est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Date de début</mat-label>
+            <input matInput [matDatepicker]="startPicker" formControlName="startDate" required>
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+            <mat-error *ngIf="sprintForm.get('startDate')?.errors?.['required']">La date de début est obligatoire</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Date de fin</mat-label>
+            <input matInput [matDatepicker]="endPicker" formControlName="endDate" required>
+            <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+            <mat-datepicker #endPicker></mat-datepicker>
+            <mat-error *ngIf="sprintForm.get('endDate')?.errors?.['required']">La date de fin est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-button type="button" class="ey-btn ey-btn-tertiary" (click)="toggleSprintForm()">
+            Annuler
+          </button>
+          <button mat-button type="submit" class="ey-btn ey-btn-primary" [disabled]="sprintForm.invalid || submittingSprint">
+            <mat-spinner *ngIf="submittingSprint" diameter="20" class="spinner-button"></mat-spinner>
+            <span *ngIf="!submittingSprint">Créer le sprint</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tableau Kanban des Sprints avec design EY amélioré -->
+    <div class="kanban-section">
+      <div class="section-header">
+        <div class="section-title">
+          <mat-icon>view_kanban</mat-icon>
+          <h2>Gestion des sprints</h2>
+        </div>
+        
+        <div class="header-actions">
+          <!-- Bouton pour générer son rapport (stagiaires) -->
+          <button 
+            mat-button 
+            class="ey-btn ey-btn-secondary ey-btn-sm"
+            (click)="generateMySprintReport()"
+            [disabled]="isGeneratingReport"
+            *ngIf="isCurrentUserStagiaire()">
+            <mat-icon *ngIf="!isGeneratingReport">assessment</mat-icon>
+            <mat-spinner *ngIf="isGeneratingReport" diameter="20" class="spinner-button"></mat-spinner>
+            <span *ngIf="!isGeneratingReport">Rapport PDF</span>
+            <span *ngIf="isGeneratingReport">Génération...</span>
+          </button>
+
+          <!-- Bouton pour ajouter un sprint -->
+          <button mat-button class="ey-btn ey-btn-primary" (click)="toggleSprintForm()">
+            <mat-icon>add_circle</mat-icon> Ajouter un sprint
+          </button>
+        </div>
+      </div>
+
+      <div class="kanban-board">
+        <!-- Colonne À faire -->
+        <div class="kanban-column">
+          <div class="kanban-column-header kanban-todo">
+            <h3>À faire</h3>
+            <div class="column-counter">{{ todoSprints.length }}</div>
+          </div>
+          
+          <div class="kanban-column-body">
+            <div *ngIf="todoSprints.length === 0" class="kanban-empty-state">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucun sprint à faire</p>
+            </div>
+
+            <div *ngFor="let sprint of todoSprints" class="kanban-card"
+                [class.overdue]="sprint.endDate < today">
+              <div class="card-header">
+                <h4 class="card-title">{{ sprint.name }}</h4>
+                <div class="card-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="todoMenu" class="card-menu-button">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #todoMenu="matMenu">
+                    <button mat-menu-item (click)="viewSprint(sprint.id!)">
+                      <mat-icon>visibility</mat-icon>
+                      <span>Détails</span>
+                    </button>
+                    <button mat-menu-item (click)="updateSprintStatus(sprint, SprintStatus.InProgress)">
+                      <mat-icon>play_arrow</mat-icon>
+                      <span>Démarrer</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              
+              <div class="card-content">
+                <p class="card-description">{{ sprint.description }}</p>
+                
+                <div class="card-dates">
+                  <div class="date start-date">
+                    <mat-icon class="date-icon">event</mat-icon>
+                    <span>{{ sprint.startDate | date:'dd MMM' }}</span>
+                  </div>
+                  <div class="date end-date" [class.overdue-date]="sprint.endDate < today">
+                    <mat-icon class="date-icon">event_busy</mat-icon>
+                    <span>{{ sprint.endDate | date:'dd MMM' }}</span>
+                  </div>
+                </div>
+
+                <div class="card-tags">
+                  <div class="tag task-tag">
+                    <span>{{ sprint.tasks?.length || 0 }} tâches</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne En cours -->
+        <div class="kanban-column">
+          <div class="kanban-column-header kanban-progress">
+            <h3>En cours</h3>
+            <div class="column-counter">{{ inProgressSprints.length }}</div>
+          </div>
+          
+          <div class="kanban-column-body">
+            <div *ngIf="inProgressSprints.length === 0" class="kanban-empty-state">
+              <mat-icon>hourglass_empty</mat-icon>
+              <p>Aucun sprint en cours</p>
+            </div>
+
+            <div *ngFor="let sprint of inProgressSprints" class="kanban-card"
+                [class.overdue]="sprint.endDate < today">
+              <div class="card-header">
+                <h4 class="card-title">{{ sprint.name }}</h4>
+                <div class="card-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="inProgressMenu" class="card-menu-button">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #inProgressMenu="matMenu">
+                    <button mat-menu-item (click)="viewSprint(sprint.id!)">
+                      <mat-icon>visibility</mat-icon>
+                      <span>Détails</span>
+                    </button>
+                    <button mat-menu-item (click)="updateSprintStatus(sprint, SprintStatus.Todo)">
+                      <mat-icon>pause</mat-icon>
+                      <span>Mettre en attente</span>
+                    </button>
+                    <button mat-menu-item (click)="updateSprintStatus(sprint, SprintStatus.Done)">
+                      <mat-icon>check</mat-icon>
+                      <span>Terminer</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              
+              <div class="card-content">
+                <p class="card-description">{{ sprint.description }}</p>
+                
+                <button mat-button class="ey-btn ey-btn-tertiary ey-btn-sm view-tasks-button" (click)="viewSprint(sprint.id!)">
+                  <mat-icon>visibility</mat-icon> Voir les tâches
+                </button>
+                
+                <div class="card-dates">
+                  <div class="date start-date">
+                    <mat-icon class="date-icon">event</mat-icon>
+                    <span>{{ sprint.startDate | date:'dd MMM' }}</span>
+                  </div>
+                  <div class="date end-date" [class.overdue-date]="sprint.endDate < today">
+                    <mat-icon class="date-icon">event_busy</mat-icon>
+                    <span>{{ sprint.endDate | date:'dd MMM' }}</span>
+                  </div>
+                </div>
+
+                <div class="card-tags">
+                  <div class="tag task-tag">
+                    <span>{{ sprint.tasks?.length || 0 }} tâches</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne Terminé -->
+        <div class="kanban-column">
+          <div class="kanban-column-header kanban-done">
+            <h3>Terminé</h3>
+            <div class="column-counter">{{ doneSprints.length }}</div>
+          </div>
+          
+          <div class="kanban-column-body">
+            <div *ngIf="doneSprints.length === 0" class="kanban-empty-state">
+              <mat-icon>check_circle</mat-icon>
+              <p>Aucun sprint terminé</p>
+            </div>
+
+            <div *ngFor="let sprint of doneSprints" class="kanban-card completed">
+              <div class="card-header">
+                <h4 class="card-title">{{ sprint.name }}</h4>
+                <div class="card-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="doneMenu" class="card-menu-button">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #doneMenu="matMenu">
+                    <button mat-menu-item (click)="viewSprint(sprint.id!)">
+                      <mat-icon>visibility</mat-icon>
+                      <span>Détails</span>
+                    </button>
+                    <button mat-menu-item (click)="updateSprintStatus(sprint, SprintStatus.InProgress)">
+                      <mat-icon>replay</mat-icon>
+                      <span>Réactiver</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              
+              <div class="card-content">
+                <p class="card-description">{{ sprint.description }}</p>
+                
+                <div class="card-dates">
+                  <div class="date start-date">
+                    <mat-icon class="date-icon">event</mat-icon>
+                    <span>{{ sprint.startDate | date:'dd MMM' }}</span>
+                  </div>
+                  <div class="date end-date">
+                    <mat-icon class="date-icon">event_busy</mat-icon>
+                    <span>{{ sprint.endDate | date:'dd MMM' }}</span>
+                  </div>
+                </div>
+
+                <div class="card-tags">
+                  <div class="tag task-tag">
+                    <span>{{ sprint.tasks?.length || 0 }} tâches</span>
+                  </div>
+                  <div class="tag completed-tag">
+                    <mat-icon class="tag-icon">check_circle</mat-icon>
+                    <span>Complété</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

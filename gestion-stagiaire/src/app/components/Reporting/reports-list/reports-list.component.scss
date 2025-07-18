@@ -1,0 +1,106 @@
+.reports-list-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.main-content {
+  transition: margin-left 0.3s ease;
+  margin-left: 80px;
+
+  &.sidebar-open {
+    margin-left: 250px;
+  }
+}
+
+.loading-container, 
+.error-container, 
+.no-reports {
+  text-align: center;
+  padding: 40px 20px;
+
+  p {
+    margin-top: 16px;
+    color: #666;
+  }
+}
+
+.no-reports {
+  .large-icon {
+    font-size: 64px;
+    height: 64px;
+    width: 64px;
+    color: #ccc;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    margin: 16px 0 8px 0;
+    color: #333;
+  }
+
+  .subtext {
+    font-style: italic;
+    font-size: 14px;
+  }
+}
+
+.header-actions {
+  margin-left: auto;
+}
+
+.reports-table {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.report-type-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon {
+    font-size: 18px;
+  }
+}
+
+.status-chip {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+
+  &.approved {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+  }
+
+  &.rejected {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+
+  &.pending {
+    background-color: #fff3e0;
+    color: #ef6c00;
+  }
+}
+
+.feedback-btn {
+  margin-left: 8px;
+  color: #2196f3;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+
+    &.sidebar-open {
+      margin-left: 0;
+    }
+  }
+  
+  .reports-list-container {
+    padding: 10px;
+  }
+}

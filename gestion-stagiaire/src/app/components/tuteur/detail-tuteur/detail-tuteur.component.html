@@ -1,0 +1,166 @@
+<app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+
+<div class="main-content" [class.sidebar-open]="isSidebarVisible">
+  <div class="content-header">
+    <button mat-icon-button color="primary" [routerLink]="['/tuteurs']">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h2>Détails du Tuteur</h2>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement des données...</p>
+  </div>
+
+  <div class="tuteur-detail-container" *ngIf="tuteurPerson && !isLoading">
+    <div class="profile-header">
+      <div class="profile-image">
+        <img [src]="tuteurPerson.image" [alt]="tuteurPerson.name + ' photo'">
+      </div>
+      <div class="profile-info">
+        <div class="name-position">
+          <h1>{{ tuteurPerson.name }}</h1>
+          <h3>{{ tuteurPerson.speciality }}</h3>
+          
+          <div class="tags">
+            <span class="department-tag">{{ tuteurPerson.departmentName }}</span>
+            <span class="experience-tag">
+              {{ tuteurPerson.yearsExperience }} ans d'expérience
+            </span>
+          </div>
+        </div>
+        
+        <div class="stats">
+          <div class="stat-badge">
+            <mat-icon>people</mat-icon>
+            <span>{{ tuteurPerson.stagiaireCount || 0 }} stagiaires</span>
+          </div>
+        </div>
+        
+        <div class="actions">
+          <button mat-raised-button color="primary" (click)="contactTuteur()">
+            <mat-icon>email</mat-icon> Contacter
+          </button>
+          <button mat-stroked-button color="primary" (click)="callTuteur()">
+            <mat-icon>phone</mat-icon> Appeler
+          </button>
+          <button mat-icon-button (click)="toggleFavorite()">
+            <mat-icon>{{ tuteurPerson.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <mat-card class="contact-card">
+      <mat-card-content>
+        <div class="contact-item">
+          <mat-icon>email</mat-icon>
+          <span>{{ tuteurPerson.email }}</span>
+        </div>
+        <div class="contact-item">
+          <mat-icon>phone</mat-icon>
+          <span>{{ tuteurPerson.phone }}</span>
+        </div>
+        <div class="contact-item">
+          <mat-icon>business</mat-icon>
+          <span>{{ tuteurPerson.departmentName }}</span>
+        </div>
+        <div class="contact-item">
+          <mat-icon>work</mat-icon>
+          <span>Spécialité: {{ tuteurPerson.speciality }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-tab-group class="info-tabs">
+      <mat-tab label="Profil">
+        <div class="tab-content">
+          <h3>Biographie</h3>
+          <p>{{ tuteurPerson.bio }}</p>
+          
+          <h3>Compétences</h3>
+          <div class="skills-container">
+            <span class="skill-tag" *ngFor="let skill of tuteurPerson.skills">{{ skill }}</span>
+          </div>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="Stagiaires">
+        <div class="tab-content">
+          <div class="tab-header">
+            <h3>Stagiaires encadrés</h3>
+            <button mat-raised-button color="primary" (click)="ouvrirDialogAffectation()">
+              <mat-icon>person_add</mat-icon>
+              Affecter des stagiaires
+            </button>
+          </div>
+          
+          <div class="stagiaires-container" *ngIf="hasStagiaires()">
+            <div class="stagiaire-card" *ngFor="let stagiaire of tuteurPerson!.stagiaires" (click)="goToStagiaireDetail(stagiaire.id)">
+              <!-- Bouton pour retirer un stagiaire -->
+              <button mat-icon-button 
+                      color="warn" 
+                      class="remove-button"
+                      matTooltip="Retirer ce stagiaire" 
+                      (click)="retirerStagiaire(stagiaire.id, stagiaire.name, $event)">
+                <mat-icon>person_remove</mat-icon>
+              </button>
+              
+              <div class="stagiaire-header">
+                <img [src]="stagiaire.image || 'assets/images/default-profile.jpg'" alt="{{ stagiaire.name }} photo">
+                <div class="stagiaire-info">
+                  <h4>{{ stagiaire.name }}</h4>
+                  <p>{{ stagiaire.position }}</p>
+                  
+                  <div class="stagiaire-period">
+                    <span class="period-badge" *ngIf="stagiaire.startDate && stagiaire.endDate">
+                      <mat-icon>date_range</mat-icon>
+                      {{ stagiaire.startDate | date:'dd/MM/yyyy' }} - {{ stagiaire.endDate | date:'dd/MM/yyyy' }}
+                    </span>
+                    <span class="duration-badge">
+                      <mat-icon>timelapse</mat-icon>
+                      {{ stagiaire.duration }}
+                    </span>
+                  </div>
+                </div>
+                
+                <div class="stagiaire-rating">
+                  <span>{{ stagiaire.rating }}</span>
+                  <mat-icon>star</mat-icon>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="no-content-placeholder" *ngIf="!hasStagiaires()">
+            <mat-icon>people_outline</mat-icon>
+            <p>Aucun stagiaire associé à ce tuteur</p>
+            <button mat-stroked-button color="primary" (click)="ouvrirDialogAffectation()">
+              Affecter des stagiaires
+            </button>
+          </div>
+        </div>
+      </mat-tab>
+      
+      <mat-tab label="Calendrier">
+        <div class="tab-content">
+          <div class="no-content-placeholder">
+            <mat-icon>calendar_today</mat-icon>
+            <p>Aucun événement planifié</p>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div class="not-found" *ngIf="!tuteurPerson && !isLoading && error">
+    <mat-icon>error_outline</mat-icon>
+    <h2>Tuteur non trouvé</h2>
+    <p>Le profil que vous recherchez n'existe pas ou a été supprimé.</p>
+    <button mat-raised-button color="primary" [routerLink]="['/tuteurs']">
+      Retour à la liste
+    </button>
+  </div>
+</div>

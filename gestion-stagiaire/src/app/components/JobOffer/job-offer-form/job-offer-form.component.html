@@ -1,0 +1,327 @@
+<div class="job-offer-form-page">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <button class="btn btn-back" (click)="goBack()">
+        <i class="fas fa-arrow-left"></i>
+        Retour
+      </button>
+      
+      <div class="header-text">
+        <h1 class="page-title">
+          <i class="fas fa-briefcase"></i>
+          {{ formTitle() }}
+        </h1>
+        <p class="page-subtitle" *ngIf="!editMode()">
+          Publiez une nouvelle opportunité de carrière pour attirer les meilleurs talents
+        </p>
+        <p class="page-subtitle" *ngIf="editMode()">
+          Modifiez les détails de votre offre d'emploi
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Chargement des données...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-alert" *ngIf="error() && !loading()">
+    <div class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div class="alert-content">
+        <h4>Erreur</h4>
+        <p>{{ error() }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-container" *ngIf="!loading()">
+    <form [formGroup]="jobOfferForm" (ngSubmit)="onSubmit()" class="job-offer-form">
+      <!-- Form Header -->
+      <div class="form-header">
+        <div class="form-progress">
+          <div class="progress-step active">
+            <div class="step-number">1</div>
+            <div class="step-label">Informations générales</div>
+          </div>
+          <div class="progress-line active"></div>
+          <div class="progress-step active">
+            <div class="step-number">2</div>
+            <div class="step-label">Compétences requises</div>
+          </div>
+          <div class="progress-line active"></div>
+          <div class="progress-step active">
+            <div class="step-number">3</div>
+            <div class="step-label">Publication</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 1: Informations générales -->
+      <div class="form-section">
+        <div class="section-header">
+          <h3>
+            <i class="fas fa-info-circle"></i>
+            Informations générales
+          </h3>
+          <p>Définissez les informations principales de votre offre d'emploi</p>
+        </div>
+
+        <div class="form-grid">
+          <!-- Titre -->
+          <div class="form-group full-width">
+            <label for="title" class="form-label required">
+              <i class="fas fa-heading"></i>
+              Titre du poste
+            </label>
+            <div class="input-wrapper">
+              <input
+                id="title"
+                type="text"
+                formControlName="title"
+                class="form-control"
+                [class.error]="isFieldInvalid('title')"
+                placeholder="Ex: Développeur Full Stack, Ingénieur DevOps..."
+              />
+              <div class="character-count">
+                {{ getCharacterCount('title') }}/{{ getMaxLength('title') }}
+              </div>
+            </div>
+            <div class="field-error" *ngIf="getFieldError('title')">
+              {{ getFieldError('title') }}
+            </div>
+            <div class="field-hint">
+              Choisissez un titre clair et attractif qui reflète le poste proposé
+            </div>
+          </div>
+
+          <!-- Département -->
+          <div class="form-group">
+            <label for="departmentId" class="form-label required">
+              <i class="fas fa-building"></i>
+              Département
+            </label>
+            <div class="select-wrapper">
+              <select
+                id="departmentId"
+                formControlName="departmentId"
+                class="form-control"
+                [class.error]="isFieldInvalid('departmentId')"
+              >
+                <option value="">Sélectionnez un département</option>
+                <option *ngFor="let dept of departments()" [value]="dept.id">
+                  {{ dept.departmentName }}
+                </option>
+              </select>
+              <i class="fas fa-chevron-down select-icon"></i>
+            </div>
+            <div class="field-error" *ngIf="getFieldError('departmentId')">
+              {{ getFieldError('departmentId') }}
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div class="form-group full-width">
+            <label for="description" class="form-label required">
+              <i class="fas fa-align-left"></i>
+              Description du poste
+            </label>
+            <div class="textarea-wrapper">
+              <textarea
+                id="description"
+                formControlName="description"
+                class="form-control textarea"
+                [class.error]="isFieldInvalid('description')"
+                placeholder="Décrivez en détail le poste, les responsabilités, l'environnement de travail..."
+                rows="8"
+              ></textarea>
+              <div class="character-count">
+                {{ getCharacterCount('description') }}/{{ getMaxLength('description') }}
+              </div>
+            </div>
+            <div class="field-error" *ngIf="getFieldError('description')">
+              {{ getFieldError('description') }}
+            </div>
+            <div class="field-hint">
+              Une description détaillée aidera les candidats à mieux comprendre le poste
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Compétences requises -->
+      <div class="form-section">
+        <div class="section-header">
+          <h3>
+            <i class="fas fa-tags"></i>
+            Compétences requises
+          </h3>
+          <p>Définissez les compétences et qualifications nécessaires pour ce poste</p>
+        </div>
+
+        <div class="skills-management">
+          <!-- Ajout de compétence -->
+          <div class="skill-input-group">
+            <label class="form-label">
+              <i class="fas fa-plus"></i>
+              Ajouter une compétence
+            </label>
+            <div class="skill-input-wrapper">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Ex: JavaScript, Angular, Node.js..."
+                [value]="newSkill()"
+                (input)="newSkill.set($any($event.target).value)"
+                (keypress)="onSkillKeyPress($event)"
+              />
+              <button
+                type="button"
+                class="btn btn-primary btn-add-skill"
+                (click)="addSkill()"
+                [disabled]="!newSkill().trim()"
+              >
+                <i class="fas fa-plus"></i>
+                Ajouter
+              </button>
+            </div>
+          </div>
+
+          <!-- Liste des compétences -->
+          <div class="skills-list" *ngIf="skillsArray().length > 0">
+            <div class="skills-header">
+              <span>Compétences ajoutées ({{ skillsArray().length }})</span>
+            </div>
+            <div class="skills-tags">
+              <div
+                class="skill-tag"
+                *ngFor="let skill of skillsArray(); let i = index"
+              >
+                <span>{{ skill }}</span>
+                <button
+                  type="button"
+                  class="btn-remove-skill"
+                  (click)="removeSkill(i)"
+                  title="Supprimer cette compétence"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Champ caché pour le formulaire -->
+          <input type="hidden" formControlName="requiredSkills" />
+          
+          <div class="field-error" *ngIf="getFieldError('requiredSkills')">
+            {{ getFieldError('requiredSkills') }}
+          </div>
+          
+          <div class="field-hint" *ngIf="skillsArray().length === 0">
+            Ajoutez au moins une compétence requise pour ce poste
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Aperçu et publication -->
+      <div class="form-section">
+        <div class="section-header">
+          <h3>
+            <i class="fas fa-eye"></i>
+            Aperçu de l'offre
+          </h3>
+          <p>Vérifiez les informations avant de publier votre offre</p>
+        </div>
+
+        <div class="offer-preview" *ngIf="hasFormValue('title')">
+          <div class="preview-card">
+            <div class="preview-header">
+              <h4 class="preview-title">{{ getFormValue('title') }}</h4>
+              <div class="preview-department">
+                <i class="fas fa-building"></i>
+                {{ selectedDepartmentName() }}
+              </div>
+            </div>
+            
+            <div class="preview-content">
+              <div class="preview-description" *ngIf="hasFormValue('description')">
+                <h5>Description du poste</h5>
+                <p>{{ getFormValue('description') }}</p>
+              </div>
+              
+              <div class="preview-skills" *ngIf="skillsArray().length > 0">
+                <h5>Compétences requises</h5>
+                <div class="preview-skills-list">
+                  <span class="preview-skill" *ngFor="let skill of skillsArray()">
+                    {{ skill }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="preview-footer">
+              <div class="preview-author">
+                <i class="fas fa-user"></i>
+                Publié par {{ currentUser()?.firstName }} {{ currentUser()?.lastName }}
+              </div>
+              <div class="preview-date">
+                <i class="fas fa-calendar-alt"></i>
+                {{ editMode() ? 'Modifié' : 'Publié' }} aujourd'hui
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-preview" *ngIf="!hasFormValue('title')">
+          <i class="fas fa-file-alt"></i>
+          <p>Remplissez les informations ci-dessus pour voir l'aperçu de votre offre</p>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <div class="actions-left">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="goBack()"
+            [disabled]="saving()"
+          >
+            <i class="fas fa-times"></i>
+            Annuler
+          </button>
+        </div>
+
+        <div class="actions-right">
+          <button
+            type="button"
+            class="btn btn-ghost"
+            *ngIf="editMode() && currentJobOffer()"
+            [routerLink]="['/job-offers', currentJobOffer()?.id]"
+          >
+            <i class="fas fa-eye"></i>
+            Voir l'offre
+          </button>
+          
+          <button
+            type="submit"
+            class="btn btn-primary btn-submit"
+            [disabled]="jobOfferForm.invalid || saving()"
+            [class.loading]="saving()"
+          >
+            <i class="fas fa-save" *ngIf="!saving()"></i>
+            <div class="spinner-sm" *ngIf="saving()"></div>
+            {{ submitButtonText() }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

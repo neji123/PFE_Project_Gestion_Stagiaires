@@ -1,0 +1,143 @@
+<!-- admin-dashboard.component.html -->
+<div class="dashboard-container p-6 bg-gray-50 min-h-screen">
+  <h1 class="text-2xl font-bold mb-6">Tableau de Bord Administrateur</h1>
+  
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="flex justify-center items-center h-64">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="hasError" class="alert alert-danger" role="alert">
+    {{ errorMessage }}
+    <button (click)="loadDashboardData()" class="btn btn-sm btn-outline-danger ms-2">Réessayer</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && !hasError">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <app-stat-card 
+        icon="users" 
+        bgColor="bg-blue-100" 
+        iconColor="text-blue-600" 
+        label="Total Utilisateurs" 
+        [value]="userStats.totalUsers">
+      </app-stat-card>
+      
+      <app-stat-card 
+        icon="user-check" 
+        bgColor="bg-green-100" 
+        iconColor="text-green-600" 
+        label="Tuteurs" 
+        [value]="userStats.tuteurs">
+      </app-stat-card>
+      
+      <app-stat-card 
+        icon="award" 
+        bgColor="bg-amber-100" 
+        iconColor="text-amber-600" 
+        label="Stagiaires" 
+        [value]="userStats.stagiaires">
+      </app-stat-card>
+      
+      <app-stat-card 
+        icon="bell" 
+        bgColor="bg-purple-100" 
+        iconColor="text-purple-600" 
+        label="Nouvelles Demandes" 
+        [value]="userStats.newRequests">
+      </app-stat-card>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-4">Distribution des Stagiaires par Département</h2>
+        <app-chart 
+          *ngIf="departmentDistribution.labels?.length > 0"
+          type="pie" 
+          [data]="departmentDistribution" 
+          [options]="pieChartOptions">
+        </app-chart>
+        <div *ngIf="!departmentDistribution.labels?.length" class="flex justify-center items-center h-64 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-lg shadow p-4">
+        <h2 class="text-lg font-semibold mb-4">Statistiques des Stages</h2>
+      <app-chart 
+  *ngIf="departmentDistribution.labels?.length > 0"
+  type="pie" 
+  [data]="departmentDistribution" 
+  [options]="pieChartOptions || {}">
+</app-chart>
+        <div *ngIf="!stageStats.labels?.length" class="flex justify-center items-center h-64 text-gray-500">
+          Aucune donnée disponible
+        </div>
+      </div>
+    </div>
+    
+    <!-- Widgets Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Recent Users -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="font-semibold mb-4">Utilisateurs Récents</h3>
+        <div *ngIf="recentUsers.length > 0" class="space-y-3">
+          <app-user-card
+            *ngFor="let user of recentUsers"
+            [user]="user"
+            [showTimestamp]="true">
+          </app-user-card>
+        </div>
+        <div *ngIf="recentUsers.length === 0" class="flex justify-center items-center h-32 text-gray-500">
+          Aucun utilisateur récent
+        </div>
+      </div>
+      
+      <!-- Pending Requests -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="font-semibold mb-4">Demandes en Attente</h3>
+        <div *ngIf="pendingRequests.length > 0" class="space-y-3">
+          <div *ngFor="let request of pendingRequests" class="flex items-center justify-between border-b pb-3">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-gray-200">
+                <img *ngIf="request.profilePictureUrl" [src]="request.profilePictureUrl" alt="User" class="w-full h-full rounded-full object-cover">
+              </div>
+              <div class="ml-3">
+                <p class="font-medium">{{ request.firstName }} {{ request.lastName }}</p>
+                <p class="text-sm text-gray-500">Type: {{ request.requestType }}</p>
+              </div>
+            </div>
+            <div class="flex space-x-2">
+              <button (click)="approveRequest(request.id)" class="p-1 bg-green-100 text-green-600 rounded">
+                <i class="fas fa-check"></i>
+              </button>
+              <button (click)="rejectRequest(request.id)" class="p-1 bg-red-100 text-red-600 rounded">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="pendingRequests.length === 0" class="flex justify-center items-center h-32 text-gray-500">
+          Aucune demande en attente
+        </div>
+      </div>
+      
+      <!-- Recent Activities -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <h3 class="font-semibold mb-4">Activités Récentes</h3>
+        <app-recent-activity 
+          *ngIf="recentActivities.length > 0"
+          [activities]="recentActivities">
+        </app-recent-activity>
+        <div *ngIf="recentActivities.length === 0" class="flex justify-center items-center h-32 text-gray-500">
+          Aucune activité récente
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

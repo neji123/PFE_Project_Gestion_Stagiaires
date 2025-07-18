@@ -1,0 +1,67 @@
+.university-list-container {
+  max-width: 600px;
+  margin: 32px auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px;
+  background: #fafbfc;
+  box-shadow: 0 2px 8px #0001;
+
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  > button {
+    margin-bottom: 16px;
+    padding: 8px 16px;
+    background: #1976d2;
+    color: white;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    &:hover { background: #1565c0; }
+  }
+
+  .error {
+    color: #b00020;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .success {
+    color: #388e3c;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .loading {
+    text-align: center;
+    margin-bottom: 12px;
+    color: #888;
+  }
+  .no-result {
+    text-align: center;
+    color: #888;
+    margin-top: 20px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    th, td {
+      border: 1px solid #e0e0e0;
+      padding: 8px;
+      text-align: left;
+    }
+    th { background: #f3f4f6; }
+    td button {
+      margin-right: 8px;
+      padding: 4px 12px;
+      border-radius: 4px;
+      border: none;
+      background: #eee;
+      color: #333;
+      cursor: pointer;
+      &:hover { background: #e3e3e3; }
+    }
+  }
+}

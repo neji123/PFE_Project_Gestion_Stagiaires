@@ -1,0 +1,683 @@
+/* Variables pour les couleurs EY */
+:host {
+  --ey-yellow: #FFE600;
+  --ey-black: #2E2E38;
+  --ey-gray-dark: #404040;
+  --ey-gray-medium: #5f5f5f;
+  --ey-gray-light: #e0e0e0;
+  --ey-white: #FFFFFF;
+  --ey-accent: #FFE600;
+  --ey-todo: #6c757d;
+  --ey-progress: #3D3D4A;
+  --ey-done: #1D1D24;
+  --ey-overdue: #F44336;
+  
+  --shadow-light: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.15);
+  
+  --radius-small: 4px;
+  --radius-medium: 8px;
+  --radius-large: 12px;
+  
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.3s ease;
+  
+  display: block;
+  width: 100%;
+}
+
+/* Conteneur principal */
+.sprint-container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Loading et erreurs */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  
+  .ey-spinner {
+    margin-bottom: 16px;
+  }
+  
+  .loading-text {
+    font-size: 16px;
+    color: var(--ey-gray-medium);
+  }
+}
+
+.error-alert {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: var(--radius-medium);
+  margin-bottom: 24px;
+  
+  mat-icon {
+    color: #F44336;
+    margin-right: 12px;
+  }
+}
+
+/* En-tête du sprint */
+.sprint-header-section {
+  position: relative;
+  background-color: #f9f9f9;
+  color: var(--ey-black);
+  border-radius: var(--radius-large);
+  margin-bottom: 32px;
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background-color: var(--ey-yellow);
+  }
+}
+
+.sprint-header-overlay {
+  background: linear-gradient(to right, rgba(46, 46, 56, 0.05), rgba(46, 46, 56, 0.02));
+  padding: 32px;
+}
+
+.sprint-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.sprint-title-section {
+  flex: 1;
+  min-width: 300px;
+}
+
+.header-actions {
+  margin-bottom: 16px;
+}
+
+.sprint-title {
+  font-size: 36px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+  color: var(--ey-black);
+}
+
+.sprint-description {
+  font-size: 16px;
+  color: var(--ey-gray-medium);
+  margin-bottom: 16px;
+  max-width: 800px;
+}
+
+.sprint-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  
+  mat-icon {
+    margin-right: 6px;
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+  }
+  
+  &.status-todo {
+    background-color: var(--ey-todo);
+    color: white;
+  }
+  
+  &.status-in-progress {
+    background-color: var(--ey-progress);
+    color: white;
+  }
+  
+  &.status-done {
+    background-color: var(--ey-done);
+    color: white;
+  }
+}
+
+.sprint-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: var(--ey-yellow);
+  border-radius: var(--radius-small);
+  margin-right: 12px;
+  
+  mat-icon {
+    color: var(--ey-black);
+  }
+}
+
+.stat-info {
+  .stat-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ey-black);
+  }
+  
+  .stat-label {
+    font-size: 13px;
+    color: var(--ey-gray-medium);
+  }
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.1);
+  margin: 0 10px;
+}
+
+.sprint-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* Style global pour tous les boutons de type EY */
+.ey-btn {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  text-transform: none;
+  letter-spacing: normal;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Bouton principal jaune */
+.ey-btn-primary {
+  background-color: #FFE600;
+  color: #2E2E38;
+  border: none;
+}
+
+.ey-btn-primary:hover {
+  background-color: #FFF200;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.ey-btn-primary:active {
+  background-color: #E6CF00;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+}
+
+/* Bouton secondaire noir */
+.ey-btn-secondary {
+  background-color: #2E2E38;
+  color: white;
+  border: none;
+}
+
+.ey-btn-secondary:hover {
+  background-color: #3D3D4A;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+.ey-btn-secondary:active {
+  background-color: #1D1D24;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+}
+
+/* Bouton tertiaire avec bordure */
+.ey-btn-tertiary {
+  background-color: transparent;
+  color: #2E2E38;
+  border: 1px solid #2E2E38;
+}
+
+.ey-btn-tertiary:hover {
+  background-color: rgba(46, 46, 56, 0.05);
+  border-color: #1D1D24;
+  transform: translateY(-1px);
+}
+
+.ey-btn-tertiary:active {
+  background-color: rgba(46, 46, 56, 0.1);
+  transform: translateY(0);
+}
+
+/* Icônes dans les boutons */
+.ey-btn mat-icon {
+  margin-right: 8px;
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+/* Boutons désactivés */
+.ey-btn:disabled {
+  background-color: #E0E0E0;
+  color: #9E9E9E;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Style pour les boutons d'action dans l'en-tête de sprint */
+.sprint-actions .ey-btn {
+  margin-left: 8px;
+}
+
+/* Style pour les gros boutons (ex: "Nouvelle tâche") */
+.ey-btn-lg {
+  height: 44px;
+  padding: 0 24px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Style pour les petits boutons */
+.ey-btn-sm {
+  height: 32px;
+  padding: 0 16px;
+  font-size: 13px;
+}
+
+/* Animation au survol */
+.ey-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.ey-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.4);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+.ey-btn:hover::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* Section des tâches */
+.task-form-section, .kanban-section {
+  background-color: var(--ey-white);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-light);
+  margin-bottom: 32px;
+  padding: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ey-gray-light);
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  
+  mat-icon {
+    color: var(--ey-yellow);
+    background-color: var(--ey-black);
+    padding: 8px;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ey-black);
+  }
+}
+
+/* Formulaire de tâche */
+.task-form-section {
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.task-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.form-field {
+  flex: 1;
+  min-width: 200px;
+  
+  &.full-width {
+    flex-basis: 100%;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.spinner-button {
+  margin-right: 8px;
+}
+
+.close-button {
+  color: var(--ey-gray-medium);
+  
+  &:hover {
+    color: var(--ey-black);
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Tableau Kanban */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.kanban-column {
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: var(--radius-medium);
+  overflow: hidden;
+  box-shadow: var(--shadow-light);
+  border: 1px solid var(--ey-gray-light);
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 400px);
+  min-height: 500px;
+  max-height: 800px;
+}
+
+.kanban-column-header {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--ey-white);
+  }
+  
+  .column-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ey-white);
+  }
+}
+
+.kanban-todo {
+  background-color: var(--ey-todo);
+}
+
+.kanban-progress {
+  background-color: var(--ey-progress);
+}
+
+.kanban-done {
+  background-color: var(--ey-done);
+}
+
+.kanban-column-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.kanban-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: var(--ey-gray-medium);
+    margin-bottom: 8px;
+    opacity: 0.5;
+  }
+  
+  p {
+    color: var(--ey-gray-medium);
+    margin: 0;
+  }
+}
+
+.kanban-card {
+  background-color: var(--ey-white);
+  border-radius: var(--radius-medium);
+  box-shadow: var(--shadow-light);
+  margin-bottom: 16px;
+  overflow: hidden;
+  transition: var(--transition-medium);
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-medium);
+  }
+  
+  &.overdue {
+    border-left: 3px solid var(--ey-overdue);
+  }
+  
+  &.completed {
+    border-left: 3px solid var(--ey-done);
+  }
+}
+
+.card-header {
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--ey-black);
+}
+
+.card-content {
+  padding: 16px;
+}
+
+.card-description {
+  font-size: 14px;
+  color: var(--ey-gray-dark);
+  margin-bottom: 16px;
+  line-height: 1.4;
+  /* Limiter à 3 lignes maximum */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.card-assignee {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: var(--radius-small);
+  font-size: 13px;
+  
+  .assignee-icon {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+    margin-right: 6px;
+    color: var(--ey-gray-medium);
+  }
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  font-size: 12px;
+  border-radius: 99px;
+  padding: 2px 10px;
+  display: flex;
+  align-items: center;
+  
+  .tag-icon {
+    font-size: 14px;
+    margin-right: 4px;
+  }
+}
+
+.task-tag {
+  background-color: rgba(46, 46, 56, 0.1);
+  color: var(--ey-black);
+}
+
+.completed-tag {
+  background-color: rgba(46, 46, 56, 0.15);
+  color: var(--ey-black);
+}
+
+/* Animations */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Media queries */
+@media (max-width: 768px) {
+  .sprint-header-content {
+    flex-direction: column;
+  }
+  
+  .sprint-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .stat-divider {
+    display: none;
+  }
+  
+  .form-row {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 576px) {
+  .sprint-actions {
+    flex-direction: column;
+    width: 100%;
+    
+    .ey-btn {
+      width: 100%;
+      margin-left: 0;
+      margin-bottom: 8px;
+    }
+  }
+}

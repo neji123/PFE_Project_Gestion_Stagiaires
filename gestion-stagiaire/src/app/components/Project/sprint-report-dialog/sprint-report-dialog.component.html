@@ -1,0 +1,109 @@
+<div class="sprint-report-dialog">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>
+      <mat-icon class="dialog-icon">assessment</mat-icon>
+      {{ data.isForOthers ? 'Questionnaire pour ' + data.stagiaireFullName : 'Mon Questionnaire de Stage' }}
+    </h2>
+    <p class="dialog-subtitle">
+      Complétez ce questionnaire pour enrichir votre rapport de sprint
+    </p>
+  </div>
+
+  <form [formGroup]="reportForm" (ngSubmit)="onSubmit()" class="dialog-form">
+    <mat-dialog-content class="dialog-content">
+      
+      <!-- Question 1: Qu'ai-je appris ? -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">school</mat-icon>
+          <h3>Qu'ai-je appris ?</h3>
+        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Décrivez vos apprentissages lors de ce stage</mat-label>
+          <textarea 
+            matInput 
+            formControlName="learnings" 
+            rows="4"
+            placeholder="Ex: J'ai appris à utiliser Angular, découvert les méthodes agiles, développé mes compétences en communication..."></textarea>
+          <mat-hint>Partagez les connaissances et compétences que vous avez acquises</mat-hint>
+          <mat-error *ngIf="reportForm.get('learnings')?.errors?.['required']">
+            Ce champ est obligatoire
+          </mat-error>
+          <mat-error *ngIf="reportForm.get('learnings')?.errors?.['minlength']">
+            Veuillez saisir au moins 50 caractères
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Question 2: Compétences mobilisées -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">engineering</mat-icon>
+          <h3>Compétences mobilisées</h3>
+        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Quelles compétences avez-vous utilisées ?</mat-label>
+          <textarea 
+            matInput 
+            formControlName="skills" 
+            rows="4"
+            placeholder="Ex: Programmation (C#, Angular), Gestion de projet, Travail d'équipe, Résolution de problèmes..."></textarea>
+          <mat-hint>Listez les compétences techniques et transversales mobilisées</mat-hint>
+          <mat-error *ngIf="reportForm.get('skills')?.errors?.['required']">
+            Ce champ est obligatoire
+          </mat-error>
+          <mat-error *ngIf="reportForm.get('skills')?.errors?.['minlength']">
+            Veuillez saisir au moins 30 caractères
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <!-- Question 3: Difficultés et solutions -->
+      <div class="form-section">
+        <div class="section-header">
+          <mat-icon class="section-icon">psychology</mat-icon>
+          <h3>Difficultés rencontrées et solutions</h3>
+        </div>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Quels défis avez-vous rencontrés et comment les avez-vous surmontés ?</mat-label>
+          <textarea 
+            matInput 
+            formControlName="difficulties" 
+            rows="4"
+            placeholder="Ex: Difficulté avec Entity Framework résolu grâce à la documentation et l'aide de mon tuteur..."></textarea>
+          <mat-hint>Décrivez vos défis et les solutions trouvées</mat-hint>
+          <mat-error *ngIf="reportForm.get('difficulties')?.errors?.['required']">
+            Ce champ est obligatoire
+          </mat-error>
+          <mat-error *ngIf="reportForm.get('difficulties')?.errors?.['minlength']">
+            Veuillez saisir au moins 30 caractères
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+    </mat-dialog-content>
+
+    <mat-dialog-actions class="dialog-actions">
+      <button 
+        mat-button 
+        type="button" 
+        class="cancel-button"
+        (click)="onCancel()">
+        <mat-icon>close</mat-icon>
+        Annuler
+      </button>
+      
+      <button 
+        mat-raised-button 
+        type="submit" 
+        class="generate-button"
+        [disabled]="reportForm.invalid || isGenerating"
+        color="primary">
+        <mat-spinner *ngIf="isGenerating" diameter="20" class="button-spinner"></mat-spinner>
+        <mat-icon *ngIf="!isGenerating">picture_as_pdf</mat-icon>
+        <span *ngIf="!isGenerating">Générer le rapport PDF</span>
+        <span *ngIf="isGenerating">Génération en cours...</span>
+      </button>
+    </mat-dialog-actions>
+  </form>
+</div>

@@ -1,0 +1,328 @@
+<!-- stagiaire-dashboard.component.html - Adapté pour le nouveau SCSS EY -->
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="dashboard-title">Tableau de Bord Stagiaire</h1>
+        <p class="dashboard-subtitle">Suivez votre progression et gérez vos tâches</p>
+      </div>
+      
+      <div class="header-actions">
+        <button 
+          (click)="refreshData()" 
+          [class.refreshing]="isLoading"
+          class="refresh-btn">
+          <i class="fas fa-sync-alt"></i>
+          Actualiser
+        </button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Chargement de vos données...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="hasError" class="error-container">
+    <div class="error-card">
+      <i class="fas fa-exclamation-triangle error-icon"></i>
+      <h3 class="error-title">Oops! Une erreur s'est produite</h3>
+      <p class="error-message">{{ errorMessage }}</p>
+      <button (click)="loadDashboardData()" class="retry-btn">
+        <i class="fas fa-redo-alt"></i>
+        Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && !hasError" class="dashboard-content">
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card stagiaires-card fade-in-scale" style="--delay: 1">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-calendar"></i>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Jours Restants</h3>
+            <div class="stat-value">{{ stagiaireStats.daysRemaining }}</div>
+            <div class="stat-change positive">
+              <i class="fas fa-clock"></i>
+              Temps restant
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card reports-card fade-in-scale" style="--delay: 2">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-file-text"></i>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Documents Soumis</h3>
+            <div class="stat-value">{{ stagiaireStats.submittedDocs }}</div>
+            <div class="stat-change positive">
+              <i class="fas fa-upload"></i>
+              Total soumis
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card tasks-card fade-in-scale" style="--delay: 3">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Tâches Terminées</h3>
+            <div class="stat-value">{{ stagiaireStats.completedTasks }}</div>
+            <div class="stat-change positive">
+              <i class="fas fa-trophy"></i>
+              Excellent!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card messages-card fade-in-scale" style="--delay: 4">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-alert-circle"></i>
+            <span *ngIf="stagiaireStats.pendingTasks > 0" class="notification-badge">{{ stagiaireStats.pendingTasks }}</span>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Tâches En Attente</h3>
+            <div class="stat-value">{{ stagiaireStats.pendingTasks }}</div>
+            <div class="stat-change" [class.urgent]="stagiaireStats.pendingTasks > 5">
+              <i class="fas fa-exclamation"></i>
+              {{ stagiaireStats.pendingTasks > 5 ? 'Action requise' : 'Sous contrôle' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <!-- Progress Chart -->
+        <div class="chart-card fade-in-up">
+          <div class="chart-header">
+            <h3 class="chart-title">Ma Progression</h3>
+            <span class="chart-subtitle">Évolution hebdomadaire</span>
+          </div>
+          <div class="chart-content">
+            <app-chart 
+              *ngIf="progressData.labels?.length > 0"
+              type="line" 
+              [data]="progressData" 
+              [options]="lineChartOptions || {}">
+            </app-chart>
+            <div *ngIf="!progressData.labels?.length" class="empty-state">
+              <i class="fas fa-chart-line empty-icon"></i>
+              <p class="empty-text">Aucune donnée de progression disponible</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tuteur Card -->
+        <div class="progress-card fade-in-up">
+          <div class="progress-header">
+            <h3 class="progress-title">Mon Tuteur</h3>
+          </div>
+          
+          <div class="progress-content">
+            <div *ngIf="myTuteur && myTuteur.id !== 0" class="tuteur-info">
+              <div class="tuteur-avatar">
+                <div class="avatar-circle">
+                  {{ getInitials(myTuteur.firstName, myTuteur.lastName) }}
+                </div>
+              </div>
+              <div class="tuteur-details">
+                <h4 class="tuteur-name">{{ myTuteur.firstName }} {{ myTuteur.lastName }}</h4>
+                <p class="tuteur-department">{{ myTuteur.department?.departmentName || 'Département non spécifié' }}</p>
+                <div class="tuteur-contact">
+                  <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>{{ myTuteur.email }}</span>
+                  </div>
+                  <div class="contact-item" *ngIf="myTuteur.phoneNumber && myTuteur.phoneNumber !== 'N/A'">
+                    <i class="fas fa-phone"></i>
+                    <span>{{ myTuteur.phoneNumber }}</span>
+                  </div>
+                </div>
+                <div class="tuteur-actions">
+                  <button class="action-btn primary">
+                    <i class="fas fa-envelope"></i> Message
+                  </button>
+                  <button class="action-btn secondary" *ngIf="myTuteur.phoneNumber && myTuteur.phoneNumber !== 'N/A'">
+                    <i class="fas fa-phone"></i> Appel
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="!myTuteur || myTuteur.id === 0" class="empty-state">
+              <i class="fas fa-user-slash empty-icon"></i>
+              <p class="empty-text">Aucun tuteur assigné</p>
+              <p class="empty-subtext">Contactez l'administration</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Projects and Tasks Section -->
+      <div class="content-grid">
+        <!-- Current Projects -->
+        <div class="projects-section fade-in-up">
+          <div class="section-header">
+            <h3 class="section-title">Mes Projets</h3>
+            <span class="section-badge">{{ myProjects.length }} projet(s)</span>
+          </div>
+
+          <div class="projects-content">
+            <div *ngFor="let project of myProjects" class="project-card">
+              <div class="project-header">
+                <h4 class="project-title">{{ project.title }}</h4>
+                <span class="project-date">{{ project.endDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+              <div class="project-progress">
+                <div class="progress-info">
+                  <span class="progress-label">Progression: {{ getProjectProgress(project) }}%</span>
+                  <span class="progress-details">({{ getCompletedSprints(project) }}/{{ getTotalSprints(project) }} sprints)</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" [style.width.%]="getProjectProgress(project)"></div>
+                </div>
+              </div>
+              <div class="project-actions">
+                <a [routerLink]="['/projects', project.id]" class="project-link">
+                  <i class="fas fa-external-link-alt"></i>
+                  Voir détails
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="myProjects.length === 0" class="empty-state">
+            <i class="fas fa-project-diagram empty-icon"></i>
+            <p class="empty-text">Aucun projet en cours</p>
+            <p class="empty-subtext">Les projets apparaîtront ici une fois assignés</p>
+          </div>
+        </div>
+        
+        <!-- Tasks Section -->
+        <div class="tasks-section fade-in-up">
+          <div class="section-header">
+            <h3 class="section-title">Mes Tâches</h3>
+            <span class="section-badge urgent" *ngIf="getPendingTasksCount() > 0">
+              {{ getPendingTasksCount() }} en attente
+            </span>
+          </div>
+
+          <div class="tasks-content">
+            <div *ngFor="let task of tasks" class="task-item" [class.completed]="isTaskCompleted(task)">
+              <div class="task-checkbox">
+                <input type="checkbox" 
+                       [checked]="isTaskCompleted(task)" 
+                       [disabled]="isTaskCompleted(task)">
+              </div>
+              <div class="task-details">
+                <h5 class="task-title" [class.completed]="isTaskCompleted(task)">{{ task.title }}</h5>
+                <div class="task-meta">
+                  <span class="task-date">
+                    <i class="fas fa-calendar-alt"></i>
+                    {{ task.dueDate | date:'dd/MM/yyyy' }}
+                  </span>
+                  <span class="task-priority" [ngClass]="getPriorityClass(task.priority)">
+                    <i class="fas fa-flag"></i>
+                    {{ getPriorityText(task.priority) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!hasTasks()" class="empty-state">
+            <i class="fas fa-tasks empty-icon"></i>
+            <p class="empty-text">Aucune tâche trouvée</p>
+            <p class="empty-subtext">Les tâches apparaîtront automatiquement</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents and Activities Section -->
+      <div class="content-grid">
+        <!-- Documents Section -->
+        <div class="documents-section fade-in-up">
+          <div class="section-header">
+            <h3 class="section-title">Documents Soumis</h3>
+            <span class="section-badge">{{ getSubmittedDocumentsCount() }} document(s)</span>
+          </div>
+
+          <div class="documents-grid">
+            <div *ngFor="let doc of submittedDocuments" class="document-card">
+              <div class="document-header">
+                <div class="document-icon">
+                  <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="document-meta">
+                  <span class="document-date">{{ doc.submissionDate | date:'dd/MM/yyyy' }}</span>
+                </div>
+              </div>
+
+              <div class="document-content">
+                <h4 class="document-title">{{ doc.title }}</h4>
+                <p class="document-date-full">Soumis le: {{ doc.submissionDate | date:'dd/MM/yyyy à HH:mm' }}</p>
+                <span class="document-status" [ngClass]="getStatusClass(getStatusText(doc).toLowerCase())">
+                  {{ getStatusText(doc) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!hasSubmittedDocuments()" class="empty-state">
+            <i class="fas fa-file-upload empty-icon"></i>
+            <p class="empty-text">Aucun document soumis</p>
+            <p class="empty-subtext">Vos rapports apparaîtront ici</p>
+          </div>
+        </div>
+        
+        <!-- Activities Section -->
+        <div class="activities-section fade-in-up">
+          <div class="section-header">
+            <h3 class="section-title">Activités Récentes</h3>
+            <span class="section-subtitle">Dernières actions</span>
+          </div>
+
+          <div class="activities-timeline">
+            <div *ngFor="let activity of recentActivities" class="timeline-item">
+              <div class="timeline-marker" [attr.data-type]="activity.type">
+                <i [ngClass]="getActivityIcon(activity.type)"></i>
+              </div>
+              <div class="timeline-content">
+                <p class="activity-text">{{ activity.text }}</p>
+                <span class="activity-time">{{ activity.time }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!hasRecentActivities()" class="empty-state">
+            <i class="fas fa-history empty-icon"></i>
+            <p class="empty-text">Aucune activité récente</p>
+            <p class="empty-subtext">Vos activités apparaîtront ici</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

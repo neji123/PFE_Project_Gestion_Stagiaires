@@ -1,0 +1,282 @@
+<!-- src/app/components/project/project-list/project-list.component.html -->
+<div class="project-list-container">
+  <div class="header-section">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="section-title" style="">Projets</h2>
+      <div class="d-flex align-items-center right-new">
+        <div class="view-toggle me-3">
+          <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="changeViewMode('grid')" title="Vue grille">
+            <i class="bi bi-grid-3x3-gap-fill"></i>
+          </button>
+          <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="changeViewMode('list')" title="Vue liste">
+            <i class="bi bi-list-ul"></i>
+          </button>
+        </div>
+        <button class="btn btn-primary create-btn " routerLink="/projects/create">
+          <i class="bi bi-plus-circle me-2"></i> Nouveau projet
+        </button>
+      </div>
+    </div>
+    
+    <!-- Barre de recherche et filtre -->
+    <div class="search-filter-container mb-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+              <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control border-start-0" 
+                   placeholder="Rechercher un projet..." 
+                   [(ngModel)]="searchTerm"
+                   (input)="applyFilters()">
+            <button *ngIf="searchTerm" class="btn btn-light border border-start-0" 
+                    (click)="searchTerm = ''; applyFilters()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
+            <option value="all">Tous les statuts</option>
+            <option value="planned">Planifiés</option>
+            <option value="progress">En cours</option>
+            <option value="unplanned">Non planifiés</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" [(ngModel)]="sortOption" (change)="applyFilters()">
+            <option value="titleAsc">Titre (A-Z)</option>
+            <option value="titleDesc">Titre (Z-A)</option>
+            <option value="dateDesc">Date (récent)</option>
+            <option value="dateAsc">Date (ancien)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" class="text-center my-5">
+    <div class="spinner-border ey-blue" role="status">
+      <span class="visually-hidden">Chargement...</span>
+    </div>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- État vide -->
+  <div *ngIf="!loading && !error && filteredProjects.length === 0" class="empty-state">
+    <div class="empty-state-content">
+      <i class="bi bi-clipboard-x empty-icon"></i>
+      <h3 class="mt-3">Aucun projet disponible</h3>
+      <p class="text-muted" *ngIf="searchTerm || statusFilter !== 'all'">
+        Aucun résultat pour votre recherche. Essayez d'autres critères.
+        <button class="btn btn-link p-0" (click)="resetFilters()">Réinitialiser les filtres</button>
+      </p>
+      <p class="text-muted" *ngIf="!searchTerm && statusFilter === 'all'">
+        Commencez par créer un nouveau projet
+      </p>
+      <button class="btn btn-primary mt-3" routerLink="/projects/create">
+        <i class="bi bi-plus-circle me-2"></i> Créer un projet
+      </button>
+    </div>
+  </div>
+
+  <!-- Liste des projets - Vue Grille -->
+  <div *ngIf="!loading && filteredProjects.length > 0 && viewMode === 'grid'" style="margin: 0 8% 0 8% ">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+      <div class="col" *ngFor="let project of displayedProjects; let i = index">
+        <div class="project-card" [class.highlight-focus]="project.highlighted">
+          <div class="project-image-container">
+            <img *ngIf="project.imageUrl" [src]="getImageUrl(project.imageUrl)" 
+                (error)="handleImageError($event)"
+                class="project-image" alt="{{ project.title }}">
+            <div *ngIf="!project.imageUrl" class="project-image-placeholder">
+              <i class="bi bi-image"></i>
+            </div>
+            <div class="project-badge" [ngClass]="getStatusBadgeClass(project)">
+              {{ getStatusText(project) }}
+            </div>
+            
+            <!-- Bouton navigation suivant -->
+            <div class="navigation-arrows" *ngIf="displayedProjects.length > 1">
+              <button class="arrow arrow-prev" *ngIf="i > 0" 
+                      (click)="focusProject(i - 1)" 
+                      title="Projet précédent">
+                <i class="bi bi-chevron-left"></i>
+              </button>
+              <button class="arrow arrow-next" *ngIf="i < displayedProjects.length - 1" 
+                      (click)="focusProject(i + 1)" 
+                      title="Projet suivant">
+                <i class="bi bi-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="project-content">
+            <h5 class="project-title">{{ project.title }}</h5>
+            <p class="project-description">
+              {{ project.description | slice:0:100 }}{{ project.description.length > 100 ? '...' : '' }}
+            </p>
+            
+            <div class="project-meta">
+              <div class="project-meta-item">
+                <i class="bi bi-calendar-event"></i>
+                <span *ngIf="project.startDate && project.endDate">
+                  {{ project.startDate | date:'dd/MM/yyyy' }} - {{ project.endDate | date:'dd/MM/yyyy' }}
+                </span>
+                <span *ngIf="project.startDate && !project.endDate">
+                  Démarré le {{ project.startDate | date:'dd/MM/yyyy' }}
+                </span>
+                <span *ngIf="!project.startDate">
+                  Non planifié
+                </span>
+              </div>
+              
+              <div class="project-meta-item">
+                <i class="bi bi-people"></i>
+                <span>{{ project.users?.length || 0 }} membres</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="project-actions">
+            <button class="btn btn-action btn-view" (click)="project.id && viewProject(project.id)" title="Voir les détails">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-action btn-edit" (click)="project.id && editProject(project.id)" title="Modifier">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-action btn-delete" (click)="project.id && deleteProject(project.id)" title="Supprimer">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Liste des projets - Vue Liste -->
+  <div *ngIf="!loading && filteredProjects.length > 0 && viewMode === 'list'" class="project-list-view">
+    <div class="list-header">
+      <div class="row align-items-center py-2 border-bottom fw-bold">
+        <div class="col-md-5">Projet</div>
+        <div class="col-md-2">Statut</div>
+        <div class="col-md-3">Dates</div>
+        <div class="col-md-2">Actions</div>
+      </div>
+    </div>
+    
+    <div class="list-body">
+      <div class="row align-items-center py-3 project-list-item" 
+           *ngFor="let project of displayedProjects; let i = index"
+           [class.highlight-focus]="project.highlighted">
+        <div class="col-md-5">
+          <div class="d-flex align-items-center">
+            <div class="project-list-image">
+              <img *ngIf="project.imageUrl" [src]="getImageUrl(project.imageUrl)" 
+                  (error)="handleImageError($event)" alt="{{ project.title }}">
+              <div *ngIf="!project.imageUrl" class="placeholder">
+                <i class="bi bi-image"></i>
+              </div>
+            </div>
+            <div class="ms-3">
+              <h5 class="mb-1">{{ project.title }}</h5>
+              <p class="text-muted small mb-0">
+                {{ project.description | slice:0:100 }}{{ project.description.length > 100 ? '...' : '' }}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-2">
+          <span class="status-badge" [ngClass]="getStatusBadgeClass(project)">
+            {{ getStatusText(project) }}
+          </span>
+        </div>
+        
+        <div class="col-md-3">
+          <div class="small">
+            <div *ngIf="project.startDate && project.endDate">
+              <i class="bi bi-calendar-event me-1"></i>
+              {{ project.startDate | date:'dd/MM/yyyy' }} - {{ project.endDate | date:'dd/MM/yyyy' }}
+            </div>
+            <div *ngIf="project.startDate && !project.endDate">
+              <i class="bi bi-calendar-event me-1"></i>
+              Démarré le {{ project.startDate | date:'dd/MM/yyyy' }}
+            </div>
+            <div *ngIf="!project.startDate" class="text-muted">
+              <i class="bi bi-calendar-x me-1"></i>
+              Non planifié
+            </div>
+            <div class="mt-1">
+              <i class="bi bi-people me-1"></i>
+              {{ project.users?.length || 0 }} membres
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-2">
+          <div class="action-buttons">
+            <button class="btn btn-sm btn-light me-1" (click)="project.id && viewProject(project.id)" title="Voir les détails">
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-light me-1" (click)="project.id && editProject(project.id)" title="Modifier">
+              <i class="bi bi-pencil"></i>
+            </button>
+            <button class="btn btn-sm btn-light" (click)="project.id && deleteProject(project.id)" title="Supprimer">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container mt-5" *ngIf="filteredProjects.length > pageSize">
+    <div class="custom-pagination">
+      <!-- Bouton Précédent -->
+      <button class="pagination-arrow" [disabled]="page === 1" (click)="page = page - 1; onPageChange(page)">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+      
+      <!-- Pages -->
+      <div class="pagination-pages">
+        <button *ngFor="let p of getPaginationRange()" 
+                [class.active]="p === page" 
+                [class.dots]="p === -1"
+                [disabled]="p === -1"
+                (click)="p !== -1 && (page = p) && onPageChange(p)">
+          {{ p === -1 ? '...' : p }}
+        </button>
+      </div>
+      
+      <!-- Bouton Suivant -->
+      <button class="pagination-arrow" [disabled]="page === getTotalPages()" (click)="page = page + 1; onPageChange(page)">
+        <i class="bi bi-chevron-right"></i>
+      </button>
+    </div>
+    
+    <!-- Indicateur de page -->
+    <div class="page-indicator">
+      Page {{ page }} sur {{ getTotalPages() }} • {{ filteredProjects.length }} projets au total
+    </div>
+  </div>
+  
+  <!-- Pas de résultats avec filtres -->
+  <div *ngIf="!loading && filteredProjects.length === 0 && projects.length > 0" class="empty-search-results mt-4 text-center">
+    <div class="empty-search-content p-5 bg-white rounded shadow-sm">
+      <i class="bi bi-search display-4 text-muted"></i>
+      <h4 class="mt-3">Aucun résultat ne correspond à votre recherche</h4>
+      <p class="text-muted">Essayez de modifier vos critères de recherche ou de consulter tous les projets.</p>
+      <button class="btn btn-outline-primary mt-2" (click)="resetFilters()">
+        <i class="bi bi-arrow-repeat me-2"></i>Réinitialiser les filtres
+      </button>
+    </div>
+  </div>
+</div>

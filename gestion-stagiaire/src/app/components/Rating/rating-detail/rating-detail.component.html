@@ -1,0 +1,374 @@
+<div class="rating-detail-container">
+  <!-- Header avec navigation -->
+  <header class="detail-header">
+    <button class="back-btn" (click)="goBack()" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+      <span>Retour</span>
+    </button>
+    
+    <div class="header-actions">
+      @if (canEdit()) {
+        <button class="action-btn action-btn--edit" (click)="editRating()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          Modifier
+        </button>
+      }
+      
+      @if (canApprove()) {
+        <button class="action-btn action-btn--approve" (click)="approveRating()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          Approuver
+        </button>
+        
+        <button class="action-btn action-btn--reject" (click)="rejectRating()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+          Rejeter
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- État de chargement -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">Chargement des détails...</p>
+    </div>
+  }
+
+  <!-- État d'erreur -->
+  @if (error() && !isLoading()) {
+    <div class="error-container">
+      <div class="error-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h2 class="error-title">Erreur</h2>
+      <p class="error-message">{{ error() }}</p>
+      <button class="retry-btn" (click)="goBack()">Retour au dashboard</button>
+    </div>
+  }
+
+  <!-- Contenu principal -->
+  @if (rating(); as ratingData) {
+    <div class="rating-content">
+      <!-- En-tête de l'évaluation -->
+      <div class="rating-header-card" [style.animation-delay]="getAnimationDelay(0)">
+        <div class="rating-meta">
+          <div class="evaluation-type">
+            <span class="type-badge">{{ getEvaluationTypeLabel(ratingData.type) }}</span>
+          </div>
+          
+          <div class="rating-timeline">
+            <span class="timeline-date">Créé {{ getRelativeTime(ratingData.createdAt) }}</span>
+            @if (ratingData.submittedAt) {
+              <span class="timeline-separator">•</span>
+              <span class="timeline-date">Soumis {{ getRelativeTime(ratingData.submittedAt) }}</span>
+            }
+            @if (ratingData.approvedAt) {
+              <span class="timeline-separator">•</span>
+              <span class="timeline-date">Approuvé {{ getRelativeTime(ratingData.approvedAt) }}</span>
+            }
+          </div>
+        </div>
+
+        <div class="participants">
+          <div class="participant evaluator">
+            <div class="participant-avatar">
+             @if (ratingData.evaluatorProfilePicture) {
+        <img [src]="getImageUrl(ratingData.evaluatorProfilePicture)" 
+             [alt]="ratingData.evaluatorName"
+             (error)="handleImageError($event)">
+      } @else {
+        <!-- ✅ AMÉLIORATION : Fallback avec initiales -->
+        <div class="avatar-placeholder">
+          {{ getInitials(ratingData.evaluatorName.split(' ')[0] || '', ratingData.evaluatorName.split(' ')[1] || '') }}
+        </div>
+      }
+            </div>
+            <div class="participant-info">
+              <h3 class="participant-name">{{ ratingData.evaluatorName }}</h3>
+              <p class="participant-role">{{ ratingData.evaluatorRole }} • Évaluateur</p>
+            </div>
+          </div>
+
+          <div class="arrow-indicator">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </div>
+
+          <div class="participant evaluated">
+            <div class="participant-avatar">
+             @if (ratingData.evaluatedUserProfilePicture) {
+        <img [src]="getImageUrl(ratingData.evaluatedUserProfilePicture)" 
+             [alt]="ratingData.evaluatedUserName"
+             (error)="handleImageError($event)">
+      } @else {
+        <!-- ✅ AMÉLIORATION : Fallback avec initiales -->
+        <div class="avatar-placeholder">
+          {{ getInitials(ratingData.evaluatedUserName.split(' ')[0] || '', ratingData.evaluatedUserName.split(' ')[1] || '') }}
+        </div>
+      }
+            </div>
+            <div class="participant-info">
+              <h3 class="participant-name">{{ ratingData.evaluatedUserName }}</h3>
+              <p class="participant-role">{{ ratingData.evaluatedUserRole }} • Évalué</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="status-badge-container">
+          <span [class]="'status-badge status-badge--' + ratingData.status.toString().toLowerCase()">
+            {{ getStatusBadge(ratingData.status).text }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Score principal -->
+      <div class="main-score-card" [style.animation-delay]="getAnimationDelay(1)">
+        <div class="score-container">
+          <div class="score-visual">
+            <div class="score-circle" [class]="scoreColorClass()">
+              <svg class="score-progress" viewBox="0 0 120 120">
+                <circle class="score-track" cx="60" cy="60" r="54" fill="none" stroke-width="8"/>
+                <circle 
+                  class="score-fill" 
+                  cx="60" 
+                  cy="60" 
+                  r="54" 
+                  fill="none" 
+                  stroke-width="8"
+                  [style.stroke-dasharray]="339.292"
+                  [style.stroke-dashoffset]="339.292 - (scorePercentage() * 339.292 / 100)"
+                />
+              </svg>
+              <div class="score-value">
+                <span class="score-number">{{ ratingData.score | number:'1.1-1' }}</span>
+                <span class="score-max">/5</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="score-info">
+            <h2 class="score-title">Note générale</h2>
+            <p class="score-label" [class]="scoreColorClass()">{{ getScoreLabel(ratingData.score) }}</p>
+            <div class="score-stats">
+              <div class="stat-item">
+                <span class="stat-label">Pourcentage</span>
+                <span class="stat-value">{{ scorePercentage() | number:'1.0-0' }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commentaire principal -->
+      <div class="comment-card" [style.animation-delay]="getAnimationDelay(2)">
+        <div class="card-header">
+          <h3 class="card-title">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            Commentaire d'évaluation
+          </h3>
+        </div>
+        <div class="comment-content">
+          <p class="comment-text">{{ ratingData.comment }}</p>
+        </div>
+      </div>
+
+      <!-- Critères d'évaluation du tuteur -->
+      @if (tutorScoresArray().length > 0) {
+        <div class="criteria-card tutor-criteria" [style.animation-delay]="getAnimationDelay(3)">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+              Évaluation du tuteur
+            </h3>
+          </div>
+          
+          <div class="criteria-grid">
+            @for (criterion of tutorScoresArray(); track criterion.key; let i = $index) {
+              <div class="criterion-item" [style.animation-delay]="getAnimationDelay(i + 4)">
+                <div class="criterion-header">
+                  <span class="criterion-icon">{{ criterion.icon }}</span>
+                  <span class="criterion-label">{{ criterion.label }}</span>
+                  <span class="criterion-score" [class]="getScoreClass(criterion.value)">
+                    {{ criterion.value | number:'1.1-1' }}/5
+                  </span>
+                </div>
+                
+                <div class="criterion-progress">
+                  <div class="progress-track">
+                    <div 
+                      class="progress-fill" 
+                      [style.width.%]="criterion.percentage"
+                      [class]="'score-' + (criterion.value >= 4 ? 'excellent' : criterion.value >= 3 ? 'good' : criterion.value >= 2 ? 'average' : 'poor')"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Critères d'évaluation détaillés -->
+      @if (detailedScoresArray().length > 0) {
+        <div class="criteria-card" [style.animation-delay]="getAnimationDelay(3)">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              Critères d'évaluation détaillés
+            </h3>
+          </div>
+          
+          <div class="criteria-grid">
+            @for (criterion of detailedScoresArray(); track criterion.key; let i = $index) {
+              <div class="criterion-item" [style.animation-delay]="getAnimationDelay(i + 4)">
+                <div class="criterion-header">
+                  <span class="criterion-icon">{{ criterion.icon }}</span>
+                  <span class="criterion-label">{{ criterion.label }}</span>
+                  <span class="criterion-score" [class]="getScoreClass(criterion.value)">
+                    {{ criterion.value | number:'1.1-1' }}/5
+                  </span>
+                </div>
+                
+                <div class="criterion-progress">
+                  <div class="progress-track">
+                    <div 
+                      class="progress-fill" 
+                      [style.width.%]="criterion.percentage"
+                      [class]="'score-' + (criterion.value >= 4 ? 'excellent' : criterion.value >= 3 ? 'good' : criterion.value >= 2 ? 'average' : 'poor')"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Informations supplémentaires -->
+      @if (ratingData.evaluationPeriodStart || ratingData.evaluationPeriodEnd || ratingData.stageReference) {
+        <div class="additional-info-card" [style.animation-delay]="getAnimationDelay(4)">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              Informations complémentaires
+            </h3>
+          </div>
+          
+          <div class="info-grid">
+            @if (ratingData.evaluationPeriodStart) {
+              <div class="info-item">
+                <span class="info-label">Début de période</span>
+                <span class="info-value">{{ formatDate(ratingData.evaluationPeriodStart) }}</span>
+              </div>
+            }
+            
+            @if (ratingData.evaluationPeriodEnd) {
+              <div class="info-item">
+                <span class="info-label">Fin de période</span>
+                <span class="info-value">{{ formatDate(ratingData.evaluationPeriodEnd) }}</span>
+              </div>
+            }
+            
+            @if (ratingData.stageReference) {
+              <div class="info-item">
+                <span class="info-label">Référence stage</span>
+                <span class="info-value">{{ ratingData.stageReference }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Réponse existante -->
+      @if (ratingData.response) {
+        <div class="response-card" [style.animation-delay]="getAnimationDelay(5)">
+          <div class="card-header">
+            <h3 class="card-title">
+              <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+              </svg>
+              Réponse de {{ ratingData.evaluatedUserName }}
+            </h3>
+            <span class="response-date">{{ formatDate(ratingData.responseDate!) }}</span>
+          </div>
+          
+          <div class="response-content">
+            <p class="response-text">{{ ratingData.response }}</p>
+          </div>
+        </div>
+      }
+
+      <!-- Formulaire de réponse -->
+      @if (canRespond()) {
+        <div class="response-form-card" [style.animation-delay]="getAnimationDelay(6)">
+          @if (!showResponse()) {
+            <button class="show-response-btn" (click)="toggleResponseForm()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/>
+              </svg>
+              Répondre à cette évaluation
+            </button>
+          }
+          
+          @if (showResponse()) {
+            <div class="response-form">
+              <div class="form-header">
+                <h3 class="form-title">Votre réponse</h3>
+                <button class="close-form-btn" (click)="toggleResponseForm()">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+              
+              <div class="form-content">
+                <textarea 
+                  class="response-textarea"
+                  placeholder="Partagez votre point de vue sur cette évaluation..."
+                  rows="6"
+                  [value]="responseText()"
+                  (input)="onResponseInput($event)"
+                ></textarea>
+                
+                <div class="form-actions">
+                  <button class="cancel-btn" (click)="toggleResponseForm()">Annuler</button>
+                  <button 
+                    class="submit-btn" 
+                    (click)="submitResponse()"
+                    [disabled]="!responseText().trim()"
+                  >
+                    Envoyer la réponse
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+    </div>
+  }
+</div>

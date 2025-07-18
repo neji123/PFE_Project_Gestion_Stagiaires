@@ -1,0 +1,57 @@
+<h2 mat-dialog-title>Affecter des stagiaires à {{ data.tuteurName }}</h2>
+
+<mat-dialog-content>
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="30"></mat-spinner>
+    <p>Chargement des stagiaires...</p>
+  </div>
+  
+  <div *ngIf="error" class="error-message">
+    {{ error }}
+  </div>
+  
+  <div *ngIf="!isLoading && stagiairesDisponibles.length === 0" class="empty-message">
+    <p>Aucun stagiaire disponible pour affectation</p>
+  </div>
+  
+  <div *ngIf="!isLoading && stagiairesDisponibles.length > 0" class="stagiaires-list">
+    <p>Sélectionnez les stagiaires à affecter :</p>
+    
+    <div *ngFor="let stagiaire of stagiairesDisponibles" class="stagiaire-item">
+      <mat-checkbox 
+        [checked]="isSelected(stagiaire.id)"
+        (change)="toggleSelection(stagiaire.id)">
+      </mat-checkbox>
+      
+      <div class="stagiaire-info">
+        <!-- Utilisation du gestionnaire d'images corrigé -->
+        <div class="stagiaire-avatar-container">
+          <img 
+            [src]="getImageUrl(stagiaire.profilePictureUrl)" 
+            [alt]="stagiaire.firstName + ' ' + stagiaire.lastName" 
+            class="stagiaire-avatar"
+            (error)="handleImageError($event)">
+        </div>
+        <div class="stagiaire-details">
+          <span class="stagiaire-name">{{ stagiaire.firstName }} {{ stagiaire.lastName }}</span>
+          <span class="stagiaire-email">{{ stagiaire.email }}</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="selection-count">
+      {{ stagiairesSelectionnes.length }} stagiaire(s) sélectionné(s)
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="annuler()">Annuler</button>
+  <button 
+    mat-raised-button 
+    color="primary" 
+    [disabled]="isLoading || stagiairesSelectionnes.length === 0" 
+    (click)="affecter()">
+    Affecter
+  </button>
+</mat-dialog-actions>

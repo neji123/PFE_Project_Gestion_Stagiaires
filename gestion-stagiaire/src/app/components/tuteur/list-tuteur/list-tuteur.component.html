@@ -1,0 +1,368 @@
+<app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+
+<div class="main-content" [class.sidebar-open]="isSidebarVisible">
+  <div class="content-container">
+    <div class="header-section">
+      <div class="title-filter-section">
+        <h2 class="section-title">Liste des Tuteurs</h2>
+        <div class="view-filters">
+          <div class="view-toggle">
+            <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="changeViewMode('grid')" matTooltip="Vue en grille">
+              <mat-icon>grid_view</mat-icon>
+            </button>
+            <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="changeViewMode('list')" matTooltip="Vue en liste">
+              <mat-icon>view_list</mat-icon>
+            </button>
+          </div>
+          
+          <button mat-stroked-button color="primary" class="favorite-filter" (click)="toggleShowFavorites()">
+            <mat-icon>{{ showOnlyFavorites ? 'star' : 'star_border' }}</mat-icon>
+            <span>{{ showOnlyFavorites ? 'Tous' : 'Favoris' }}</span>
+          </button>
+          
+          <!-- Ajout du bouton pour filtrer par statut actif -->
+          <button mat-stroked-button color="primary" class="status-filter" (click)="toggleShowActive()">
+            <mat-icon>{{ showOnlyActive ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+            <span>{{ showOnlyActive ? 'Tous' : 'Actifs' }}</span>
+          </button>
+          
+          <button mat-raised-button color="primary" class="add-button" (click)="openAddTuteurModal()">
+            <mat-icon>person_add</mat-icon>
+            <span>Ajouter un Tuteur</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Barre de recherche et filtres -->
+      <div class="search-filter-row">
+        <div class="search-field">
+          <mat-form-field appearance="outline">
+            <mat-label>Rechercher</mat-label>
+            <input matInput [(ngModel)]="searchText" (input)="applyFilters()" placeholder="Nom, spécialité, email...">
+            <mat-icon matPrefix>search</mat-icon>
+            <button *ngIf="searchText" matSuffix mat-icon-button aria-label="Effacer" (click)="searchText=''; applyFilters()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+        
+        <div class="filter-sort-options">
+          <mat-form-field appearance="outline">
+            <mat-label>Département</mat-label>
+            <mat-select [(value)]="activeDepartment" (selectionChange)="applyFilters()">
+              <mat-option value="all">Tous les départements</mat-option>
+              <mat-option *ngFor="let dept of getDepartments()" [value]="dept.id">
+                {{ dept.departmentName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Tri</mat-label>
+            <mat-select [(value)]="sortOption" (selectionChange)="applyFilters()">
+              <mat-option value="nameAsc">Nom (A-Z)</mat-option>
+              <mat-option value="nameDesc">Nom (Z-A)</mat-option>
+              <mat-option value="expDesc">Expérience (décroissante)</mat-option>
+              <mat-option value="expAsc">Expérience (croissante)</mat-option>
+              <mat-option value="stagiaireCount">Nombre de stagiaires</mat-option>
+              <mat-option value="startDate">Date de début (récent)</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <button mat-stroked-button color="primary" *ngIf="searchText || activeDepartment !== 'all' || sortOption !== 'nameAsc' || showOnlyFavorites || showOnlyActive" 
+                  (click)="resetFilters()">
+            <mat-icon>refresh</mat-icon>
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+      
+      <!-- Filtres rapides par département -->
+      <div class="quick-filter-chips">
+        <div class="chip" 
+             [class.active]="activeDepartment === 'all'"
+             (click)="activeDepartment = 'all'; applyFilters()">
+          Tous
+        </div>
+        <div class="chip" 
+             *ngFor="let dept of getDepartments()"
+             [class.active]="activeDepartment === dept.id"
+             (click)="activeDepartment = dept.id; applyFilters()">
+          {{ dept.departmentName }}
+        </div>
+      </div>
+    </div>
+    
+    <!-- Indicateur de chargement -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement des tuteurs...</p>
+    </div>
+  
+    <!-- Aucun résultat -->
+    <div class="no-results" *ngIf="!isLoading && filteredTuteurList.length === 0">
+      <mat-icon *ngIf="searchText || activeDepartment !== 'all' || showOnlyFavorites || showOnlyActive">search_off</mat-icon>
+      <mat-icon *ngIf="!searchText && activeDepartment === 'all' && !showOnlyFavorites && !showOnlyActive">school</mat-icon>
+      
+      <h3 *ngIf="searchText || activeDepartment !== 'all' || showOnlyFavorites || showOnlyActive">
+        Aucun résultat ne correspond à votre recherche
+      </h3>
+      <h3 *ngIf="!searchText && activeDepartment === 'all' && !showOnlyFavorites && !showOnlyActive">
+        Aucun tuteur disponible
+      </h3>
+      
+      <p *ngIf="searchText || activeDepartment !== 'all' || showOnlyFavorites || showOnlyActive">
+        Essayez de modifier vos critères de recherche.
+      </p>
+      <p *ngIf="!searchText && activeDepartment === 'all' && !showOnlyFavorites && !showOnlyActive">
+        Commencez par ajouter un tuteur.
+      </p>
+      
+      <div class="no-results-actions">
+        <button mat-raised-button color="primary" *ngIf="searchText || activeDepartment !== 'all' || showOnlyFavorites || showOnlyActive" 
+                (click)="resetFilters()">
+          <mat-icon>refresh</mat-icon>
+          Réinitialiser les filtres
+        </button>
+        
+        <button mat-raised-button color="primary" *ngIf="!searchText && activeDepartment === 'all' && !showOnlyFavorites && !showOnlyActive" 
+                (click)="openAddTuteurModal()">
+          <mat-icon>person_add</mat-icon>
+          Ajouter un tuteur
+        </button>
+      </div>
+    </div>
+    
+    <!-- Vue en grille -->
+    <div class="tuteur-grid" *ngIf="!isLoading && filteredTuteurList.length > 0 && viewMode === 'grid'">
+      <div class="tuteur-card" *ngFor="let tuteur of displayedTuteurs; let i = index" 
+           [class.highlight-focus]="tuteur.highlighted"
+           [routerLink]="['/tuteur', tuteur.id]">
+        <div class="card-header">
+          <div class="status-indicator" [class.active]="tuteur.statuts"></div>
+          <div class="profile-image-container">
+            <img [src]="getImageUrl(tuteur.imageUrl)" [alt]="tuteur.name + ' photo'">
+          </div>
+          <div class="favorite-badge" (click)="$event.stopPropagation(); toggleFavorite(tuteur)" matTooltip="{{ tuteur.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}">
+            <mat-icon>{{ tuteur.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+          </div>
+          
+          <!-- Navigation entre tuteurs -->
+          <div class="navigation-arrows" *ngIf="displayedTuteurs.length > 1">
+            <button class="arrow-btn" *ngIf="i > 0" 
+                    (click)="$event.stopPropagation(); focusTuteur(i - 1)" 
+                    matTooltip="Tuteur précédent">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button class="arrow-btn" *ngIf="i < displayedTuteurs.length - 1" 
+                    (click)="$event.stopPropagation(); focusTuteur(i + 1)" 
+                    matTooltip="Tuteur suivant">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          
+          <!-- Badge d'expérience -->
+          <div class="experience-badge" *ngIf="tuteur.yearsExperience && tuteur.yearsExperience > 0">
+            <span class="exp-value">{{ tuteur.yearsExperience }}</span>
+            <span class="exp-unit">ans</span>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <h3 class="tuteur-name">{{ tuteur.name }}</h3>
+          <!-- Nom d'utilisateur -->
+          <p class="username" *ngIf="tuteur.username">{{"@"}}{{ tuteur.username }}</p>
+          <div class="department-chip">{{ tuteur.departmentName }}</div>
+          <p class="speciality">{{ tuteur.speciality }}</p>
+          
+          <!-- Statut (Actif/Inactif) avec bouton pour changer l'état -->
+          <div class="status-toggle">
+            <span>Statut:</span>
+            <button class="status-button" 
+                   [class.active]="tuteur.statuts" 
+                   [class.inactive]="!tuteur.statuts"
+                   (click)="$event.stopPropagation(); toggleStatus(tuteur)">
+              {{ tuteur.statuts ? 'Actif' : 'Inactif' }}
+            </button>
+          </div>
+          
+          <div class="tuteur-details">
+            <div class="detail-item">
+              <mat-icon>email</mat-icon>
+              <span>{{ tuteur.email }}</span>
+            </div>
+            <div class="detail-item">
+              <mat-icon>phone</mat-icon>
+              <span>{{ tuteur.phone }}</span>
+            </div>
+            <div class="detail-item">
+              <mat-icon>people</mat-icon>
+              <span>{{ tuteur.stagiaireCount || 0 }} stagiaire(s)</span>
+            </div>
+            <!-- Date de début -->
+            <div class="detail-item" *ngIf="tuteur.startDate">
+              <mat-icon>event</mat-icon>
+              <span>Début: {{ tuteur.startDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          
+          <div class="experience-bar" *ngIf="tuteur.yearsExperience && tuteur.yearsExperience > 0">
+            <div class="exp-label">Expérience</div>
+            <div class="progress-container">
+              <div class="progress-bar" [style.width]="getExperienceWidth(tuteur.yearsExperience) + '%'"></div>
+            </div>
+            <div class="exp-value">{{ tuteur.yearsExperience }} ans</div>
+          </div>
+        </div>
+        
+        <div class="card-actions">
+          <button mat-icon-button color="primary" matTooltip="Envoyer un email" 
+                  (click)="$event.stopPropagation(); contactTuteur(tuteur)">
+            <mat-icon>mail</mat-icon>
+          </button>
+          
+          <button mat-icon-button color="accent" matTooltip="Modifier" 
+                  (click)="editTuteur(tuteur, $event)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          
+          <button mat-icon-button color="warn" matTooltip="Supprimer" 
+                  (click)="$event.stopPropagation(); confirmDelete(tuteur)">
+            <mat-icon>delete</mat-icon>
+          </button>
+
+          <button mat-icon-button matTooltip="{{ tuteur.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}" 
+                  (click)="$event.stopPropagation(); toggleFavorite(tuteur)">
+            <mat-icon>{{ tuteur.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Vue en liste -->
+    <div class="tuteur-list-view" *ngIf="!isLoading && filteredTuteurList.length > 0 && viewMode === 'list'">
+      <div class="list-header">
+        <div class="row">
+          <div class="col-name">Nom</div>
+          <div class="col-department">Département</div>
+          <div class="col-speciality">Spécialité & Expérience</div>
+          <div class="col-status">Statut</div> <!-- Nouvelle colonne statut -->
+          <div class="col-contact">Contact</div>
+          <div class="col-actions">Actions</div>
+        </div>
+      </div>
+      <div class="list-body">
+        <div class="tuteur-list-item" *ngFor="let tuteur of displayedTuteurs; let i = index" 
+             [class.highlight-focus]="tuteur.highlighted"
+             [class.active-tuteur]="tuteur.statuts"
+             [routerLink]="['/tuteur', tuteur.id]">
+          <div class="row">
+            <div class="col-name">
+              <div class="name-with-image">
+                <div class="list-image">
+                  <img [src]="getImageUrl(tuteur.imageUrl)" [alt]="tuteur.name + ' photo'">
+                  <div class="favorite-indicator" *ngIf="tuteur.isFavorite">
+                    <mat-icon>star</mat-icon>
+                  </div>
+                  <div class="stagiaire-count-indicator" *ngIf="(tuteur.stagiaireCount || 0) > 0">
+                    <span>{{ tuteur.stagiaireCount }}</span>
+                  </div>
+                </div>
+                <div class="name-position">
+                  <h3>{{ tuteur.name }}</h3>
+                  <!-- Nom d'utilisateur -->
+                  <p class="username" *ngIf="tuteur.username">{{"@"}}{{ tuteur.username }}</p>
+                  <!-- Date de début -->
+                  <div class="additional-info" *ngIf="tuteur.startDate">
+                    <div class="info-item">
+                      <mat-icon>event</mat-icon>
+                      <span>Depuis {{ tuteur.startDate | date:'MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-department">
+              <div class="department-chip">{{ tuteur.departmentName }}</div>
+            </div>
+            <div class="col-speciality">
+              <div class="speciality-info">
+                <div class="speciality-name">{{ tuteur.speciality }}</div>
+                <div class="experience-compact">
+                  <mat-icon>work</mat-icon>
+                  <span>{{ tuteur.yearsExperience || 0 }} ans d'expérience</span>
+                </div>
+              </div>
+            </div>
+            <!-- Colonne statut avec bouton pour changer l'état -->
+            <div class="col-status">
+              <button class="status-button" 
+                    [class.active]="tuteur.statuts" 
+                    [class.inactive]="!tuteur.statuts"
+                    (click)="$event.stopPropagation(); toggleStatus(tuteur)">
+                {{ tuteur.statuts ? 'Actif' : 'Inactif' }}
+              </button>
+            </div>
+            <div class="col-contact">
+              <div class="contact-info">
+                <div class="email"><mat-icon>email</mat-icon> {{ tuteur.email }}</div>
+                <div class="phone"><mat-icon>phone</mat-icon> {{ tuteur.phone }}</div>
+              </div>
+            </div>
+            <div class="col-actions">
+              <div class="list-actions">
+                <button mat-icon-button color="primary" matTooltip="Envoyer un email" 
+                        (click)="$event.stopPropagation(); contactTuteur(tuteur)">
+                  <mat-icon>mail</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" matTooltip="Modifier" 
+                        (click)="editTuteur(tuteur, $event)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" matTooltip="Supprimer" 
+                        (click)="$event.stopPropagation(); confirmDelete(tuteur)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="{{ tuteur.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}" 
+                        (click)="$event.stopPropagation(); toggleFavorite(tuteur)">
+                  <mat-icon>{{ tuteur.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="!isLoading && filteredTuteurList.length > pageSize">
+      <div class="custom-pagination">
+        <!-- Bouton Précédent -->
+        <button class="pagination-arrow" [disabled]="page === 1" (click)="page = page - 1; onPageChange(page)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        
+        <!-- Pages -->
+        <div class="pagination-pages">
+          <button *ngFor="let p of getPaginationRange()" 
+                  [class.active]="p === page" 
+                  [class.dots]="p === -1"
+                  [disabled]="p === -1"
+                  (click)="p !== -1 && (page = p) && onPageChange(p)">
+            {{ p === -1 ? '...' : p }}
+          </button>
+        </div>
+        
+        <!-- Bouton Suivant -->
+        <button class="pagination-arrow" [disabled]="page === getTotalPages()" (click)="page = page + 1; onPageChange(page)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      
+      <!-- Indicateur de page -->
+      <div class="page-indicator">
+        Page {{ page }} sur {{ getTotalPages() }} • {{ filteredTuteurList.length }} tuteur{{ filteredTuteurList.length > 1 ? 's' : '' }}
+      </div>
+    </div>
+  </div>
+</div>

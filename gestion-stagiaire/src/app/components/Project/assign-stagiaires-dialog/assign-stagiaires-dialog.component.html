@@ -1,0 +1,192 @@
+<div class="assign-stagiaires-dialog">
+  <h2 mat-dialog-title>
+    Affecter des stagiaires à "{{ data.projectTitle }}"
+    <span class="badge" *ngIf="!loading">
+      {{ stats.totalAvailable }} disponibles
+    </span>
+  </h2>
+
+  <mat-dialog-content class="dialog-content">
+    <!-- Indicateur de chargement -->
+    <div *ngIf="loading" class="loading-container">
+      <mat-spinner diameter="40" class="ey-spinner"></mat-spinner>
+      <p class="loading-text">Chargement des stagiaires disponibles...</p>
+    </div>
+
+    <!-- Affichage des erreurs -->
+    <div *ngIf="error" class="modern-alert modern-alert--danger">
+      <mat-icon>error_outline</mat-icon>
+      <div class="flex-grow-1">
+        {{ error }}
+      </div>
+      <button mat-button (click)="refreshData()">
+        <mat-icon>refresh</mat-icon>
+        Réessayer
+      </button>
+    </div>
+
+    <!-- Contenu principal -->
+    <div *ngIf="!loading && !error">
+
+      <!-- Message si aucun stagiaire disponible -->
+      <div *ngIf="availableStagiaires.length === 0" class="modern-alert modern-alert--info">
+        <mat-icon>info</mat-icon>
+        <div>
+          <strong>Aucun stagiaire disponible</strong><br>
+          Tous les stagiaires sont déjà affectés à des projets ou il n'y a pas de stagiaires dans le système.
+        </div>
+      </div>
+
+      <!-- Liste des stagiaires disponibles -->
+      <div *ngIf="availableStagiaires.length > 0">
+        <div class="section-title">
+          <mat-icon>assignment_ind</mat-icon>
+          Sélectionnez les stagiaires à affecter :
+        </div>
+        
+       <div class="search-container">
+  <div class="filters-row">
+    <!-- Barre de recherche -->
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Rechercher un stagiaire</mat-label>
+      <input matInput 
+             placeholder="Nom, prénom, email..." 
+             (input)="filterStagiaires(searchInput.value, departmentSelect.value)" 
+             #searchInput>
+      <mat-icon matIconSuffix>search</mat-icon>
+    </mat-form-field>
+    
+    <!-- Filtre département -->
+    <mat-form-field appearance="outline" class="department-field">
+      <mat-label>Département</mat-label>
+      <mat-select (selectionChange)="filterStagiaires(searchInput.value, $event.value)" #departmentSelect>
+        <mat-option value="">Tous les départements</mat-option>
+        <mat-option *ngFor="let dept of getDepartments()" [value]="dept">
+          {{ dept }}
+        </mat-option>
+      </mat-select>
+      <mat-icon matIconSuffix>business</mat-icon>
+    </mat-form-field>
+  </div>
+</div>
+
+        <!-- Compteur de sélection -->
+        <div class="selection-counter" *ngIf="selectedStagiaires.length > 0">
+          <span class="counter-number">{{ selectedStagiaires.length }}</span> 
+          stagiaire(s) sélectionné(s)
+        </div>
+
+        <!-- Message si aucun résultat de recherche -->
+        <div *ngIf="filteredStagiaires.length === 0 && searchInput.value" class="modern-alert modern-alert--warning">
+          <mat-icon>search_off</mat-icon>
+          <div>
+            Aucun stagiaire trouvé pour "{{ searchInput.value }}"
+          </div>
+        </div>
+
+        <!-- Liste simple des stagiaires -->
+        <div class="stagiaires-simple-list" *ngIf="filteredStagiaires.length > 0">
+          @for (stagiaire of filteredStagiaires; track stagiaire.id) {
+            <div class="stagiaire-item" 
+                 [class.selected]="isSelected(stagiaire.id)"
+                 (click)="toggleSelection(stagiaire.id)">
+              
+              <!-- Checkbox -->
+              <div class="stagiaire-checkbox">
+                <mat-checkbox
+                  [checked]="isSelected(stagiaire.id)"
+                  (change)="toggleSelection(stagiaire.id)"
+                  (click)="$event.stopPropagation()"
+                  color="primary">
+                </mat-checkbox>
+              </div>
+              
+              <!-- Avatar -->
+              <div class="stagiaire-avatar" 
+                   [class.initials]="!stagiaire.profilePictureUrl"
+                   [style.background-color]="!stagiaire.profilePictureUrl ? getAvatarColor(stagiaire.firstName, stagiaire.lastName) : null">
+                <img *ngIf="stagiaire.profilePictureUrl" 
+                     [src]="getImageUrl(stagiaire.profilePictureUrl)" 
+                     [alt]="stagiaire.firstName + ' ' + stagiaire.lastName"
+                     (error)="handleImageError($event)">
+                <span *ngIf="!stagiaire.profilePictureUrl">
+                  {{ getInitials(stagiaire.firstName, stagiaire.lastName) }}
+                </span>
+              </div>
+              
+              <!-- Informations du stagiaire -->
+              <div class="stagiaire-info">
+                <h4 class="stagiaire-name">{{ stagiaire.firstName }} {{ stagiaire.lastName }}</h4>
+                <div class="stagiaire-details">
+                  <div class="detail-row email" *ngIf="stagiaire.email">
+                    <mat-icon>email</mat-icon>
+                    {{ stagiaire.email }}
+                  </div>
+                  <div class="detail-row" *ngIf="stagiaire.department">
+                    <mat-icon>business</mat-icon>
+                    {{ stagiaire.department }}
+                  </div>
+                  <div class="detail-row" *ngIf="stagiaire.university">
+                    <mat-icon>school</mat-icon>
+                    {{ stagiaire.university }}
+                  </div>
+                   <div class="detail-row date-range" *ngIf="stagiaire.startDate || stagiaire.endDate">
+    <mat-icon>date_range</mat-icon>
+    <span *ngIf="stagiaire.startDate && stagiaire.endDate">
+      {{ stagiaire.startDate | date:'dd/MM/yyyy' }} - {{ stagiaire.endDate | date:'dd/MM/yyyy' }}
+    </span>
+    <span *ngIf="stagiaire.startDate && !stagiaire.endDate">
+      Début: {{ stagiaire.startDate | date:'dd/MM/yyyy' }}
+    </span>
+    <span *ngIf="!stagiaire.startDate && stagiaire.endDate">
+      Fin: {{ stagiaire.endDate | date:'dd/MM/yyyy' }}
+    </span>
+  </div>
+                </div>
+              </div>
+              
+              <!-- Indicateur de sélection -->
+              <div class="selection-indicator" *ngIf="isSelected(stagiaire.id)">
+                <span class="selected-badge">
+                  <mat-icon>check</mat-icon>
+                  Sélectionné
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+        
+        <!-- Info sur les stagiaires actuellement dans le projet -->
+        <div *ngIf="currentlyAssignedStagiaires.length > 0" class="current-assignees-section">
+          <div class="section-title">
+            <mat-icon>group</mat-icon>
+            Stagiaires actuellement dans le projet ({{ currentlyAssignedStagiaires.length }})
+          </div>
+          <div class="current-assignees">
+            @for (stagiaire of currentlyAssignedStagiaires; track stagiaire.id) {
+              <span class="assignee-badge">
+                <mat-icon>person</mat-icon>
+                {{ stagiaire.firstName }} {{ stagiaire.lastName }}
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-button (click)="onCancel()">
+      <mat-icon>cancel</mat-icon>
+      Annuler
+    </button>
+    
+    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading || selectedStagiaires.length === 0">
+      <mat-spinner diameter="16" *ngIf="loading"></mat-spinner>
+      <mat-icon *ngIf="!loading">person_add</mat-icon>
+      <span *ngIf="!loading">Affecter ({{ selectedStagiaires.length }})</span>
+      <span *ngIf="loading">Affectation...</span>
+    </button>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,737 @@
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', 'Open Sans', sans-serif;
+}
+
+// EY Colors
+$ey-yellow: #FFE600;
+$ey-dark-gray: #2E2E38;
+$ey-light-gray: #747480;
+$ey-white: #FFFFFF;
+$ey-black: #000000;
+$ey-error: #E74C3C;
+$ey-success: #2ECC71;
+$ey-background: #F6F6FA;
+
+// Font weights
+$font-light: 300;
+$font-regular: 400;
+$font-medium: 500;
+$font-bold: 700;
+
+a {
+  text-decoration: none;
+}
+
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background-color: #f6f6fa;
+  background: linear-gradient(135deg, #f6f6fa 25%, #efefef 25%, #efefef 50%, #f6f6fa 50%, #f6f6fa 75%, #efefef 75%, #efefef 100%);
+  background-size: 40px 40px;
+  position: relative;
+  z-index: 1; /* S'assurer que le contenu principal est en-dessous de la navbar */
+}
+
+.main {
+  width: 80%;
+  height: 85%;
+  background-color: $ey-white;
+  border-radius: 10px;
+  display: flex;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 15px 25px rgba(0, 0, 0, 0.1);
+}
+
+.main.active .sign-in {
+  transform: translateX(-100%);
+}
+
+.main.active .sign-up {
+  transform: translateX(0);
+  opacity: 1;
+  z-index: 5;
+  animation: move 0.6s;
+  transition: .5s;
+}
+
+@keyframes move {
+  0%, 49.99% {
+    opacity: 0;
+    z-index: 1;
+  }
+  50%, 100% {
+    opacity: 1;
+    z-index: 5;
+  }
+}
+
+.main .sign-in,
+.main .container-form {
+  width: 50%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 30px;
+  text-align: center;
+  transition: .5s;
+}
+
+.brand-logo {
+  margin-bottom: 25px;
+  
+  .ey-logo-svg {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: $ey-dark-gray;
+    border-radius: 4px;
+    padding: 10px;
+    
+    svg {
+      width: 100%;
+      height: auto;
+    }
+  }
+}
+
+.main .sign-up {
+  transform: translateX(100%);
+  opacity: 0;
+  z-index: 1;
+  overflow-y: auto;
+  
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $ey-dark-gray;
+    border-radius: 10px;
+  }
+}
+
+// Style for the sign-up form to accommodate all the fields
+.signup-form {
+  padding: 10px 15px;
+  max-height: 65vh;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 450px;
+  z-index: 10;
+  position: relative;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: $ey-dark-gray;
+    border-radius: 10px;
+  }
+}
+
+.main .title {
+  font-size: 28px;
+  color: $ey-dark-gray;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+  padding: 0;
+  font-weight: $font-bold;
+}
+
+.main .p-title {
+  padding: 0;
+  margin: 0;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: $ey-light-gray;
+  font-weight: $font-regular;
+}
+
+.main .input-box {
+  max-width: 100%;
+  width: 100%;
+  background-color: #f8f8f8;
+  margin: 0 auto 15px auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  position: relative;
+  display: flex;
+  transition: border-color 0.3s;
+  
+  &:focus-within {
+    border-color: $ey-yellow;
+    box-shadow: 0 0 0 2px rgba(255, 230, 0, 0.2);
+  }
+}
+
+.input-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  width: 100%;
+  max-width: 100%;
+  
+  .half-width {
+    flex: 1;
+    margin-bottom: 15px;
+  }
+}
+
+.main .input-box i {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 15px;
+  font-size: 16px;
+  color: $ey-light-gray;
+  cursor: pointer;
+  
+  &:hover {
+    color: $ey-dark-gray;
+  }
+}
+
+.main .input-box input,
+.main .input-box select {
+  background: none;
+  outline: none;
+  border: none;
+  font-weight: $font-medium;
+  font-size: 14px;
+  color: $ey-dark-gray;
+  padding: 12px 15px;
+  width: 100%;
+  
+  &::placeholder {
+    color: #aaa;
+    font-weight: $font-regular;
+  }
+}
+
+// Section styles
+.section-container {
+  margin-bottom: 25px;
+  width: 100%;
+}
+
+.section-title {
+  color: $ey-dark-gray;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 2px solid $ey-yellow;
+  text-align: left;
+}
+
+// Custom styles for the select dropdown
+.custom-select {
+  appearance: none;
+  cursor: pointer;
+  background: url("data:image/svg+xml;utf8,<svg fill='%23747480' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>") no-repeat;
+  background-position: right 10px top 50%;
+  padding-right: 30px !important;
+}
+
+// Special styling for file input
+.file-input-box {
+  padding: 5px 0;
+  
+  input[type="file"] {
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+  }
+  
+  .file-input-label {
+    display: block;
+    padding: 10px 15px;
+    text-align: left;
+    font-weight: $font-medium;
+    font-size: 14px;
+    color: $ey-light-gray;
+  }
+  
+  i {
+    right: 15px !important;
+  }
+}
+
+// Image upload styling
+.file-upload-container {
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.image-preview {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 10px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  
+  .preview-image {
+    max-width: 100%;
+    max-height: 120px;
+    object-fit: cover;
+  }
+  
+  .image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: $ey-light-gray;
+    font-size: 2rem;
+  }
+}
+
+.main .checkbox {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 100%;
+  width: 100%;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+}
+
+.main label {
+  font-size: 13px;
+  color: $ey-light-gray;
+  margin-left: 5px;
+}
+
+.main .forgot, .main .terms {
+  font-size: 13px;
+  color: $ey-dark-gray;
+  font-weight: $font-medium;
+  transition: color 0.3s;
+  
+  &:hover {
+    color: $ey-yellow;
+    text-decoration: underline;
+  }
+}
+
+.main .input-submit {
+  max-width: 100%;
+  width: 100%;
+  color: $ey-black;
+  margin: 0 auto 15px auto;
+  border: none;
+  border-radius: 8px;
+  position: relative;
+  padding: 14px;
+  font-weight: $font-bold;
+  font-size: 16px;
+  letter-spacing: 0.5px;
+  background-color: $ey-yellow;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  &:hover {
+    background-color: darken($ey-yellow, 10%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    background-color: #e0e0e0;
+    color: #aaa;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+.toggle-container {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 50%;
+  height: 100%;
+  overflow: hidden;
+  transition: all 0.6s ease-in-out;
+  z-index: 1000;
+  padding: 0;
+}
+
+.ani {
+  height: 100%;
+  background-color: $ey-dark-gray;
+  background-image: linear-gradient(45deg, rgba(255,230,0,0.1) 25%, transparent 25%, transparent 50%, rgba(255,230,0,0.1) 50%, rgba(255,230,0,0.1) 75%, transparent 75%, transparent);
+  background-size: 20px 20px;
+}
+
+.main.active .toggle-container {
+  transform: translateX(-100%);
+}
+
+.toggle-content {
+  padding: 30px;
+}
+
+.toggle-panel h1 {
+  margin-bottom: 20px;
+  letter-spacing: 0.5px;
+  font-size: 28px;
+  font-weight: $font-bold;
+  color: $ey-white;
+}
+
+.toggle-panel p {
+  margin-bottom: 30px;
+  letter-spacing: 0.2px;
+  line-height: 1.6;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.toggle-panel button {
+  width: 180px;
+  height: 50px;
+  background-color: transparent;
+  border: 2px solid $ey-white;
+  outline: none;
+  border-radius: 8px;
+  font-weight: $font-bold;
+  font-size: 16px;
+  color: $ey-white;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: $ey-yellow;
+    border-color: $ey-yellow;
+    color: $ey-black;
+  }
+}
+
+.toggle {
+  height: 100%;
+  color: $ey-white;
+  position: relative;
+  left: -100%;
+  height: 100%;
+  width: 200%;
+  transform: translateX(0);
+  transition: all 0.6s ease-in-out;
+}
+
+.main.active .toggle {
+  transform: translateX(50%);
+}
+
+.toggle-panel {
+  position: absolute;
+  width: 50%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0;
+  text-align: center;
+  top: 0;
+  transform: translateX(0);
+  transition: all 0.6s ease-in-out;
+}
+
+.toggle-left {
+  transform: translateX(-200%);
+}
+
+.main.active .toggle-left {
+  transform: translateX(0);
+}
+
+.toggle-right {
+  right: 0;
+  transform: translateX(0);
+}
+
+.main.active .toggle-right {
+  transform: translateX(200%);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  border-top-color: $ey-black;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  background-color: rgba($ey-error, 0.1);
+  color: $ey-error;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  max-width: 100%;
+  width: 100%;
+  text-align: left;
+  
+  i {
+    margin-right: 8px;
+    font-size: 16px;
+  }
+}
+
+.validation-error {
+  color: $ey-error;
+  font-size: 12px;
+  margin-top: -10px;
+  margin-bottom: 10px;
+  text-align: left;
+  padding-left: 15px;
+}
+
+// Loading spinner
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  margin: 20px 0;
+}
+
+// Responsive design
+@media (max-width: 1200px) {
+  .main {
+    width: 85%;
+  }
+}
+
+@media (max-width: 992px) {
+  .main {
+    width: 90%;
+    height: 85%;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    width: 95%;
+    height: 90%;
+  }
+  
+  .main .sign-in,
+  .main .container-form {
+    padding: 20px;
+  }
+  
+  .input-row {
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .main {
+    width: 95%;
+    height: 90%;
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .main .sign-in,
+  .main .container-form {
+    width: 100%;
+    height: 50%;
+    padding: 15px;
+  }
+
+  .main.active .sign-in {
+    transform: translateY(-100%);
+  }
+
+  .main .sign-up {
+    transform: translateY(100%);
+  }
+
+  .main.active .sign-up {
+    transform: translateY(0);
+  }
+
+  .toggle-container {
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 50%;
+  }
+
+  .main.active .toggle-container {
+    transform: translateY(-100%);
+  }
+
+  .toggle {
+    left: 0;
+    top: -100%;
+    width: 100%;
+    height: 200%;
+  }
+
+  .main.active .toggle {
+    transform: translateY(50%);
+  }
+
+  .toggle-panel {
+    width: 100%;
+    height: 50%;
+  }
+
+  .toggle-left {
+    transform: translateY(-200%);
+  }
+
+  .main.active .toggle-left {
+    transform: translateY(0);
+  }
+
+  .toggle-right {
+    bottom: 0;
+    top: auto;
+    transform: translateY(0);
+  }
+
+  .main.active .toggle-right {
+    transform: translateY(200%);
+  }
+  
+  .toggle-content {
+    padding: 15px;
+  }
+  
+  .toggle-panel h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .toggle-panel p {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .toggle-panel button {
+    width: 150px;
+    height: 40px;
+    font-size: 14px;
+  }
+}
+
+// Dans login.component.scss, ajoutons un style pour l'erreur de compte inactif
+.error-message.account-inactive {
+  background-color: rgba($ey-error, 0.2);
+  border-left: 4px solid $ey-error;
+  padding: 15px;
+  margin-bottom: 25px;
+  
+  i {
+    font-size: 18px;
+  }
+}
+
+// Pour éliminer la barre de défilement horizontale et centrer correctement
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+
+
+// Centrer et fixer la page
+:host {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+
+
+// Adapter pour les petits écrans
+@media (max-width: 992px) {
+  .main {
+    width: 90%;
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    width: 95%;
+  }
+}

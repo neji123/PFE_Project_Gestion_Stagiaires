@@ -1,0 +1,101 @@
+<app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+
+<div class="main-content" [class.sidebar-open]="isSidebarVisible">
+  <div class="content-header">
+    <button mat-icon-button color="primary" [routerLink]="['/rh']">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    <h2>Détails du Responsable RH</h2>
+  </div>
+
+  <!-- Indicateur de chargement -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Chargement des données...</p>
+  </div>
+
+  <div class="rh-detail-container" *ngIf="rhPerson && !isLoading">
+    <div class="profile-header">
+      <div class="profile-image">
+        <img [src]="rhPerson.image" [alt]="rhPerson.name + ' photo'">
+      </div>
+      <div class="profile-info">
+        <div class="name-position">
+          <h1>{{ rhPerson.name }}</h1>
+          <h3>{{ rhPerson.position }}</h3>
+        </div>
+        <div class="actions">
+          <button mat-raised-button color="primary" (click)="contactRh()">
+            <mat-icon>email</mat-icon> Contacter
+          </button>
+          <button mat-stroked-button color="primary" (click)="callRh()">
+            <mat-icon>phone</mat-icon> Appeler
+          </button>
+          <button mat-icon-button (click)="toggleFavorite()">
+            <mat-icon>{{ rhPerson.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <mat-card class="contact-card">
+      <mat-card-content>
+        <div class="contact-item">
+          <mat-icon>email</mat-icon>
+          <span>{{ rhPerson.email }}</span>
+        </div>
+        <div class="contact-item">
+          <mat-icon>phone</mat-icon>
+          <span>{{ rhPerson.phone }}</span>
+        </div>
+        <div class="contact-item">
+          <mat-icon>business</mat-icon>
+          <span>{{ rhPerson.department }} - {{ rhPerson.office }}</span>
+        </div>
+        <div class="contact-item">
+          <mat-icon>date_range</mat-icon>
+          <span>Date d'arrivée: {{ rhPerson.joinDate }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-tab-group class="info-tabs">
+      <mat-tab label="Profil">
+        <div class="tab-content">
+          <h3>Biographie</h3>
+          <p>{{ rhPerson.bio }}</p>
+          
+          <h3>Compétences</h3>
+          <div class="skills-container">
+            <span class="skill-tag" *ngFor="let skill of rhPerson.skills">{{ skill }}</span>
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Projets">
+        <div class="tab-content">
+          <div class="no-content-placeholder">
+            <mat-icon>business_center</mat-icon>
+            <p>Aucun projet associé pour le moment</p>
+          </div>
+        </div>
+      </mat-tab>
+      <mat-tab label="Calendrier">
+        <div class="tab-content">
+          <div class="no-content-placeholder">
+            <mat-icon>calendar_today</mat-icon>
+            <p>Aucun événement planifié</p>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+
+  <div class="not-found" *ngIf="!rhPerson && !isLoading && error">
+    <mat-icon>error_outline</mat-icon>
+    <h2>Responsable RH non trouvé</h2>
+    <p>Le profil que vous recherchez n'existe pas ou a été supprimé.</p>
+    <button mat-raised-button color="primary" [routerLink]="['/rh']">
+      Retour à la liste
+    </button>
+  </div>
+</div>

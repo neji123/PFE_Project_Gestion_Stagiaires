@@ -1,0 +1,300 @@
+<div class="attestation-container">
+  <div class="attestation-card">
+    <div class="card-header">
+      <h1>Générateur d'Attestation de Stage</h1>
+      <p>Choisissez le mode de génération d'attestation</p>
+      
+      <!-- Sélecteur de mode -->
+      <div class="mode-selector">
+        <button 
+          type="button" 
+          [class.active]="generationMode === 'auto'"
+          (click)="switchMode('auto')"
+          class="mode-btn">
+          <i class="fas fa-search"></i>
+          Sélection Avancée
+        </button>
+        <button 
+          type="button" 
+          [class.active]="generationMode === 'manual'"
+          (click)="switchMode('manual')"
+          class="mode-btn">
+          <i class="fas fa-edit"></i>
+          Saisie Manuelle
+        </button>
+      </div>
+    </div>
+    
+    <div class="card-content">
+      
+      <!-- MODE AUTOMATIQUE AVEC FILTRES -->
+      <div *ngIf="generationMode === 'auto'" class="auto-mode">
+        
+        <!-- Loading des stagiaires -->
+        <div *ngIf="loadingStagiaires" class="loading-container">
+          <div class="spinner"></div>
+          <p>Chargement des stagiaires terminés...</p>
+        </div>
+        
+        <!-- Filtres et recherche -->
+        <div *ngIf="!loadingStagiaires" class="filters-section">
+          <h3>Rechercher un stagiaire terminé</h3>
+          
+          <div class="filters-row">
+            <!-- Barre de recherche -->
+            <div class="search-field">
+              <label>Recherche</label>
+              <div class="search-input-container">
+                <input 
+                  type="text" 
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearchChange()"
+                  placeholder="Nom, prénom, email, département..."
+                  class="search-input">
+                <i class="fas fa-search search-icon"></i>
+              </div>
+            </div>
+            
+            <!-- Filtre par année -->
+            <div class="filter-field">
+              <label for="yearFilter">Année de fin</label>
+              <select 
+                id="yearFilter"
+                [(ngModel)]="selectedYear"
+                (change)="onYearChange()"
+                class="filter-select">
+                <option value="">Toutes les années</option>
+                <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+              </select>
+            </div>
+            
+            <!-- Filtre par département -->
+            <div class="filter-field">
+              <label for="departmentFilter">Département</label>
+              <select 
+                id="departmentFilter"
+                [(ngModel)]="selectedDepartment"
+                (change)="onDepartmentChange()"
+                class="filter-select">
+                <option value="">Tous les départements</option>
+                <option *ngFor="let dept of availableDepartments" [value]="dept">{{ dept }}</option>
+              </select>
+            </div>
+            
+            <!-- Bouton reset -->
+            <div class="reset-field">
+              <button 
+                type="button" 
+                (click)="resetFilters()"
+                class="reset-btn"
+                title="Réinitialiser les filtres">
+                <i class="fas fa-undo"></i>
+                Reset
+              </button>
+            </div>
+          </div>
+          
+          <!-- Résultats de recherche -->
+          <div class="search-results">
+            <p class="results-count">
+              {{ filteredStagiaires.length }} stagiaire(s) trouvé(s)
+              <span *ngIf="allCompletedStagiaires.length !== filteredStagiaires.length">
+                sur {{ allCompletedStagiaires.length }} total
+              </span>
+            </p>
+          </div>
+        </div>
+        
+        <!-- Liste déroulante des stagiaires -->
+        <div *ngIf="!loadingStagiaires && filteredStagiaires.length > 0" class="stagiaire-selector">
+          
+          <!-- Affichage de la sélection actuelle -->
+          <div class="selected-stagiaire" *ngIf="selectedStagiaire">
+            <div class="selected-header">
+              <h4>Stagiaire sélectionné:</h4>
+              <button type="button" (click)="clearSelection()" class="clear-btn">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="selected-details">
+              <div class="selected-main">
+                <h5>{{ selectedStagiaire.fullName }}</h5>
+                <span class="username">{{"@"}}{{ selectedStagiaire.username }}</span>
+              </div>
+              
+              <div class="selected-info">
+                <div class="info-row">
+                  <span class="label">Période:</span>
+                  <span class="value">{{ formatDisplayDate(selectedStagiaire.startDate) }} - {{ formatDisplayDate(selectedStagiaire.endDate) }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Durée:</span>
+                  <span class="value">{{ calculateDuration(selectedStagiaire.startDate, selectedStagiaire.endDate) }} jours</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Département:</span>
+                  <span class="value">{{ selectedStagiaire.departmentName }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Université:</span>
+                  <span class="value">{{ selectedStagiaire.universityName }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Type:</span>
+                  <span class="value">{{ selectedStagiaire.stage }} - {{ selectedStagiaire.studentType }}</span>
+                </div>
+                <div class="info-row" *ngIf="selectedStagiaire.note">
+                  <span class="label">Note:</span>
+                  <span class="value">{{ selectedStagiaire.note }}/20</span>
+                </div>
+                <div class="info-row">
+                  <span class="label">Tuteur:</span>
+                  <span class="value">{{ selectedStagiaire.tuteurName }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Liste des options -->
+          <div class="dropdown-container" *ngIf="!selectedStagiaire">
+            <h4>Sélectionnez un stagiaire:</h4>
+            
+            <div class="stagiaires-dropdown">
+              <div 
+                *ngFor="let stagiaire of filteredStagiaires; let i = index" 
+                class="dropdown-item"
+                (click)="selectStagiaire(stagiaire)">
+                
+                <div class="item-main">
+                  <div class="item-name">
+                    <strong>{{ stagiaire.fullName }}</strong>
+                    <span class="item-username">{{"@"}}{{ stagiaire.username }}</span>
+                  </div>
+                  <div class="item-department">{{ stagiaire.departmentName }}</div>
+                </div>
+                
+                <div class="item-details">
+                  <span class="item-period">
+                    {{ formatDisplayDate(stagiaire.startDate) }} - {{ formatDisplayDate(stagiaire.endDate) }}
+                  </span>
+                  <span class="item-duration">
+                    ({{ calculateDuration(stagiaire.startDate, stagiaire.endDate) }} jours)
+                  </span>
+                </div>
+                
+                <div class="item-extra">
+                  <span class="item-university">{{ stagiaire.universityName }}</span>
+                  <span class="item-stage">{{ stagiaire.stage }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Message si aucun stagiaire après filtrage -->
+        <div *ngIf="!loadingStagiaires && filteredStagiaires.length === 0 && allCompletedStagiaires.length > 0" class="no-results">
+          <i class="fas fa-search"></i>
+          <p>Aucun stagiaire ne correspond à vos critères de recherche.</p>
+          <button type="button" (click)="resetFilters()" class="reset-btn">
+            Réinitialiser les filtres
+          </button>
+        </div>
+        
+        <!-- Message si aucun stagiaire du tout -->
+        <div *ngIf="!loadingStagiaires && allCompletedStagiaires.length === 0" class="no-stagiaires">
+          <i class="fas fa-info-circle"></i>
+          <p>Aucun stagiaire n'a terminé son stage pour le moment.</p>
+        </div>
+        
+        <!-- Bouton de génération -->
+        <div class="button-container" *ngIf="selectedStagiaire">
+          <button 
+            type="button" 
+            (click)="generateForSelectedStagiaire()"
+            [disabled]="isLoading"
+            class="generate-btn">
+            <span *ngIf="!isLoading">
+              <i class="fas fa-file-pdf"></i>
+              Générer l'Attestation
+            </span>
+            <span *ngIf="isLoading" class="spinner"></span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- MODE MANUEL (inchangé) -->
+      <div *ngIf="generationMode === 'manual'" class="manual-mode">
+        <form [formGroup]="attestationForm" (ngSubmit)="onSubmit()">
+          <!-- Full Name Field -->
+          <div class="form-field">
+            <label for="fullName">Nom et Prénom *</label>
+            <input 
+              id="fullName" 
+              type="text" 
+              formControlName="fullName" 
+              placeholder="Entrez le nom et prénom du stagiaire"
+              [class.invalid]="formControls['fullName']?.invalid && formControls['fullName']?.touched">
+            
+            <div class="error-message" *ngIf="formControls['fullName']?.invalid && formControls['fullName']?.touched">
+              <span *ngIf="formControls['fullName']?.errors?.['required']">Le nom est obligatoire</span>
+              <span *ngIf="formControls['fullName']?.errors?.['minlength']">Le nom doit contenir au moins 3 caractères</span>
+            </div>
+          </div>
+          
+          <!-- Date Fields -->
+          <div class="date-fields">
+            <div class="form-field">
+              <label for="startDate">Date de début *</label>
+              <input 
+                id="startDate" 
+                type="date" 
+                formControlName="startDate"
+                [max]="today.toISOString().split('T')[0]"
+                [min]="minDate.toISOString().split('T')[0]"
+                [class.invalid]="formControls['startDate']?.invalid && formControls['startDate']?.touched">
+              
+              <div class="error-message" *ngIf="formControls['startDate']?.invalid && formControls['startDate']?.touched">
+                <span *ngIf="formControls['startDate']?.errors?.['required']">La date de début est obligatoire</span>
+              </div>
+            </div>
+            
+            <div class="form-field">
+              <label for="endDate">Date de fin *</label>
+              <input 
+                id="endDate" 
+                type="date" 
+                formControlName="endDate"
+                [max]="today.toISOString().split('T')[0]"
+                [min]="minDate.toISOString().split('T')[0]"
+                [class.invalid]="formControls['endDate']?.invalid && formControls['endDate']?.touched">
+              
+              <div class="error-message" *ngIf="formControls['endDate']?.invalid && formControls['endDate']?.touched">
+                <span *ngIf="formControls['endDate']?.errors?.['required']">La date de fin est obligatoire</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Date Range Error -->
+          <div class="error-message" *ngIf="attestationForm.errors?.['dateRange'] && (formControls['startDate']?.touched || formControls['endDate']?.touched)">
+            La date de début doit être antérieure à la date de fin
+          </div>
+          
+          <!-- Submit Button -->
+          <div class="button-container">
+            <button type="submit" [disabled]="isLoading || attestationForm.invalid">
+              <span *ngIf="!isLoading">Générer l'Attestation</span>
+              <span *ngIf="isLoading" class="spinner"></span>
+            </button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Messages -->
+      <div class="messages">
+        <div class="error-alert" *ngIf="errorMessage">{{ errorMessage }}</div>
+        <div class="success-alert" *ngIf="successMessage">{{ successMessage }}</div>
+      </div>
+    </div>
+  </div>
+</div>

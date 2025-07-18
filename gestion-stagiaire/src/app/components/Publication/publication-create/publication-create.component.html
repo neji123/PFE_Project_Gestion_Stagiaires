@@ -1,0 +1,24 @@
+<form [formGroup]="form" (ngSubmit)="submit()" class="publication-create">
+  <textarea
+    formControlName="content"
+    placeholder="Exprimez-vous…"
+    rows="3"
+    maxlength="2000"></textarea>
+
+  <input
+    type="file"
+    (change)="onFilesSelected($event)"
+    multiple
+    accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+  />
+
+  <div class="attachments-list" *ngIf="files.length > 0">
+    <div *ngFor="let file of files">{{file.name}}</div>
+  </div>
+
+  <button type="submit" [disabled]="form.invalid || loading">
+    Publier
+  </button>
+  <span *ngIf="loading" class="loading">Publication…</span>
+  <span *ngIf="error" class="error">{{error}}</span>
+</form>

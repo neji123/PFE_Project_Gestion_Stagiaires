@@ -1,0 +1,65 @@
+# Node (Angular)
+node_modules/
+dist/
+.env
+
+# Angular build
+*.log
+.angular/cache/
+.angular/config.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+ENV/
+.venv/
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.vs/
+*.dbmdl
+*.log
+*.ncb
+*.sdf
+*.opensdf
+*.vssscc
+*.vsscc
+*.pidb
+*.svclog
+*.suo
+*.user
+*.userprefs
+*.cache
+*.pdb
+*.mdb
+*.dbmdl
+*.bak
+*.backup
+*.publish.xml
+*.TestResults/
+TestResults/
+
+# Sensitive config
+PFE.domain/PFE.Api/appsettings.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Others
+*.swp
+*.swo
+.idea/
+*.iml

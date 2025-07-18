@@ -1,0 +1,524 @@
+// 🎨 SCSS Simple et Élégant pour le dialogue d'affectation
+
+// Variables EY
+$ey-yellow: #FFE600;
+$ey-dark-gray: #2E2E38;
+$ey-light-gray: #747480;
+$ey-white: #FFFFFF;
+$ey-black: #000000;
+$ey-background: #F6F6FA;
+
+// ===== DIALOG CONTAINER =====
+.assign-stagiaires-dialog {
+  .mat-mdc-dialog-container {
+    --mdc-dialog-container-color: $ey-white;
+    --mdc-dialog-container-shape: 12px;
+    
+    .mdc-dialog__surface {
+      border-radius: 12px !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+      border: none !important;
+      overflow: hidden;
+      max-width: 600px;
+      width: 90vw;
+    }
+  }
+  
+  // Header avec style EY
+ // Remplacez la section .mat-mdc-dialog-title dans votre SCSS
+
+ // c bon
+.mat-mdc-dialog-title {
+  background: linear-gradient(135deg, $ey-dark-gray 0%, lighten($ey-dark-gray, 8%) 50%, $ey-dark-gray 100%);
+  color: $ey-white;
+  padding: 2rem 2rem 1.5rem 2rem; // Plus d'espace en haut
+  margin: -1.5rem -1.5rem 0 -1.5rem;
+  position: relative;
+  font-size: 1.3rem; // Légèrement plus grand
+  font-weight: 700;
+  text-align: center; // Centrer le titre
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); // Ombre douce
+  
+  // Barre jaune plus subtile et plus belle
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px; // Largeur fixe au centre
+    height: 4px;
+    background: linear-gradient(90deg, transparent, $ey-yellow, transparent);
+    border-radius: 2px;
+  }
+  
+  // Badge amélioré
+  .badge {
+    background: linear-gradient(135deg, $ey-yellow, lighten($ey-yellow, 10%)) !important;
+    color: $ey-black !important;
+    border: none;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 20px; // Plus arrondi
+    font-size: 0.8rem;
+    margin-left: 1rem;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(255, 230, 0, 0.3);
+    
+    // Animation subtile
+    transition: all 0.3s ease;
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(255, 230, 0, 0.4);
+    }
+  }
+}
+  
+  // Contenu du dialog
+  .dialog-content {
+    padding: 1.5rem 2rem ;
+    background: $ey-white;
+    min-height: 300px;
+    max-height: 60vh;
+    //overflow-y: auto;
+    
+    // Scrollbar simple
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    &::-webkit-scrollbar-track {
+      background: #F0F0F0;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: $ey-light-gray;
+      border-radius: 3px;
+    }
+  }
+}
+
+// ===== LOADING STATE =====
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 0;
+  
+  .ey-spinner {
+    ::ng-deep .mat-mdc-progress-spinner .mdc-circular-progress__indeterminate-circle-graphic {
+      stroke: $ey-yellow !important;
+    }
+  }
+  
+  .loading-text {
+    margin-top: 1rem;
+    font-size: 1rem;
+    color: $ey-light-gray;
+    font-weight: 500;
+  }
+}
+
+// ===== SECTION TITLE =====
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $ey-dark-gray;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+  
+  .mat-icon {
+    color: $ey-light-gray;
+  }
+}
+
+// ===== ALERTS SIMPLES =====
+.modern-alert {
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  border-left: 4px solid;
+  
+  &--info {
+    background: #E3F2FD;
+    color: #1976D2;
+    border-left-color: #1976D2;
+    
+    .mat-icon {
+      color: #1976D2;
+    }
+  }
+  
+  &--warning {
+    background: #FFF3E0;
+    color: #F57C00;
+    border-left-color: #F57C00;
+    
+    .mat-icon {
+      color: #F57C00;
+    }
+  }
+  
+  &--danger {
+    background: #FFEBEE;
+    color: #D32F2F;
+    border-left-color: #D32F2F;
+    
+    .mat-icon {
+      color: #D32F2F;
+    }
+  }
+}
+
+// ===== FILTRES AMÉLIORÉS =====
+.search-container {
+  margin-bottom: 1.5rem;
+  
+  .filters-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1rem;
+    
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+    
+    .search-field,
+    .department-field {
+      .mat-mdc-text-field-wrapper {
+        background: $ey-background;
+        border-radius: 8px;
+        border: 1px solid #E0E0E0;
+        transition: all 0.3s ease;
+        
+        &:hover {
+          border-color: $ey-yellow;
+        }
+      }
+      
+      &.mat-focused {
+        .mat-mdc-text-field-wrapper {
+          border-color: $ey-yellow;
+          background: $ey-white;
+        }
+      }
+      
+      .mat-mdc-form-field-input {
+        color: $ey-dark-gray;
+        font-weight: 500;
+      }
+      
+      .mat-mdc-form-field-icon-suffix {
+        .mat-icon {
+          color: $ey-light-gray;
+        }
+      }
+    }
+  }
+}
+
+// ===== LISTE SIMPLE DES STAGIAIRES =====
+//  cbon
+.stagiaires-simple-list {
+  .stagiaire-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #F0F0F0;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: rgba($ey-yellow, 0.05);
+      margin: 0 -1rem;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      border-radius: 6px;
+    }
+    
+    &.selected {
+      background: rgba($ey-yellow, 0.1);
+      border-left: 3px solid $ey-yellow;
+      margin: 0 -1rem;
+      padding-left: calc(1rem - 3px);
+      padding-right: 1rem;
+      border-radius: 0 6px 6px 0;
+    }
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    // Checkbox
+    .stagiaire-checkbox {
+      margin-right: 1rem;
+      
+      .mat-mdc-checkbox {
+        .mdc-checkbox {
+          --mdc-checkbox-selected-checkmark-color: $ey-black;
+          --mdc-checkbox-selected-focus-icon-color: $ey-yellow;
+          --mdc-checkbox-selected-hover-icon-color: $ey-yellow;
+          --mdc-checkbox-selected-icon-color: $ey-yellow;
+          --mdc-checkbox-selected-pressed-icon-color: darken($ey-yellow, 10%);
+        }
+      }
+    }
+    
+    // Avatar
+    .stagiaire-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 1rem;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid $ey-yellow;
+      background: $ey-yellow;
+      
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      
+      // Initiales si pas d'image
+      &.initials {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: $ey-black;
+      }
+    }
+    
+    // Informations du stagiaire
+    .stagiaire-info {
+      flex: 1;
+      
+      .stagiaire-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: $ey-dark-gray;
+        margin: 0 0 0.25rem 0;
+        line-height: 1.3;
+      }
+      
+      .stagiaire-details {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        
+        .detail-row {
+          display: flex;
+          align-items: center;
+          gap: 0.375rem;
+          font-size: 0.875rem;
+          color: $ey-light-gray;
+          
+          .mat-icon {
+            font-size: 0.875rem;
+            width: 0.875rem;
+            height: 0.875rem;
+            color: $ey-light-gray;
+          }
+          
+          &.email {
+            color: #1976D2;
+          }
+        }
+      }
+    }
+    
+    // Badge sélectionné
+    .selection-indicator {
+      margin-left: auto;
+      
+      .selected-badge {
+        background: $ey-yellow;
+        color: $ey-black;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        
+        .mat-icon {
+          font-size: 0.875rem;
+          width: 0.875rem;
+          height: 0.875rem;
+        }
+      }
+    }
+  }
+}
+
+// ===== COMPTEUR DE SÉLECTION =====
+.selection-counter {
+  background: rgba($ey-yellow, 0.1);
+  border: 1px solid rgba($ey-yellow, 0.3);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: $ey-dark-gray;
+  font-weight: 600;
+  
+  .counter-number {
+    color: darken($ey-yellow, 30%);
+    font-weight: 700;
+  }
+}
+
+// ===== STAGIAIRES ACTUELS =====
+.current-assignees-section {
+  background: $ey-background;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 1.5rem;
+  border: 1px solid #E0E0E0;
+  
+  .section-title {
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem;
+  }
+  
+  .current-assignees {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    
+    .assignee-badge {
+      background: $ey-white;
+      color: $ey-dark-gray;
+      border: 1px solid #D0D0D0;
+      border-radius: 6px;
+      padding: 0.375rem 0.75rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      
+      .mat-icon {
+        font-size: 0.875rem;
+        width: 0.875rem;
+        height: 0.875rem;
+      }
+    }
+  }
+}
+
+// ===== ACTIONS FOOTER =====
+.mat-mdc-dialog-actions {
+  padding: 1rem 2em;
+ // margin: 0 -1.5rem -1.5rem -1.5rem;
+  background: $ey-background;
+  border-top: 1px solid #E0E0E0;
+  display: flex;
+  gap: 0.75 rem;
+  justify-content: flex-end;
+  
+  .mat-mdc-button,
+  .mat-mdc-raised-button {
+    border-radius: 6px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    
+    .mat-icon {
+      margin-right: 0.375rem;
+    }
+  }
+  
+  // Bouton Annuler
+  //bon
+  .mat-mdc-button:not([color]) {
+    color: $ey-light-gray;
+    border: 1px solid $ey-light-gray;
+    
+    &:hover {
+      background: rgba($ey-light-gray, 0.1);
+      color: $ey-dark-gray;
+      border-color: $ey-dark-gray;
+    }
+  }
+  
+  // Bouton Affecter
+  // bon
+  .mat-mdc-raised-button[color="primary"] {
+    background: $ey-yellow !important;
+    color: $ey-black !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+    border: none;
+    
+    &:hover:not([disabled]) {
+      background: darken($ey-yellow, 5%) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    &:disabled {
+      background: #E0E0E0 !important;
+      color: $ey-light-gray !important;
+      box-shadow: none !important;
+    }
+    
+    .mat-mdc-progress-spinner {
+      --mdc-circular-progress-active-indicator-color: $ey-black;
+    }
+  }
+}
+
+// ===== RESPONSIVE =====
+@media (max-width: 600px) {
+  .assign-stagiaires-dialog {
+    .mdc-dialog__surface {
+      width: 95vw !important;
+      max-width: none !important;
+    }
+    
+    .mat-mdc-dialog-title {
+      padding: 1rem 1.5rem;
+      margin: -1.5rem -1.5rem 0 -1.5rem;
+      font-size: 1.125rem;
+      
+      .badge {
+        display: block;
+        margin: 0.5rem 0 0 0;
+      }
+    }
+    
+    .dialog-content {
+      padding: 1rem 1.5rem;
+    }
+    
+    .mat-mdc-dialog-actions {
+      padding: 1rem 1.5rem;
+      margin: 0 -1.5rem -1.5rem -1.5rem;
+      flex-direction: column;
+      
+      .mat-mdc-button,
+      .mat-mdc-raised-button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+  
+  .stagiaires-simple-list {
+    .stagiaire-item {
+      .stagiaire-details {
+        .detail-row {
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,107 @@
+<app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+
+<div class="main-content" [class.sidebar-open]="isSidebarVisible">
+  <div class="projects-container" style="margin: 0 30% 0 ">
+    <div class="header-section">
+      <h1 class="page-title">Mon Projet</h1>
+    </div>
+    
+    <div *ngIf="loading" class="loading-container">
+      <div class="spinner-wrapper">
+        <mat-spinner diameter="40" class="ey-spinner"></mat-spinner>
+      </div>
+      <p class="loading-text">Chargement de vos projets...</p>
+    </div>
+    
+    <div *ngIf="error" class="error-alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+    
+    <div *ngIf="!loading && !error">
+      <!-- État vide -->
+      <div *ngIf="projects.length === 0" class="empty-state">
+        <div class="empty-illustration">
+          <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect width="120" height="120" rx="60" fill="#F5F5F5"/>
+            <path d="M40 45H80V85H40V45Z" fill="#E0E0E0"/>
+            <path d="M50 55H70V65H50V55Z" fill="#FFE600"/>
+            <path d="M50 70H70V75H50V70Z" fill="#2E2E38" fill-opacity="0.5"/>
+            <path d="M40 40L60 30L80 40" stroke="#2E2E38" stroke-width="2"/>
+          </svg>
+        </div>
+        <h2>Aucun projet assigné</h2>
+        <p>Vous n'êtes actuellement assigné à aucun projet. Contactez votre responsable pour plus d'informations.</p>
+        <button mat-flat-button class="ey-button-secondary">
+          <mat-icon>refresh</mat-icon> Actualiser
+        </button>
+      </div>
+      
+      <!-- Liste des projets -->
+      <div *ngIf="projects.length > 0" class="projects-grid">
+        <div *ngFor="let project of projects; let i = index" class="project-card-container">
+          <!-- Carte de projet avec animation de décalage basée sur l'indice -->
+          <div class="project-card" [ngStyle]="{'animation-delay': (i * 0.1) + 's'}">
+            <div class="card-header" [ngClass]="getProjectStatusClass(project)">
+              <div class="project-icon">
+                {{ project.title.charAt(0) }}
+              </div>
+              <div class="project-status-badge">
+                {{ getProjectStatus(project) }}
+              </div>
+            </div>
+            
+            <div class="card-body">
+              <h3 class="project-title">{{ project.title }}</h3>
+              
+              <div class="project-dates">
+                <mat-icon>event</mat-icon>
+                <span *ngIf="project.startDate && project.endDate">
+                  {{ project.startDate | date:'dd MMM yyyy' }} - {{ project.endDate | date:'dd MMM yyyy' }}
+                </span>
+                <span *ngIf="project.startDate && !project.endDate">
+                  Démarré le {{ project.startDate | date:'dd MMM yyyy' }}
+                </span>
+                <span *ngIf="!project.startDate">
+                  Date non définie
+                </span>
+              </div>
+              
+              <p class="project-description">{{ project.description }}</p>
+              
+              <!-- Progression du projet -->
+              <div class="project-progress">
+                <div class="progress-label">
+                  <span>Progression</span>
+                  <span>{{ getProjectProgress(project) }}%</span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" [style.width.%]="getProjectProgress(project)"></div>
+                </div>
+              </div>
+              
+              <!-- Statistiques du projet -->
+              <div class="project-stats">
+                <div class="stat-item">
+                  <mat-icon>people</mat-icon>
+                  <span>{{ project.users?.length || 0 }}</span>
+                </div>
+               
+                <div class="stat-item">
+                  <mat-icon>task_alt</mat-icon>
+                  <span>{{ getCompletedTasks(project) }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card-actions">
+              <button mat-icon-button class="action-button" title="Voir les détails" [routerLink]="['/projects', project.id]">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

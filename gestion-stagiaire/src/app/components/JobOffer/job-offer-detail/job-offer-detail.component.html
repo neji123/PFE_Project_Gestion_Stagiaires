@@ -1,0 +1,610 @@
+<div class="job-offer-detail-page">
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="loading()">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Chargement de l'offre d'emploi...</p>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="error() && !loading()">
+    <div class="error-content">
+      <i class="fas fa-exclamation-triangle"></i>
+      <h3>Erreur de chargement</h3>
+      <p>{{ error() }}</p>
+      <div class="error-actions">
+        <button class="btn btn-primary" (click)="refreshOffer()">
+          <i class="fas fa-retry"></i>
+          Réessayer
+        </button>
+        <button class="btn btn-secondary" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+          Retour à la liste
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content-wrapper" *ngIf="!loading() && !error() && jobOffer()">
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <div class="actions-left">
+        <button class="btn btn-ghost" (click)="goBack()">
+          <i class="fas fa-arrow-left"></i>
+          Retour à la liste
+        </button>
+      </div>
+
+      <div class="actions-right">
+        <!-- Share Actions -->
+        <button class="btn btn-ghost btn-icon" (click)="shareOffer()" title="Partager">
+          <i class="fas fa-share-alt"></i>
+        </button>
+        
+        <button class="btn btn-ghost btn-icon" (click)="copyOfferUrl()" title="Copier le lien">
+          <i class="fas fa-link"></i>
+        </button>
+        
+        <button class="btn btn-ghost btn-icon" (click)="printOffer()" title="Imprimer">
+          <i class="fas fa-print"></i>
+        </button>
+
+        <!-- ✨ NOUVEAU : Bouton de recommandation IA -->
+        <button 
+          class="btn btn-ai-recommendation"
+          (click)="toggleRecommendations()"
+          [disabled]="generatingRecommendations()"
+          *ngIf="canGenerateRecommendations()"
+          title="Recommandations IA basées sur cette offre">
+          <i class="fas fa-robot" *ngIf="!generatingRecommendations()"></i>
+          <div class="spinner-sm" *ngIf="generatingRecommendations()"></div>
+          <span *ngIf="!hasRecommendations() && !generatingRecommendations()">Recommandations IA</span>
+          <span *ngIf="hasRecommendations() && !generatingRecommendations()">
+            {{ showRecommendations() ? 'Masquer' : 'Afficher' }} ({{ recommendations().length }})
+          </span>
+          <span *ngIf="generatingRecommendations()">Analyse IA...</span>
+        </button>
+
+        <!-- Edit Actions (if authorized) -->
+        <div class="edit-actions" *ngIf="canEdit()">
+          <button class="btn btn-secondary" (click)="editOffer()">
+            <i class="fas fa-edit"></i>
+            Modifier
+          </button>
+          
+          <button 
+            class="btn btn-danger" 
+            (click)="deleteOffer()"
+            [disabled]="deleting()"
+            *ngIf="canDelete()">
+            <i class="fas fa-trash" *ngIf="!deleting()"></i>
+            <div class="spinner-sm" *ngIf="deleting()"></div>
+            {{ deleting() ? 'Suppression...' : 'Supprimer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ✨ NOUVELLE SECTION : Recommandations IA -->
+    <div class="ai-recommendations-section" *ngIf="showRecommendations() && hasRecommendations()">
+      <div class="recommendations-header">
+        <h2>
+          <i class="fas fa-robot"></i>
+          Recommandations IA
+          <span class="recommendations-count">({{ recommendations().length }} candidats)</span>
+        </h2>
+        <p class="recommendations-subtitle">
+          Candidats recommandés par notre IA selon les compétences et l'expérience
+        </p>
+      </div>
+
+      <!-- Meilleur match -->
+      <div class="best-match-section" *ngIf="bestMatch()">
+        <div class="best-match-card">
+          <div class="best-match-header">
+            <div class="best-match-badge">
+              <i class="fas fa-crown"></i>
+              <span>Meilleur match</span>
+            </div>
+            <div class="best-match-score">
+              <span class="score-value" [ngClass]="getScoreClass(bestMatch()!.compositeScore)">
+                {{ formatScore(bestMatch()!.compositeScore) }}
+              </span>
+              <span class="score-label">de compatibilité</span>
+            </div>
+          </div>
+          
+          <div class="best-match-content">
+            <div class="candidate-info">
+              <h3 class="candidate-name">{{ bestMatch()!.name }}</h3>
+              <p class="candidate-details">
+                <i class="fas fa-building"></i>
+                {{ bestMatch()!.department }} • {{ bestMatch()!.university }}
+              </p>
+            </div>
+            
+            <div class="match-metrics">
+              <div class="metric-item">
+                <span class="metric-label">Compétences</span>
+                <div class="metric-bar">
+                  <div class="metric-fill" [style.width]="formatScore(bestMatch()!.skillSimilarity)"></div>
+                </div>
+                <span class="metric-value">{{ formatScore(bestMatch()!.skillSimilarity) }}</span>
+              </div>
+              
+              <div class="metric-item">
+                <span class="metric-label">Profil</span>
+                <div class="metric-bar">
+                  <div class="metric-fill" [style.width]="formatScore(bestMatch()!.textSimilarity)"></div>
+                </div>
+                <span class="metric-value">{{ formatScore(bestMatch()!.textSimilarity) }}</span>
+              </div>
+            </div>
+            
+            <div class="quick-actions">
+              <button 
+                class="btn btn-outline-primary btn-sm"
+                (click)="contactCandidate(bestMatch()!)">
+                <i class="fas fa-envelope"></i>
+                Contacter
+              </button>
+              <button 
+                class="btn btn-primary btn-sm"
+                (click)="selectCandidate(bestMatch()!)">
+                <i class="fas fa-star"></i>
+                Sélectionner
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liste complète des recommandations -->
+      <div class="recommendations-grid">
+        <div 
+          class="recommendation-card"
+         *ngFor="let recommendation of displayedRecommendations(); let i = index"
+          [class.best-match]="i === 0">
+          
+          <!-- Header de la carte -->
+          <div class="recommendation-header">
+            <div class="candidate-rank">
+              <span class="rank-badge" [ngClass]="i === 0 ? 'rank-gold' : i === 1 ? 'rank-silver' : i === 2 ? 'rank-bronze' : 'rank-normal'">
+                #{{ i + 1 }}
+              </span>
+            </div>
+            
+            <div class="candidate-score">
+              <span class="score-circle" [ngClass]="getScoreClass(recommendation.compositeScore)">
+                {{ formatScore(recommendation.compositeScore) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Info candidat -->
+          <div class="candidate-section">
+            <h4 class="candidate-name">{{ recommendation.name }}</h4>
+            <p class="candidate-email">
+              <i class="fas fa-envelope"></i>
+              {{ recommendation.email }}
+            </p>
+            <div class="candidate-details">
+              <div class="detail-item">
+                <i class="fas fa-building"></i>
+                <span>{{ recommendation.department }}</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span>{{ recommendation.university }}</span>
+              </div>
+              <div class="detail-item" *ngIf="recommendation.departmentMatch">
+                <i class="fas fa-check-circle text-success"></i>
+                <span>Même département</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compétences -->
+          <div class="skills-section" *ngIf="recommendation.skills">
+            <h5>
+              <i class="fas fa-tags"></i>
+              Compétences
+            </h5>
+            <div class="skills-tags">
+              <span 
+                class="skill-tag"
+                *ngFor="let skill of formatSkillsArray(recommendation.skills).slice(0, 4)">
+                {{ skill }}
+              </span>
+              <span 
+                class="skill-more"
+                *ngIf="formatSkillsArray(recommendation.skills).length > 4">
+                +{{ formatSkillsArray(recommendation.skills).length - 4 }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Métriques de correspondance -->
+          <div class="metrics-section">
+            <h5>
+              <i class="fas fa-chart-bar"></i>
+              Analyse de correspondance
+            </h5>
+            
+            <div class="metrics-grid">
+              <div class="metric-row">
+                <span class="metric-label">Compétences</span>
+                <div class="metric-progress">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill skill-progress" 
+                      [style.width]="formatScore(recommendation.skillSimilarity)">
+                    </div>
+                  </div>
+                  <span class="metric-percentage">{{ formatScore(recommendation.skillSimilarity) }}</span>
+                </div>
+              </div>
+              
+              <div class="metric-row">
+                <span class="metric-label">Profil</span>
+                <div class="metric-progress">
+                  <div class="progress-bar">
+                    <div 
+                      class="progress-fill text-progress" 
+                      [style.width]="formatScore(recommendation.textSimilarity)">
+                    </div>
+                  </div>
+                  <span class="metric-percentage">{{ formatScore(recommendation.textSimilarity) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Raisons du match -->
+          <div class="reasons-section" *ngIf="recommendation.matchReasons.length > 0">
+            <h5>
+              <i class="fas fa-lightbulb"></i>
+              Pourquoi ce candidat ?
+            </h5>
+            <ul class="match-reasons">
+              <li *ngFor="let reason of recommendation.matchReasons" class="reason-item">
+                <i class="fas fa-check"></i>
+                <span>{{ reason }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Actions -->
+          <div class="recommendation-actions">
+            <button 
+              class="btn btn-outline-secondary btn-sm"
+              (click)="markRecommendationAsViewed(recommendation)">
+              <i class="fas fa-eye"></i>
+              Voir profil
+            </button>
+            <button 
+              class="btn btn-outline-primary btn-sm"
+              (click)="contactCandidate(recommendation)">
+              <i class="fas fa-envelope"></i>
+              Contacter
+            </button>
+            <button 
+              class="btn btn-primary btn-sm"
+              (click)="selectCandidate(recommendation)">
+              <i class="fas fa-user-plus"></i>
+              Sélectionner
+            </button>
+          </div>
+        </div>
+      </div>
+     <!-- ✨ NOUVEAU : Section Bouton "Afficher Plus" -->
+      <div class="load-more-section" 
+           [class.no-more-items]="!hasMoreRecommendations()"
+           *ngIf="recommendations().length > 3">
+        
+        <!-- Bouton "Afficher Plus" -->
+        <button 
+          class="load-more-btn"
+          (click)="loadMoreRecommendations()"
+          [disabled]="loadingMore() || !hasMoreRecommendations()"
+          *ngIf="hasMoreRecommendations()">
+          
+          <i class="fas fa-chevron-down" *ngIf="!loadingMore()"></i>
+          <div class="spinner-sm" *ngIf="loadingMore()"></div>
+          
+          <span *ngIf="!loadingMore()">Afficher plus de recommandations</span>
+          <span *ngIf="loadingMore()">Chargement...</span>
+        </button>
+
+        <!-- Message quand toutes les recommandations sont affichées -->
+        <button 
+          class="load-more-btn"
+          disabled
+          *ngIf="!hasMoreRecommendations() && recommendations().length > 3">
+          
+          <i class="fas fa-check-circle"></i>
+          <span>Toutes les recommandations affichées</span>
+        </button>
+        
+        <!-- Informations sur l'affichage -->
+        <div class="load-more-info">
+          Affichage 
+          <span class="shown-count">{{ displayedRecommendations().length }}</span> 
+          sur 
+          <span class="total-count">{{ recommendations().length }}</span> 
+          recommandations
+        </div>
+      </div>
+
+        
+   
+
+      <!-- Actions globales des recommandations -->
+      <div class="recommendations-footer">
+        <div class="footer-info">
+          <i class="fas fa-info-circle"></i>
+          <span>Recommandations générées par IA • Basées sur l'analyse des compétences et de l'expérience</span>
+        </div>
+        <div class="footer-actions">
+          <button 
+            class="btn btn-outline-secondary"
+            (click)="generateRecommendations()">
+            <i class="fas fa-sync-alt"></i>
+            Régénérer
+          </button>
+          <button 
+            class="btn btn-ghost"
+            (click)="showRecommendations.set(false)">
+            <i class="fas fa-times"></i>
+            Masquer
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Message d'erreur des recommandations -->
+    <div class="ai-error-section" *ngIf="recommendationError()">
+      <div class="error-card">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Erreur du service IA</h3>
+        <p>{{ recommendationError() }}</p>
+        <button 
+          class="btn btn-primary"
+          (click)="generateRecommendations()">
+          <i class="fas fa-retry"></i>
+          Réessayer
+        </button>
+      </div>
+    </div>
+
+    <!-- Job Offer Content (Contenu existant inchangé) -->
+    <div class="job-offer-content">
+      <!-- Main Card -->
+      <div class="main-card">
+        <!-- Header -->
+        <div class="offer-header">
+          <div class="header-main">
+            <h1 class="offer-title">{{ jobOffer()?.title }}</h1>
+            <div class="offer-meta">
+              <div class="meta-item">
+                <i class="fas fa-building"></i>
+                <span>{{ jobOffer()?.departmentName }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>{{ publishedDate() }}</span>
+              </div>
+              <div class="meta-item">
+                <i class="fas fa-user"></i>
+                <span>Publié par {{ jobOffer()?.publishedByName }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="header-badge" *ngIf="canEdit()">
+            <div class="owner-badge">
+              <i class="fas fa-crown"></i>
+              <span>Votre publication</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description Section -->
+        <div class="content-section">
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-align-left"></i>
+              Description du poste
+            </h2>
+          </div>
+          <div class="section-content">
+            <div class="description-text">{{ jobOffer()?.description }}</div>
+          </div>
+        </div>
+
+        <!-- Skills Section -->
+        <div class="content-section" *ngIf="skills().length > 0">
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-tags"></i>
+              Compétences requises
+            </h2>
+          </div>
+          <div class="section-content">
+            <div class="skills-grid">
+              <div class="skill-item" *ngFor="let skill of skills()">
+                <i class="fas fa-check"></i>
+                <span>{{ skill }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Section (for candidates) -->
+        <div class="content-section contact-section" *ngIf="!canEdit()">
+          <div class="section-header">
+            <h2>
+              <i class="fas fa-envelope"></i>
+              Candidater
+            </h2>
+          </div>
+          <div class="section-content">
+            <div class="contact-info">
+              <p>Pour postuler à cette offre, veuillez contacter :</p>
+              <div class="contact-details">
+                <div class="contact-item">
+                  <i class="fas fa-user"></i>
+                  <span>{{ jobOffer()?.publishedByName }}</span>
+                </div>
+                <div class="contact-item">
+                  <i class="fas fa-building"></i>
+                  <span>{{ jobOffer()?.departmentName }}</span>
+                </div>
+              </div>
+              <div class="contact-actions">
+                <button class="btn btn-primary">
+                  <i class="fas fa-paper-plane"></i>
+                  Envoyer candidature
+                </button>
+                <button class="btn btn-secondary">
+                  <i class="fas fa-download"></i>
+                  Télécharger en PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Summary Card -->
+        <div class="sidebar-card summary-card">
+          <h3>
+            <i class="fas fa-info-circle"></i>
+            Résumé de l'offre
+          </h3>
+          <div class="summary-items">
+            <div class="summary-item">
+              <label>Poste</label>
+              <span class="value">{{ jobOffer()?.title }}</span>
+            </div>
+            <div class="summary-item">
+              <label>Département</label>
+              <span class="value">{{ jobOffer()?.departmentName }}</span>
+            </div>
+            <div class="summary-item">
+              <label>Date de publication</label>
+              <span class="value">{{ jobOffer()?.publishedAt | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="summary-item">
+              <label>Responsable RH</label>
+              <span class="value">{{ jobOffer()?.publishedByName }}</span>
+            </div>
+            <div class="summary-item">
+              <label>Compétences</label>
+              <span class="value">{{ skills().length }} compétence(s) requise(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✨ NOUVELLE CARTE : Statut des recommandations -->
+        <div class="sidebar-card ai-status-card" *ngIf="canGenerateRecommendations()">
+          <h3>
+            <i class="fas fa-robot"></i>
+            Recommandations IA
+          </h3>
+          <div class="ai-status">
+            <div class="status-item" *ngIf="!hasRecommendations()">
+              <i class="fas fa-circle-notch text-muted"></i>
+              <span>Aucune recommandation générée</span>
+            </div>
+            <div class="status-item" *ngIf="hasRecommendations()">
+              <i class="fas fa-check-circle text-success"></i>
+              <span>{{ recommendations().length }} candidats recommandés</span>
+            </div>
+            <div class="status-item" *ngIf="bestMatch()">
+              <i class="fas fa-star text-warning"></i>
+              <span>Meilleur match: {{ formatScore(bestMatch()!.compositeScore) }}</span>
+            </div>
+          </div>
+          <button 
+            class="btn btn-ai btn-sm btn-block"
+            (click)="toggleRecommendations()"
+            [disabled]="generatingRecommendations()">
+            <i class="fas fa-robot" *ngIf="!generatingRecommendations()"></i>
+            <div class="spinner-sm" *ngIf="generatingRecommendations()"></div>
+            <span *ngIf="!hasRecommendations()">Générer recommandations</span>
+            <span *ngIf="hasRecommendations()">
+              {{ showRecommendations() ? 'Masquer' : 'Afficher' }} recommandations
+            </span>
+          </button>
+        </div>
+
+        <!-- Quick Actions Card -->
+        <div class="sidebar-card actions-card" *ngIf="canEdit()">
+          <h3>
+            <i class="fas fa-cogs"></i>
+            Actions rapides
+          </h3>
+          <div class="quick-actions">
+            <button class="action-btn edit" (click)="editOffer()">
+              <i class="fas fa-edit"></i>
+              <span>Modifier l'offre</span>
+            </button>
+            <button class="action-btn share" (click)="shareOffer()">
+              <i class="fas fa-share-alt"></i>
+              <span>Partager</span>
+            </button>
+            <button class="action-btn copy" (click)="copyOfferUrl()">
+              <i class="fas fa-link"></i>
+              <span>Copier le lien</span>
+            </button>
+            <button class="action-btn print" (click)="printOffer()">
+              <i class="fas fa-print"></i>
+              <span>Imprimer</span>
+            </button>
+            <button 
+              class="action-btn delete" 
+              (click)="deleteOffer()"
+              [disabled]="deleting()"
+              *ngIf="canDelete()">
+              <i class="fas fa-trash" *ngIf="!deleting()"></i>
+              <div class="spinner-sm" *ngIf="deleting()"></div>
+              <span>{{ deleting() ? 'Suppression...' : 'Supprimer' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation Card -->
+        <div class="sidebar-card navigation-card">
+          <h3>
+            <i class="fas fa-compass"></i>
+            Navigation
+          </h3>
+          <div class="nav-actions">
+            <button class="nav-btn" (click)="goBack()">
+              <i class="fas fa-list"></i>
+              <span>Toutes les offres</span>
+            </button>
+            <button class="nav-btn" [routerLink]="['/job-offers/create']" *ngIf="currentUser()?.role === 'RHs'">
+              <i class="fas fa-plus"></i>
+              <span>Nouvelle offre</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="test-section mt-3">
+  <button 
+    type="button" 
+    class="btn btn-outline-info btn-sm"
+    (click)="testPythonConnection()"
+    title="Tester la connexion avec l'API Python">
+    🔧 Test Python Connection
+  </button>
+</div>

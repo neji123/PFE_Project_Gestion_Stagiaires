@@ -1,0 +1,366 @@
+<div class="job-offers-page">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="page-title">
+          <i class="fas fa-briefcase"></i>
+          Offres d'Emploi
+        </h1>
+        <p class="page-subtitle">
+          Découvrez les opportunités de carrière dans notre entreprise
+        </p>
+      </div>
+      
+      <!-- Actions RH -->
+      <div class="header-actions" *ngIf="isRH()">
+        <button 
+          class="btn btn-primary btn-create"
+          (click)="navigateToCreate()"
+          title="Créer une nouvelle offre">
+          <i class="fas fa-plus"></i>
+          <span>Nouvelle Offre</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="stats-section" *ngIf="!loading()">
+    <div class="stats-grid">
+      <div class="stat-card primary">
+        <div class="stat-icon">
+          <i class="fas fa-briefcase"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ totalOffers() }}</div>
+          <div class="stat-label">Offres Disponibles</div>
+        </div>
+      </div>
+
+      <div class="stat-card accent" *ngIf="filteredOffers().length !== totalOffers()">
+        <div class="stat-icon">
+          <i class="fas fa-filter"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ filteredOffers().length }}</div>
+          <div class="stat-label">Résultats Filtrés</div>
+        </div>
+      </div>
+
+      <div class="stat-card success" *ngIf="isRH() && myOffersCount() > 0">
+        <div class="stat-icon">
+          <i class="fas fa-user-edit"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ myOffersCount() }}</div>
+          <div class="stat-label">Mes Publications</div>
+        </div>
+      </div>
+
+      <div class="stat-card info">
+        <div class="stat-icon">
+          <i class="fas fa-building"></i>
+        </div>
+        <div class="stat-content">
+          <div class="stat-number">{{ departments().length }}</div>
+          <div class="stat-label">Départements</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters Section -->
+  <div class="filters-section">
+    <div class="filters-card">
+      <div class="filters-header">
+        <h3>
+          <i class="fas fa-search"></i>
+          Filtres de recherche
+        </h3>
+        <button 
+          class="btn btn-ghost btn-sm"
+          (click)="clearFilters()"
+          *ngIf="searchKeyword() || selectedDepartmentId() || showMyOffersOnly()">
+          <i class="fas fa-times"></i>
+          Effacer tout
+        </button>
+      </div>
+      
+      <div class="filters-grid">
+        <!-- Search -->
+        <div class="filter-group">
+          <label for="search">
+            <i class="fas fa-search"></i>
+            Recherche globale
+          </label>
+          <div class="input-wrapper">
+            <input
+              id="search"
+              type="text"
+              class="form-control"
+              placeholder="Titre, compétences, description..."
+              [value]="searchKeyword()"
+              (input)="searchKeyword.set($any($event.target).value); onSearchChange()"
+            />
+            <i class="fas fa-search input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Department Filter -->
+        <div class="filter-group">
+          <label for="department">
+            <i class="fas fa-building"></i>
+            Département
+          </label>
+          <div class="select-wrapper">
+            <select
+              id="department"
+              class="form-control"
+              [value]="selectedDepartmentId() || ''"
+              (change)="selectedDepartmentId.set($any($event.target).value ? +$any($event.target).value : null); onDepartmentChange()"
+            >
+              <option value="">Tous les départements</option>
+              <option *ngFor="let dept of departments()" [value]="dept.id">
+                {{ dept.departmentName }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
+        </div>
+
+        <!-- My Offers Filter (pour RH) -->
+        <div class="filter-group toggle-group" *ngIf="isRH()">
+          <label class="toggle-label">
+            <input
+              type="checkbox"
+              class="toggle-input"
+              [checked]="showMyOffersOnly()"
+              (change)="showMyOffersOnly.set($any($event.target).checked); onShowMyOffersChange()"
+            />
+            <span class="toggle-slider"></span>
+            <span class="toggle-text">Mes offres uniquement</span>
+          </label>
+        </div>
+
+        <!-- Refresh Button -->
+        <div class="filter-group">
+          <button
+            class="btn btn-secondary btn-refresh"
+            (click)="refreshOffers()"
+            title="Actualiser la liste">
+            <i class="fas fa-sync-alt" [class.spinning]="loading()"></i>
+            <span>Actualiser</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content Section -->
+  <div class="content-section">
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading()">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Chargement des offres d'emploi...</p>
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" *ngIf="error() && !loading()">
+      <div class="error-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3>Erreur de chargement</h3>
+        <p>{{ error() }}</p>
+        <button class="btn btn-primary" (click)="refreshOffers()">
+          <i class="fas fa-retry"></i>
+          Réessayer
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading() && !error() && filteredOffers().length === 0">
+      <div class="empty-content">
+        <i class="fas fa-search"></i>
+        <h3>Aucune offre trouvée</h3>
+        <p *ngIf="searchKeyword() || selectedDepartmentId() || showMyOffersOnly()">
+          Aucune offre ne correspond à vos critères de recherche.
+        </p>
+        <p *ngIf="!searchKeyword() && !selectedDepartmentId() && !showMyOffersOnly()">
+          Aucune offre d'emploi n'est disponible pour le moment.
+        </p>
+        <div class="empty-actions">
+          <button 
+            class="btn btn-ghost" 
+            (click)="clearFilters()"
+            *ngIf="searchKeyword() || selectedDepartmentId() || showMyOffersOnly()">
+            <i class="fas fa-times"></i>
+            Effacer les filtres
+          </button>
+          <button 
+            class="btn btn-primary" 
+            (click)="navigateToCreate()"
+            *ngIf="isRH()">
+            <i class="fas fa-plus"></i>
+            Créer une offre
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Jobs Grid -->
+    <div class="jobs-grid" *ngIf="!loading() && !error() && paginatedOffers().length > 0">
+      <div 
+        class="job-card"
+        *ngFor="let offer of paginatedOffers(); trackBy: trackByOfferId"
+        [class.my-offer]="isMyOffer(offer)">
+        
+        <!-- Card Header -->
+        <div class="job-card-header">
+          <div class="job-title-section">
+            <h3 class="job-title" (click)="navigateToView(offer.id)">
+              {{ offer.title }}
+            </h3>
+            <div class="job-department">
+              <i class="fas fa-building"></i>
+              {{ offer.departmentName }}
+            </div>
+          </div>
+          
+          <!-- Actions pour mes offres ou admin -->
+          <div class="job-actions" *ngIf="isMyOffer(offer)">
+            <button 
+              class="btn btn-ghost btn-sm btn-edit"
+              (click)="navigateToEdit(offer.id)"
+              title="Modifier cette offre">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button 
+              class="btn btn-ghost btn-sm btn-danger"
+              (click)="deleteOffer(offer)"
+              title="Supprimer cette offre">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+
+          <!-- Actions pour tous les RH/Admin (version de test) -->
+          <div class="job-actions-temp" *ngIf="isRH()" style="margin-top: 0.5rem;">
+            <button 
+              class="btn btn-outline-primary btn-sm"
+              (click)="navigateToEdit(offer.id)"
+              title="Modifier (Admin/RH)">
+              <i class="fas fa-edit"></i>
+              Modifier
+            </button>
+            <button 
+              class="btn btn-outline-secondary btn-sm"
+              (click)="deleteOffer(offer)"
+              title="Supprimer (Admin/RH)">
+              <i class="fas fa-trash"></i>
+              Supprimer
+            </button>
+          </div>
+
+        
+          
+        </div>
+
+        <!-- Card Content -->
+        <div class="job-card-content">
+          <div class="job-description">
+            {{ truncateText(offer.description, 120) }}
+          </div>
+          
+          <div class="job-skills">
+            <div class="skills-header">
+              <i class="fas fa-tags"></i>
+              <span>Compétences requises :</span>
+            </div>
+            <div class="skills-list">
+              <span 
+                class="skill-tag"
+                *ngFor="let skill of formatSkills(offer.requiredSkills).slice(0, 3)">
+                {{ skill }}
+              </span>
+              <span 
+                class="skill-more"
+                *ngIf="formatSkills(offer.requiredSkills).length > 3">
+                +{{ formatSkills(offer.requiredSkills).length - 3 }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="job-card-footer">
+          <div class="job-meta">
+            <div class="job-author">
+              <i class="fas fa-user"></i>
+              {{ offer.publishedByName }}
+            </div>
+            <div class="job-date">
+              <i class="fas fa-calendar-alt"></i>
+              {{ formatDate(offer.publishedAt) }}
+            </div>
+          </div>
+          
+          <div class="job-card-actions">
+            <button 
+              class="btn btn-outline-primary btn-sm"
+              (click)="navigateToView(offer.id)">
+              <i class="fas fa-eye"></i>
+              Voir détails
+            </button>
+          </div>
+        </div>
+
+        <!-- My Offer Badge -->
+        <div class="my-offer-badge" *ngIf="isMyOffer(offer)">
+          <i class="fas fa-crown"></i>
+          <span>Ma publication</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-section" *ngIf="!loading() && !error() && totalPages() > 1">
+      <div class="pagination-info">
+        <span>
+          Affichage {{ ((currentPage() - 1) * itemsPerPage()) + 1 }} à 
+          {{ Math.min(currentPage() * itemsPerPage(), filteredOffers().length) }} 
+          sur {{ filteredOffers().length }} offres
+        </span>
+      </div>
+      
+      <nav class="pagination-nav">
+        <button 
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === 1"
+          (click)="goToPage(currentPage() - 1)">
+          <i class="fas fa-chevron-left"></i>
+          Précédent
+        </button>
+        
+        <div class="pagination-numbers">
+          <button
+            *ngFor="let page of getPageNumbers()"
+            class="btn btn-ghost btn-sm"
+            [class.active]="page === currentPage()"
+            (click)="goToPage(page)">
+            {{ page }}
+          </button>
+        </div>
+        
+        <button 
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentPage() === totalPages()"
+          (click)="goToPage(currentPage() + 1)">
+          Suivant
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </nav>
+    </div>
+  </div>
+</div>

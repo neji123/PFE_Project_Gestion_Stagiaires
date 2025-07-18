@@ -1,0 +1,253 @@
+<!-- tuteur-dashboard.component.html - Version corrigée pour les images -->
+<div class="ey-dashboard">
+  <!-- Header Section -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="dashboard-title">Tableau de Bord Tuteur</h1>
+        <p class="dashboard-subtitle">Gérez vos stagiaires et suivez leurs progrès</p>
+      </div>
+      
+      <div class="header-actions">
+        <button 
+          (click)="refreshData()" 
+          [class.refreshing]="isRefreshing"
+          class="refresh-btn">
+          <i class="fas fa-sync-alt"></i>
+          Actualiser
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="ey-spinner">
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+      <div class="spinner-ring"></div>
+    </div>
+    <p class="loading-text">Chargement de vos données...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="hasError" class="error-container">
+    <div class="error-card">
+      <i class="fas fa-exclamation-triangle error-icon"></i>
+      <h3 class="error-title">Oops! Une erreur s'est produite</h3>
+      <p class="error-message">{{ errorMessage }}</p>
+      <button (click)="loadDashboardData()" class="retry-btn">
+        <i class="fas fa-redo-alt"></i>
+        Réessayer
+      </button>
+    </div>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!isLoading && !hasError" class="dashboard-content">
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card stagiaires-card">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Mes Stagiaires</h3>
+            <div class="stat-value">{{ tuteurStats.stagiairesCount }}</div>
+            <div class="stat-change positive">
+              <i class="fas fa-arrow-up"></i>
+              Actuel
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card reports-card">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-file-text"></i>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Rapports en Attente</h3>
+            <div class="stat-value">{{ tuteurStats.pendingReports }}</div>
+            <div class="stat-change" [class.urgent]="tuteurStats.pendingReports > 5">
+              <i class="fas fa-clock"></i>
+              {{ tuteurStats.pendingReports > 5 ? 'Action requise' : 'Sous contrôle' }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card tasks-card">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Tâches Complétées</h3>
+            <div class="stat-value">{{ tuteurStats.completedTasks }}</div>
+            <div class="stat-change positive">
+              <i class="fas fa-trophy"></i>
+              Excellent!
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat-card messages-card">
+        <div class="stat-content">
+          <div class="stat-icon">
+            <i class="fas fa-envelope"></i>
+            <span *ngIf="tuteurStats.messages > 0" class="notification-badge">{{ tuteurStats.messages }}</span>
+          </div>
+          <div class="stat-details">
+            <h3 class="stat-title">Messages</h3>
+            <div class="stat-value">{{ tuteurStats.messages }}</div>
+            <div class="stat-change">
+              <i class="fas fa-comment"></i>
+              {{ tuteurStats.messages > 0 ? 'Nouveaux' : 'Aucun nouveau' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+      
+      <!-- Charts Section -->
+      <div class="charts-section">
+        <!-- Performance Chart -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <h3 class="chart-title">Performance des Stagiaires</h3>
+          </div>
+          <div class="chart-content">
+            <app-chart 
+              *ngIf="stagiairePerformance.labels?.length > 0"
+              type="bar" 
+              [data]="stagiairePerformance" 
+              [options]="barChartOptions || {}">
+            </app-chart>
+            <div *ngIf="!stagiairePerformance.labels?.length" class="empty-state">
+              <i class="fas fa-chart-bar empty-icon"></i>
+              <p class="empty-text">Aucune donnée de performance disponible</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-card">
+          <div class="progress-header">
+            <h3 class="progress-title">Progression des Stages</h3>
+          </div>
+          
+          <div class="progress-content">
+            <div *ngFor="let stagiaire of stagiaireProgress; trackBy: trackByStagiaire" 
+                 class="progress-item">
+              
+              <div class="stagiaire-info">
+                <div class="stagiaire-avatar">
+                  <!-- CORRECTION : Utilisation des bonnes méthodes comme dans mes-stagiaires -->
+                  <ng-container *ngIf="stagiaire.avatar; else defaultAvatar">
+                    <img [src]="getImageUrl(stagiaire.avatar)" 
+                         [alt]="stagiaire.name"
+                         (error)="handleImageError($event)">
+                  </ng-container>
+                  <ng-template #defaultAvatar>
+                    <div class="avatar-placeholder">
+                      {{ getInitials(stagiaire.name) }}
+                    </div>
+                  </ng-template>
+                </div>
+                <div class="stagiaire-details">
+                  <h4 class="stagiaire-name">{{ stagiaire.name }}</h4>
+                  <p class="stagiaire-department">{{ stagiaire.department }}</p>
+                </div>
+              </div>
+              
+              <div class="progress-section">
+                <div class="progress-percentage">{{ stagiaire.progress }}%</div>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" 
+                       [style.width.%]="stagiaire.progress"
+                       [style.background-color]="getColorByScore(stagiaire.progress)">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Section -->
+      <div class="documents-section">
+        <div class="section-header">
+          <h3 class="section-title">Rapports à Valider</h3>
+        </div>
+
+        <div class="documents-grid">
+          <div *ngFor="let doc of documentsToValidate; trackBy: trackByDocument" 
+               class="document-card">
+            
+            <div class="document-header">
+              <div class="document-icon">
+                <i class="fas fa-file-alt"></i>
+              </div>
+              <div class="document-meta">
+                <div class="document-date">{{ doc.submittedDate | date:'dd/MM/yyyy' }}</div>
+              </div>
+            </div>
+
+            <div class="document-content">
+              <h4 class="document-title">{{ doc.title }}</h4>
+              <p class="document-student">{{ doc.stagiaireName }}</p>
+              <span class="document-type">{{ doc.reportType }}</span>
+            </div>
+
+            <div class="document-actions">
+              <button (click)="reviewDocument(doc.id)" class="review-btn">
+                <i class="fas fa-eye"></i>
+                Examiner
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="documentsToValidate.length === 0" class="empty-state">
+          <i class="fas fa-check-circle empty-icon"></i>
+          <p class="empty-text">Aucun rapport en attente</p>
+        </div>
+      </div>
+
+      <!-- Activities Section -->
+      <div class="activities-section">
+        <div class="section-header">
+          <h3 class="section-title">Activités Récentes</h3>
+        </div>
+
+        <div class="activities-timeline">
+          <div *ngFor="let activity of recentActivities; trackBy: trackByActivity" 
+               class="timeline-item">
+            
+            <div class="timeline-marker" [attr.data-type]="activity.type">
+              <i [class]="'fas ' + getActivityIcon(activity.type)"></i>
+            </div>
+            
+            <div class="timeline-content">
+              <p class="activity-text">{{ activity.text }}</p>
+              <span class="activity-time">{{ activity.time }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="recentActivities.length === 0" class="empty-state">
+          <i class="fas fa-history empty-icon"></i>
+          <p class="empty-text">Aucune activité récente</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

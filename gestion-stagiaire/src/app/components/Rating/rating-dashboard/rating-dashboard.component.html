@@ -1,0 +1,677 @@
+<div class="dashboard-container">
+  <!-- Header Section -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="header-text">
+        <h1 class="main-title">
+          <span class="title-icon">🌟</span>
+          Tableau de bord des évaluations
+        </h1>
+        <p class="subtitle">
+          Gérez vos évaluations et consultez vos statistiques en temps réel
+        </p>
+      </div>
+      <div class="header-actions">
+        <button class="refresh-btn" (click)="refreshData()" [disabled]="isLoading()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+          Actualiser
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="loading-container">
+      <div class="loading-spinner"></div>
+      <p>Chargement des données...</p>
+    </div>
+  } @else {
+    <!-- Stats Cards SIMPLIFIÉES - SANS APPROBATION -->
+    <section class="stats-section">
+      @if (userStats(); as stats) {
+        <div class="stats-grid">
+          <!-- Total évaluations -->
+          <div class="stat-card stat-card--primary" [style.animation-delay]="getAnimationDelay(0)">
+            <div class="stat-card__content">
+              <div class="stat-card__info">
+                <p class="stat-card__label">Total évaluations</p>
+                <p class="stat-card__value">{{ stats.totalRatings }}</p>
+                <div class="stat-card__trend">
+                  <span class="trend-indicator trend-indicator--up">📊</span>
+                  <span class="trend-text">{{ getProgressText(stats) }}</span>
+                </div>
+              </div>
+              <div class="stat-card__icon stat-card__icon--primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-card__glow"></div>
+          </div>
+
+          <!-- Moyenne des notes reçues -->
+          <div class="stat-card stat-card--success" [style.animation-delay]="getAnimationDelay(1)">
+            <div class="stat-card__content">
+              <div class="stat-card__info">
+                <p class="stat-card__label">Notes reçues</p>
+                <p class="stat-card__value">{{ stats.averageScore | number:'1.1-1' }}/5</p>
+                <div class="stat-card__trend">
+                  <span class="trend-indicator" [class]="getScoreTrendClass(stats.averageScore)">
+                    {{ getScoreTrendArrow(stats.averageScore) }}
+                  </span>
+                  <span class="trend-text">{{ getScoreText(stats.averageScore) }}</span>
+                </div>
+              </div>
+              <div class="stat-card__icon" [class]="getScoreIconClass(stats.averageScore)">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-card__glow"></div>
+          </div>
+
+          <!-- Moyenne des notes données -->
+          @if (currentUser()?.role !== 'Stagiaire' || stats.averageScoreGiven > 0) {
+            <div class="stat-card stat-card--info" [style.animation-delay]="getAnimationDelay(2)">
+              <div class="stat-card__content">
+                <div class="stat-card__info">
+                  <p class="stat-card__label">Notes données</p>
+                  <p class="stat-card__value">{{ stats.averageScoreGiven | number:'1.1-1' }}/5</p>
+                  <div class="stat-card__trend">
+                    <span class="trend-indicator" [class]="getScoreTrendClass(stats.averageScoreGiven)">
+                      {{ getScoreTrendArrow(stats.averageScoreGiven) }}
+                    </span>
+                    <span class="trend-text">{{ getScoreText(stats.averageScoreGiven) }}</span>
+                  </div>
+                </div>
+                <div class="stat-card__icon" [class]="getScoreIconClass(stats.averageScoreGiven)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-card__glow"></div>
+            </div>
+          }
+
+          <!-- Brouillons (seulement si il y en a) -->
+          @if (stats.draftRatings > 0) {
+            <div class="stat-card stat-card--warning" [style.animation-delay]="getAnimationDelay(3)">
+              <div class="stat-card__content">
+                <div class="stat-card__info">
+                  <p class="stat-card__label">Brouillons</p>
+                  <p class="stat-card__value">{{ stats.draftRatings }}</p>
+                  <div class="stat-card__trend">
+                    <span class="trend-indicator trend-indicator--info">📝</span>
+                    <span class="trend-text">{{ getDraftText(stats.draftRatings) }}</span>
+                  </div>
+                </div>
+                <div class="stat-card__icon stat-card__icon--warning" (click)="navigateToDrafts()" style="cursor: pointer;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="stat-card__glow"></div>
+            </div>
+          }
+        </div>
+
+        <!-- Statistiques spéciales selon le rôle -->
+        @if (stats.specialStats) {
+          <div class="special-stats-section">
+            <!-- Meilleur stagiaire pour les Tuteurs -->
+            @if (currentUser()?.role === 'Tuteur' && stats.specialStats['bestStagiaire']) {
+              <div class="special-card best-stagiaire-card">
+                <div class="special-header">
+                  <h3>🏆 Meilleur stagiaire évalué</h3>
+                </div>
+                <div class="special-content">
+                  <div class="best-user">
+                    <div class="user-info">
+                      <h4>{{ stats.specialStats['bestStagiaire'].name }}</h4>
+                      <p class="user-score">{{ stats.specialStats['bestStagiaire'].score | number:'1.1-1' }}/5</p>
+                    </div>
+                    <div class="user-date">
+                      {{ formatDate(stats.specialStats['bestStagiaire'].evaluationDate) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <!-- Top 5 pour les RH -->
+            @if (currentUser()?.role === 'RHs') {
+              <div class="special-grid">
+                <!-- Top Tuteurs -->
+                @if (stats.specialStats['topTutors'] && stats.specialStats['topTutors'].length > 0) {
+                  <div class="special-card top-tutors-card">
+                    <div class="special-header">
+                      <h3>🎓 Top 5 Tuteurs</h3>
+                    </div>
+                    <div class="special-content">
+                      <div class="top-list">
+                        @for (tutor of stats.specialStats['topTutors']; track tutor.userId; let i = $index) {
+                          <div class="top-item" [class]="'rank-' + (i + 1)">
+                            <div class="rank-badge">{{ i + 1 }}</div>
+                            <div class="user-info">
+                              <h5>{{ tutor.name }}</h5>
+                              <p class="user-details">{{ tutor.evaluationCount }} évaluation{{ tutor.evaluationCount !== 1 ? 's' : '' }}</p>
+                            </div>
+                            <div class="user-score">{{ tutor.averageScore | number:'1.1-1' }}/5</div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+
+                <!-- Top Stagiaires -->
+                @if (stats.specialStats['topStagiaires'] && stats.specialStats['topStagiaires'].length > 0) {
+                  <div class="special-card top-stagiaires-card">
+                    <div class="special-header">
+                      <h3>🌟 Top 5 Stagiaires</h3>
+                    </div>
+                    <div class="special-content">
+                      <div class="top-list">
+                        @for (stagiaire of stats.specialStats['topStagiaires']; track stagiaire.userId; let i = $index) {
+                          <div class="top-item" [class]="'rank-' + (i + 1)">
+                            <div class="rank-badge">{{ i + 1 }}</div>
+                            <div class="user-info">
+                              <h5>{{ stagiaire.name }}</h5>
+                              <p class="user-details">{{ stagiaire.evaluationCount }} évaluation{{ stagiaire.evaluationCount !== 1 ? 's' : '' }}</p>
+                            </div>
+                            <div class="user-score">{{ stagiaire.averageScore | number:'1.1-1' }}/5</div>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      } @else {
+        <!-- Fallback si pas de stats -->
+        <div class="stats-placeholder">
+          <div class="placeholder-card">
+            <div class="placeholder-icon">📊</div>
+            <h3>Statistiques en cours de chargement...</h3>
+            <p>Vos données d'évaluation seront bientôt disponibles</p>
+            <button class="placeholder-action" (click)="refreshData()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Réessayer
+            </button>
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Message d'erreur si applicable -->
+    @if (error()) {
+      <div class="error-banner">
+        <div class="error-content">
+          <div class="error-icon">⚠️</div>
+          <div class="error-text">
+            <h4>Erreur de chargement</h4>
+            <p>{{ error() }}</p>
+          </div>
+          <button class="error-action" (click)="refreshData()">
+            Réessayer
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Quick Actions -->
+    <section class="actions-section">
+      <div class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">
+            <span class="section-icon">🚀</span>
+            Actions rapides
+          </h2>
+          <div class="section-badge">
+            @if (currentUser(); as user) {
+              <span class="role-badge role-badge--{{ user.role.toLowerCase() }}">
+                {{ user.role }}
+              </span>
+            }
+          </div>
+        </div>
+        
+        <div class="action-grid">
+          @if (canCreateRating()) {
+            <button class="action-card action-card--create" (click)="navigateToCreate()">
+              <div class="action-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+              </div>
+              <div class="action-card__content">
+                <h3 class="action-card__title">Nouvelle évaluation</h3>
+                <p class="action-card__description">
+                  {{ currentUser()?.role === 'Stagiaire' ? 'Évaluer mon tuteur' : 'Créer une évaluation complète' }}
+                </p>
+              </div>
+              <div class="action-card__arrow">→</div>
+            </button>
+          }
+
+          <button class="action-card action-card--view" (click)="navigateToMyRatings()">
+            <div class="action-card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+              </svg>
+            </div>
+            <div class="action-card__content">
+              <h3 class="action-card__title">Mes évaluations</h3>
+              <p class="action-card__description">
+                {{ myRatings().length }} évaluation{{ myRatings().length !== 1 ? 's' : '' }} créée{{ myRatings().length !== 1 ? 's' : '' }}
+              </p>
+            </div>
+            <div class="action-card__arrow">→</div>
+          </button>
+
+          <button class="action-card action-card--profile" (click)="navigateToAboutMe()">
+            <div class="action-card__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </div>
+            <div class="action-card__content">
+              <h3 class="action-card__title">À mon sujet</h3>
+              <p class="action-card__description">
+                {{ ratingsAboutMe().length }} évaluation{{ ratingsAboutMe().length !== 1 ? 's' : '' }} reçue{{ ratingsAboutMe().length !== 1 ? 's' : '' }}
+              </p>
+            </div>
+            <div class="action-card__arrow">→</div>
+          </button>
+
+          @if (userStats()?.draftRatings && userStats()!.draftRatings > 0) {
+            <button class="action-card action-card--draft" (click)="navigateToDrafts()">
+              <div class="action-card__icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                </svg>
+              </div>
+              <div class="action-card__content">
+                <h3 class="action-card__title">Terminer brouillons</h3>
+                <p class="action-card__description">
+                  {{ userStats()!.draftRatings }} brouillon{{ userStats()!.draftRatings !== 1 ? 's' : '' }} en attente
+                </p>
+              </div>
+              <div class="action-card__arrow">→</div>
+            </button>
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Activity -->
+    <section class="activity-section">
+      <div class="activity-grid">
+        <!-- 🆕 SECTION MODIFIÉE - Mes évaluations récentes avec boutons d'action -->
+        <div class="activity-card" id="my-ratings-section">
+          <div class="activity-header">
+            <h2 class="activity-title">
+              <span class="activity-icon">📝</span>
+              Mes évaluations récentes
+              @if (myRatings().length > 0) {
+                <span class="activity-count">({{ myRatings().length }})</span>
+              }
+            </h2>
+            @if (myRatings().length > 5) {
+              <button class="view-all-btn" (click)="navigateToMyRatings()">
+                Voir tout
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          <div class="activity-content">
+            @if (myRatings(); as ratings) {
+              @if (ratings.length > 0) {
+                <div class="rating-list">
+                  @for (rating of sortRatingsByDate(ratings).slice(0, 5); track rating.id; let i = $index) {
+                    <div class="rating-item" 
+                         [style.animation-delay]="getAnimationDelay(i)"
+                         (click)="navigateToDetails(rating.id)"
+                         [attr.tabindex]="0"
+                         (keydown.enter)="navigateToDetails(rating.id)"
+                         [class.clickable]="canViewDetails(rating)">
+                      <div class="rating-item__info">
+                        <div class="rating-item__header">
+                          <h4 class="rating-item__name">{{ rating.evaluatedUserName }}</h4>
+                          <div class="rating-item__score" [class]="getScoreClass(rating.score)">
+                            <span class="score-value">{{ rating.score | number:'1.1-1' }}</span>
+                            <svg class="score-star" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <p class="rating-item__type">{{ getEvaluationTypeLabel(rating.type) }}</p>
+                        <p class="rating-item__date">{{ getRelativeTime(rating.createdAt) }}</p>
+                        @if (rating.stageReference) {
+                          <p class="rating-item__reference">🔖 {{ rating.stageReference }}</p>
+                        }
+                      </div>
+                      <div class="rating-item__meta">
+                        <div class="rating-item__status">
+                          <span [class]="'status-badge ' + getStatusBadge(rating.status).class">
+                            {{ getStatusBadge(rating.status).text }}
+                          </span>
+                        </div>
+                        
+                        <!-- 🆕 NOUVEAUX BOUTONS D'ACTION -->
+                        @if (canEditRating(rating)) {
+                          <div class="rating-item__actions">
+                            <!-- Bouton Modifier -->
+                            <button class="action-btn action-btn--edit" 
+                                    (click)="editRating($event, rating.id)"
+                                    title="Modifier cette évaluation"
+                                    [disabled]="isLoading()">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                              </svg>
+                            </button>
+                            
+                            <!-- Bouton Supprimer -->
+                            <button class="action-btn action-btn--delete" 
+                                    (click)="confirmDeleteRating($event, rating)"
+                                    title="Supprimer cette évaluation"
+                                    [disabled]="isLoading()">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                              </svg>
+                            </button>
+                          </div>
+                        }
+                        
+                        @if (canViewDetails(rating)) {
+                          <div class="rating-item__arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="empty-state">
+                  <div class="empty-state__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                  </div>
+                  <p class="empty-state__text">Aucune évaluation créée</p>
+                  <p class="empty-state__subtext">
+                    {{ currentUser()?.role === 'Stagiaire' ? 
+                       'Vous pourrez bientôt évaluer votre tuteur' : 
+                       'Commencez par créer votre première évaluation' }}
+                  </p>
+                  @if (canCreateRating()) {
+                    <button class="empty-state__action" (click)="navigateToCreate()">
+                      {{ currentUser()?.role === 'Stagiaire' ? 
+                         'Évaluer mon tuteur' : 
+                         'Créer ma première évaluation' }}
+                    </button>
+                  }
+                </div>
+              }
+            }
+          </div>
+        </div>
+
+        <!-- Évaluations me concernant (INCHANGÉE) -->
+        <div class="activity-card" id="about-me-section">
+          <div class="activity-header">
+            <h2 class="activity-title">
+              <span class="activity-icon">👁️</span>
+              Évaluations me concernant
+              @if (ratingsAboutMe().length > 0) {
+                <span class="activity-count">({{ ratingsAboutMe().length }})</span>
+              }
+            </h2>
+            @if (ratingsAboutMe().length > 5) {
+              <button class="view-all-btn" (click)="navigateToAboutMe()">
+                Voir tout
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+              </button>
+            }
+          </div>
+
+          <div class="activity-content">
+            @if (ratingsAboutMe(); as ratings) {
+              @if (ratings.length > 0) {
+                <div class="rating-list">
+                  @for (rating of sortRatingsByDate(ratings).slice(0, 5); track rating.id; let i = $index) {
+                    <div class="rating-item" 
+                         [style.animation-delay]="getAnimationDelay(i)"
+                         (click)="navigateToDetails(rating.id)"
+                         [attr.tabindex]="0"
+                         (keydown.enter)="navigateToDetails(rating.id)"
+                         [class.clickable]="canViewDetails(rating)">
+                      <div class="rating-item__info">
+                        <div class="rating-item__header">
+                          <h4 class="rating-item__name">Par {{ rating.evaluatorName }}</h4>
+                          <div class="rating-item__score" [class]="getScoreClass(rating.score)">
+                            <span class="score-value">{{ rating.score | number:'1.1-1' }}</span>
+                            <svg class="score-star" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <p class="rating-item__type">{{ getEvaluationTypeLabel(rating.type) }}</p>
+                        <p class="rating-item__date">{{ getRelativeTime(rating.createdAt) }}</p>
+                        @if (rating.stageReference) {
+                          <p class="rating-item__reference">🔖 {{ rating.stageReference }}</p>
+                        }
+                      </div>
+                      <div class="rating-item__meta">
+                        <div class="rating-item__status">
+                          <span [class]="'status-badge ' + getStatusBadge(rating.status).class">
+                            {{ getStatusBadge(rating.status).text }}
+                          </span>
+                        </div>
+                        @if (canViewDetails(rating)) {
+                          <div class="rating-item__arrow">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="empty-state">
+                  <div class="empty-state__icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                  </div>
+                  <p class="empty-state__text">Aucune évaluation reçue</p>
+                  <p class="empty-state__subtext">
+                    {{ currentUser()?.role === 'Stagiaire' ? 
+                       'Votre tuteur pourra bientôt vous évaluer' : 
+                       'Vous recevrez bientôt des évaluations' }}
+                  </p>
+                </div>
+              }
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Performance Insights (si statistiques disponibles et données utiles) -->
+    @if (userStats(); as stats) {
+      @if (stats.totalRatings > 0) {
+        <section class="insights-section">
+          <div class="section-card">
+            <div class="section-header">
+              <h2 class="section-title">
+                <span class="section-icon">📈</span>
+                Aperçu de vos performances
+              </h2>
+            </div>
+            
+            <div class="insights-grid">
+              <div class="insight-card">
+                <div class="insight-metric">
+                  <span class="insight-value">{{ getAverageScore(myRatings()) | number:'1.1-1' }}</span>
+                  <span class="insight-label">Score moyen donné</span>
+                </div>
+                <div class="insight-visual">
+                  <div class="score-bars">
+                    @for (rating of myRatings().slice(0, 5); track rating.id) {
+                      <div class="score-bar" 
+                           [style.height]="(rating.score / 5 * 100) + '%'"
+                           [class]="getScoreClass(rating.score)">
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              @if (currentUser()?.role === 'Stagiaire') {
+                <div class="insight-card">
+                  <div class="insight-metric">
+                    <span class="insight-value">{{ getAverageScore(ratingsAboutMe()) | number:'1.1-1' }}</span>
+                    <span class="insight-label">Score moyen reçu</span>
+                  </div>
+                  <div class="insight-visual">
+                    <div class="trend-chart">
+                      <span class="trend-icon" [class]="getScoreTrendClass(getAverageScore(ratingsAboutMe()))">
+                        {{ getScoreTrendArrow(getAverageScore(ratingsAboutMe())) }}
+                      </span>
+                      <span class="trend-text">{{ getScoreText(getAverageScore(ratingsAboutMe())) }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              <div class="insight-card">
+                <div class="insight-metric">
+                  <span class="insight-value">{{ myRatings().length + ratingsAboutMe().length }}</span>
+                  <span class="insight-label">Total interactions</span>
+                </div>
+                <div class="insight-visual">
+                  <div class="interaction-chart">
+                    <div class="chart-segment chart-segment--given" 
+                         [style.width]="(myRatings().length / (myRatings().length + ratingsAboutMe().length) * 100) + '%'">
+                    </div>
+                    <div class="chart-segment chart-segment--received" 
+                         [style.width]="(ratingsAboutMe().length / (myRatings().length + ratingsAboutMe().length) * 100) + '%'">
+                    </div>
+                  </div>
+                  <div class="chart-legend">
+                    <span class="legend-item">
+                      <span class="legend-color legend-color--given"></span>
+                      Données ({{ myRatings().length }})
+                    </span>
+                    <span class="legend-item">
+                      <span class="legend-color legend-color--received"></span>
+                      Reçues ({{ ratingsAboutMe().length }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+    }
+
+    <!-- Actions flottantes pour mobile -->
+    <div class="floating-actions">
+      @if (canCreateRating()) {
+        <button class="fab fab--primary" (click)="navigateToCreate()" title="Créer une évaluation">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- 🆕 NOUVEAU - Modal de confirmation de suppression -->
+  @if (showDeleteConfirmation()) {
+    <div class="modal-overlay" (click)="cancelDelete()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <span class="modal-icon">⚠️</span>
+            Confirmer la suppression
+          </h3>
+          <button class="modal-close" (click)="cancelDelete()" aria-label="Fermer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          @if (ratingToDelete(); as rating) {
+            <p>Êtes-vous sûr de vouloir supprimer cette évaluation ?</p>
+            <div class="rating-preview">
+              <div class="preview-header">
+                <strong>{{ rating.evaluatedUserName }}</strong>
+                <span class="preview-score">{{ rating.score }}/5 ⭐</span>
+              </div>
+              <div class="preview-meta">
+                <span class="preview-type">{{ getEvaluationTypeLabel(rating.type) }}</span>
+                <span class="preview-date">{{ formatDate(rating.createdAt) }}</span>
+              </div>
+            </div>
+            <p class="warning-text">⚠️ Cette action est irréversible.</p>
+          }
+        </div>
+        
+        <div class="modal-footer">
+          <button class="btn btn--secondary" 
+                  (click)="cancelDelete()"
+                  [disabled]="isDeleting()">
+            Annuler
+          </button>
+          <button class="btn btn--danger" 
+                  (click)="confirmDelete()"
+                  [disabled]="isDeleting()">
+            @if (isDeleting()) {
+              <span class="loading-spinner"></span>
+              Suppression...
+            } @else {
+              🗑️ Supprimer
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

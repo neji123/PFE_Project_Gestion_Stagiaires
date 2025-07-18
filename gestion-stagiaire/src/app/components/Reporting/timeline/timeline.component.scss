@@ -1,0 +1,536 @@
+// Variables de couleurs EY
+$ey-yellow: #ffe600;
+$ey-black: #2e2e38;
+$ey-gray-dark: #404040;
+$ey-gray-medium: #747480;
+$ey-gray-light: #e6e6e6;
+$ey-white: #ffffff;
+
+// Couleurs sémantiques
+$color-approved: #2e7a81; // Bleu-vert EY
+$color-pending: #ffb600; // Orange EY
+$color-rejected: #e10033; // Rouge EY
+$color-completed: #2e7d32; // Vert
+$color-current: #673ab7; // Violet
+$color-upcoming: $ey-gray-medium; // Gris
+
+// Styles communs
+@mixin card-shadow {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Timeline Container
+.timeline-container {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+  
+  mat-card {
+    border-radius: 8px;
+    @include card-shadow;
+    overflow: hidden;
+    border-top: 4px solid $ey-yellow;
+  }
+}
+.main-content {
+  transition: margin-left 0.3s ease;
+  margin-left: 80px;
+
+  &.sidebar-open {
+    margin-left: 250px;
+  }
+}
+
+// Header styles
+mat-card-header {
+  padding: 16px 16px 0;
+  
+  mat-card-title {
+    color: $ey-black;
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  
+  mat-card-subtitle {
+    color: $ey-gray-medium;
+    font-weight: 400;
+    font-size: 14px;
+  }
+}
+
+// Loading et error containers
+.loading-container, .error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  
+  mat-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+    margin-bottom: 24px;
+    color: $ey-gray-medium;
+  }
+  
+  p {
+    font-size: 16px;
+    color: $ey-gray-dark;
+    margin-bottom: 24px;
+  }
+  
+  .error-container mat-icon {
+    color: $color-rejected;
+  }
+}
+
+// Timeline info section
+.timeline-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba($ey-yellow, 0.1);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 16px 24px;
+  
+  .info-content {
+    display: flex;
+    align-items: center;
+    
+    mat-icon {
+      margin-right: 12px;
+      color: $ey-black;
+      background-color: $ey-yellow;
+      border-radius: 50%;
+      padding: 4px;
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+    
+    span {
+      color: $ey-gray-dark;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  }
+  
+  .action-buttons {
+    button {
+      background-color: $ey-black;
+      color: $ey-white;
+      
+      &:hover {
+        background-color: lighten($ey-black, 10%);
+      }
+      
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
+// Timeline stepper
+.timeline-stepper {
+  position: relative;
+  padding: 0 16px 24px;
+  
+  &:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 41px;
+    width: 2px;
+    background-color: $ey-gray-light;
+    z-index: 0;
+  }
+}
+
+.timeline-step {
+  position: relative;
+  margin-bottom: 32px;
+  
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// Step content
+.step-content {
+  display: flex;
+  width: 100%;
+  border-radius: 8px;
+  padding: 20px;
+  @include card-shadow;
+  border-left: 4px solid;
+  background-color: $ey-white;
+  position: relative;
+  z-index: 1;
+  
+  &.completed {
+    border-left-color: $color-completed;
+  }
+  
+  &.approved {
+    border-left-color: $color-approved;
+  }
+  
+  &.pending-approval {
+    border-left-color: $color-pending;
+  }
+  
+  &.rejected {
+    border-left-color: $color-rejected;
+  }
+  
+  &.current {
+    border-left-color: $ey-yellow;
+  }
+  
+  &.upcoming {
+    border-left-color: $color-upcoming;
+  }
+}
+
+.step-icon {
+  @include flex-center;
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  border-radius: 50%;
+  margin-right: 20px;
+  background-color: $ey-white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  
+  .completed & {
+    background-color: $color-completed;
+    color: $ey-white;
+  }
+  
+  .approved & {
+    background-color: $color-approved;
+    color: $ey-white;
+  }
+  
+  .pending-approval & {
+    background-color: $color-pending;
+    color: $ey-white;
+  }
+  
+  .rejected & {
+    background-color: $color-rejected;
+    color: $ey-white;
+  }
+  
+  .current & {
+    background-color: $ey-yellow;
+    color: $ey-black;
+  }
+  
+  .upcoming & {
+    background-color: $ey-gray-light;
+    color: $ey-gray-medium;
+  }
+}
+
+// Step details
+.step-details {
+  flex: 1;
+  
+  h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 500;
+    color: $ey-black;
+  }
+  
+  .step-date {
+    margin: 0 0 8px;
+    color: $ey-gray-medium;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    
+    &:before {
+      content: '\e916'; // Material Icon - calendar_today
+      font-family: 'Material Icons';
+      margin-right: 6px;
+      font-size: 16px;
+    }
+  }
+  
+  .step-status {
+    font-weight: 500;
+    margin: 0 0 16px;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 13px;
+    
+    &.completed {
+      background-color: rgba($color-completed, 0.1);
+      color: $color-completed;
+    }
+    
+    &.approved {
+      background-color: rgba($color-approved, 0.1);
+      color: $color-approved;
+    }
+    
+    &.pending-approval {
+      background-color: rgba($color-pending, 0.1);
+      color: darken($color-pending, 10%);
+    }
+    
+    &.rejected {
+      background-color: rgba($color-rejected, 0.1);
+      color: $color-rejected;
+    }
+    
+    &.current {
+      background-color: rgba($ey-yellow, 0.2);
+      color: darken($ey-yellow, 30%);
+    }
+    
+    &.upcoming {
+      background-color: rgba($ey-gray-light, 0.5);
+      color: $ey-gray-medium;
+    }
+  }
+}
+
+// Approval info
+.approval-info {
+  margin: 12px 0 16px;
+  padding: 16px;
+  border-radius: 8px;
+  background-color: rgba($ey-gray-light, 0.3);
+  
+  .approval-details, .approver-info {
+    display: flex;
+    align-items: center;
+    margin: 0 0 10px;
+    font-size: 14px;
+    
+    mat-icon {
+      margin-right: 8px;
+      font-size: 18px;
+      height: 18px;
+      width: 18px;
+    }
+    
+    &.approved {
+      color: $color-approved;
+    }
+    
+    &.rejected {
+      color: $color-rejected;
+    }
+  }
+  
+  .approver-info {
+    color: $ey-gray-dark;
+  }
+}
+
+// Feedback container
+.feedback-container {
+  margin-top: 12px;
+  
+  .feedback-label {
+    font-weight: 500;
+    margin: 0 0 6px;
+    font-size: 14px;
+    color: $ey-gray-dark;
+  }
+  
+  .feedback-content {
+    padding: 12px 16px;
+    background-color: $ey-white;
+    border-radius: 8px;
+    border: 1px solid $ey-gray-light;
+    font-style: italic;
+    color: $ey-gray-dark;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+// Actions
+.step-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  
+  button {
+    border-radius: 24px;
+    
+    &[color="primary"] {
+      background-color: $ey-black;
+      color: $ey-white;
+      
+      &:hover {
+        background-color: lighten($ey-black, 10%);
+      }
+    }
+    
+    &[color="accent"] {
+      background-color: $ey-yellow;
+      color: $ey-black;
+      
+      &:hover {
+        background-color: darken($ey-yellow, 5%);
+      }
+    }
+    
+    mat-icon {
+      margin-right: 6px;
+    }
+  }
+}
+
+// Légende
+.timeline-legend {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 32px 16px 16px;
+  padding-top: 16px;
+  border-top: 1px solid $ey-gray-light;
+  gap: 16px;
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 16px;
+    
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    span {
+      font-size: 13px;
+      color: $ey-gray-dark;
+    }
+    
+    &.approved .legend-dot {
+      background-color: $color-approved;
+    }
+    
+    &.pending-approval .legend-dot {
+      background-color: $color-pending;
+    }
+    
+    &.rejected .legend-dot {
+      background-color: $color-rejected;
+    }
+    
+    &.completed .legend-dot {
+      background-color: $color-completed;
+    }
+    
+    &.current .legend-dot {
+      background-color: $ey-yellow;
+    }
+    
+    &.upcoming .legend-dot {
+      background-color: $ey-gray-medium;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .timeline-container {
+    padding: 16px;
+  }
+  
+  .timeline-info {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .action-buttons {
+      margin-top: 16px;
+      width: 100%;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+  
+  .timeline-stepper {
+    padding: 0 12px 16px;
+    
+    &:before {
+      left: 31px;
+    }
+  }
+  
+  .step-content {
+    flex-direction: column;
+    padding: 16px;
+  }
+  
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    margin-right: 0;
+    margin-bottom: 16px;
+    
+    mat-icon {
+      font-size: 20px;
+      height: 20px;
+      width: 20px;
+    }
+  }
+  
+  .step-actions {
+    flex-direction: column;
+    
+    button {
+      width: 100%;
+    }
+  }
+  
+  .timeline-legend {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    
+    .legend-item {
+      margin-right: 0;
+      width: calc(50% - 12px);
+    }
+  }
+   .main-content {
+    margin-left: 0;
+
+    &.sidebar-open {
+      margin-left: 0;
+    }
+  }
+
+
+}

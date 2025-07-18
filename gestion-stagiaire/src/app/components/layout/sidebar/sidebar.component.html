@@ -1,0 +1,185 @@
+<div class="sidebar-container">
+  <!-- Zone sensible à la souris pour afficher le sidebar -->
+  <div class="hover-zone" (mouseenter)="showSidebar()" *ngIf="!isVisible"></div>
+  
+  <!-- Le sidebar avec scrolling interne pour éviter le chevauchement du footer -->
+  <div #sidebarRef class="sidebar" [class.visible]="isVisible" [class.dark-theme]="isDarkMode"
+       (mouseenter)="onSidebarMouseEnter()" 
+       (mouseleave)="onSidebarMouseLeave()">
+    <div class="sidebar-header">
+      <!-- Bouton pour fermer/réduire la sidebar -->
+      <button class="close-btn" (click)="toggleSidebar()" matTooltip="Réduire le menu">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+    </div>
+    
+    <!-- Contenu scrollable de la sidebar -->
+    <div class="sidebar-scrollable-content">
+      <div class="sidebar-profile">
+        <div class="profile-image-container" (click)="navigateToProfile()">
+          <img [src]="userProfileImage" [alt]="username + ' Profile Picture'" class="profile-image">
+          <div class="profile-badge" *ngIf="hasAdminAccess()">
+            <mat-icon>verified</mat-icon>
+          </div>
+        </div>
+        <div class="profile-info">
+          <h3 class="username">{{ username }}</h3>
+          <div class="user-role" *ngIf="currentUser?.role">{{ currentUser.role }}</div>
+        </div>
+      </div>
+      
+      <div class="sidebar-menu">
+        <div class="menu-section">
+          <h4 class="section-title">Principal</h4>
+          <ul>
+            <li (click)="navigateToDashboard()" [class.active]="isDashboardActive()" style="cursor: pointer;">
+  <div class="menu-item">
+    <mat-icon>dashboard</mat-icon>
+    <span>Tableau de bord</span>
+  </div>
+</li>
+            
+       <!--      <li *ngIf="currentUser?.role === 'Tuteur'" routerLink="/mes-stagiaires" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>groups</mat-icon>
+                <span>Mes Stagiaires</span>
+              </div>
+            </li>
+            
+             <li *ngIf="currentUser?.role === 'Stagiaire'" routerLink="/mes-projets" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>assignment</mat-icon>
+                <span>Mon Projet</span>
+              </div>
+            </li>
+            
+            <li *ngIf="currentUser?.role === 'Stagiaire'" routerLink="/ooo" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>assignment</mat-icon>
+                <span>Rapports</span>
+              </div>
+            </li>
+            <li *ngIf="currentUser?.role === 'Stagiaire'" routerLink="/documents" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>assignment</mat-icon>
+                <span>Documents</span>
+              </div>
+            </li>-->
+            
+            <li routerLink="/calendar" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>event</mat-icon>
+                <span>Planification</span>
+              </div>
+            </li>
+            
+            <li routerLink="/ratings" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>star</mat-icon>
+                <span>Rate</span>
+              </div>
+            </li>
+
+           <!--= <li routerLink="/publications" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>dashboard</mat-icon>
+                <span>News</span>
+              </div>
+            </li>-->
+
+          </ul>
+        </div>
+        
+        <div class="menu-section" *ngIf="hasAdminAccess()">
+          <h4 class="section-title">Administration</h4>
+          <ul>
+            <li routerLink="/projects" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>work</mat-icon>
+                <span>Projets</span>
+              </div>
+            </li>
+          <!--  <li routerLink="/reports/approval" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>work</mat-icon>
+                <span>Approuver Doccuments</span>
+              </div>
+            </li>-->
+
+
+
+            <div class="menu-section" *ngIf="hasRHAccess()">
+            <li routerLink="/admin/report-types" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>work</mat-icon>
+                <span>Types de rapports</span>
+              </div>
+            </li>
+            <li routerLink="/attestation" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>work</mat-icon>
+                <span>Attestation</span>
+              </div>
+            </li>
+
+          </div>
+
+            
+            
+            <li routerLink="/tuteurs" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>school</mat-icon>
+                <span>Tuteurs</span>
+              </div>
+            </li>
+            
+            <li routerLink="/stagiaires" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>person</mat-icon>
+                <span>Stagiaires</span>
+              </div>
+            </li>
+            
+            <li routerLink="/RH" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>people</mat-icon>
+                <span>Responsables RH</span>
+              </div>
+            </li>
+             <li routerLink="/departements" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>work</mat-icon>
+                <span>Departments</span>
+              </div>
+            </li>
+             <li routerLink="/universites" routerLinkActive="active">
+              <div class="menu-item">
+                <mat-icon>work</mat-icon>
+                <span>Universities</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+        
+     
+      
+      <div class="sidebar-footer">
+        <button class="logout-btn" (click)="logout()">
+          <mat-icon>exit_to_app</mat-icon>
+          <span>Déconnexion</span>
+        </button>
+        
+        <div class="toggle-theme">
+          <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+          <span>{{ isDarkMode ? 'Mode clair' : 'Mode sombre' }}</span>
+          <mat-slide-toggle [checked]="isDarkMode" (change)="toggleDarkMode()"></mat-slide-toggle>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bouton flottant pour montrer le sidebar quand il est caché -->
+  <button class="show-sidebar-btn" *ngIf="!isVisible" (click)="showSidebar()" matTooltip="Ouvrir le menu">
+    <mat-icon>menu</mat-icon>
+  </button>
+</div>

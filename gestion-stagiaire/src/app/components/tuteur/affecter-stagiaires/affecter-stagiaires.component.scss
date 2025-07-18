@@ -1,0 +1,109 @@
+:host {
+  display: block;
+  width: 500px;
+  max-width: 100%;
+}
+
+// Variables pour les couleurs EY
+$ey-yellow: #FFE600;
+$ey-dark-gray: #2E2E38;
+$ey-light-gray: #747480;
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  
+  p {
+    margin-top: 15px;
+    color: #666;
+  }
+}
+
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 30px;
+  color: #666;
+}
+
+.stagiaires-list {
+  margin-bottom: 15px;
+  
+  .stagiaire-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    .stagiaire-info {
+      display: flex;
+      align-items: center;
+      margin-left: 15px;
+      flex: 1;
+    }
+    
+    .stagiaire-avatar-container {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 15px;
+      overflow: hidden;
+      border: 2px solid $ey-yellow;
+      background-color: #f0f0f0;
+    }
+    
+    .stagiaire-avatar {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .stagiaire-details {
+      display: flex;
+      flex-direction: column;
+      
+      .stagiaire-name {
+        font-weight: 500;
+      }
+      
+      .stagiaire-email {
+        font-size: 12px;
+        color: #666;
+      }
+    }
+  }
+}
+
+.selection-count {
+  text-align: right;
+  margin-top: 15px;
+  font-style: italic;
+  color: #666;
+}
+
+mat-dialog-actions {
+  padding-top: 0;
+  padding-bottom: 16px;
+  
+  button[mat-raised-button] {
+    background-color: $ey-yellow;
+    color: $ey-dark-gray;
+    
+    &:hover {
+      background-color: darken($ey-yellow, 10%);
+    }
+  }
+}

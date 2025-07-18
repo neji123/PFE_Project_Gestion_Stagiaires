@@ -1,0 +1,327 @@
+<app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+
+<div class="main-content" [class.sidebar-open]="isSidebarVisible">
+  <div class="content-container">
+    <div class="header-section">
+      <div class="title-filter-section">
+        <h2 class="section-title">Responsables RH</h2>
+        <div class="view-filters">
+          <div class="view-toggle">
+            <button class="toggle-btn" [class.active]="viewMode === 'grid'" (click)="changeViewMode('grid')" matTooltip="Vue en grille">
+              <mat-icon>grid_view</mat-icon>
+            </button>
+            <button class="toggle-btn" [class.active]="viewMode === 'list'" (click)="changeViewMode('list')" matTooltip="Vue en liste">
+              <mat-icon>view_list</mat-icon>
+            </button>
+          </div>
+          
+          <button mat-stroked-button color="primary" class="favorite-filter" (click)="toggleShowFavorites()">
+            <mat-icon>{{ showOnlyFavorites ? 'star' : 'star_border' }}</mat-icon>
+            <span>{{ showOnlyFavorites ? 'Tous' : 'Favoris' }}</span>
+          </button>
+          
+          <!-- Ajout du bouton pour filtrer par statut actif -->
+          <button mat-stroked-button color="primary" class="status-filter" (click)="toggleShowActive()">
+            <mat-icon>{{ showOnlyActive ? 'toggle_off' : 'toggle_on' }}</mat-icon>
+            <span>{{ showOnlyActive ? 'Tous' : 'Actifs' }}</span>
+          </button>
+          
+          <button mat-raised-button color="primary" class="add-button" (click)="openAddRhModal()">
+            <mat-icon>person_add</mat-icon>
+            <span>Ajouter un RH</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Barre de recherche et filtres -->
+      <div class="search-filter-row">
+        <div class="search-field">
+          <mat-form-field appearance="outline">
+            <mat-label>Rechercher</mat-label>
+            <input matInput [(ngModel)]="searchText" (input)="applyFilters()" placeholder="Nom, poste, email...">
+            <mat-icon matPrefix>search</mat-icon>
+            <button *ngIf="searchText" matSuffix mat-icon-button aria-label="Effacer" (click)="searchText=''; applyFilters()">
+              <mat-icon>close</mat-icon>
+            </button>
+          </mat-form-field>
+        </div>
+        
+        <div class="filter-sort-options">
+          <mat-form-field appearance="outline">
+            <mat-label>Département</mat-label>
+            <mat-select [(value)]="departmentFilter" (selectionChange)="applyFilters()">
+              <mat-option value="all">Tous les départements</mat-option>
+              <mat-option *ngFor="let dept of getDepartments()" [value]="dept.id">
+                {{ dept.departmentName }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Tri</mat-label>
+            <mat-select [(value)]="sortOption" (selectionChange)="applyFilters()">
+              <mat-option value="nameAsc">Nom (A-Z)</mat-option>
+              <mat-option value="nameDesc">Nom (Z-A)</mat-option>
+              <mat-option value="startDate">Date de début (récent)</mat-option>
+              <mat-option value="newest">Plus récent</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <button mat-stroked-button color="primary" *ngIf="searchText || departmentFilter !== 'all' || sortOption !== 'nameAsc' || showOnlyFavorites || showOnlyActive" 
+                  (click)="resetFilters()">
+            <mat-icon>refresh</mat-icon>
+            Réinitialiser
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Indicateur de chargement -->
+    <div class="loading-container" *ngIf="isLoading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Chargement des responsables RH...</p>
+    </div>
+  
+    <!-- Aucun résultat -->
+    <div class="no-results" *ngIf="!isLoading && filteredRhList.length === 0">
+      <mat-icon *ngIf="searchText || departmentFilter !== 'all' || showOnlyFavorites || showOnlyActive">search_off</mat-icon>
+      <mat-icon *ngIf="!searchText && departmentFilter === 'all' && !showOnlyFavorites && !showOnlyActive">people_outline</mat-icon>
+      
+      <h3 *ngIf="searchText || departmentFilter !== 'all' || showOnlyFavorites || showOnlyActive">
+        Aucun résultat ne correspond à votre recherche
+      </h3>
+      <h3 *ngIf="!searchText && departmentFilter === 'all' && !showOnlyFavorites && !showOnlyActive">
+        Aucun responsable RH disponible
+      </h3>
+      
+      <p *ngIf="searchText || departmentFilter !== 'all' || showOnlyFavorites || showOnlyActive">
+        Essayez de modifier vos critères de recherche.
+      </p>
+      <p *ngIf="!searchText && departmentFilter === 'all' && !showOnlyFavorites && !showOnlyActive">
+        Commencez par ajouter un responsable RH.
+      </p>
+      
+      <div class="no-results-actions">
+        <button mat-raised-button color="primary" *ngIf="searchText || departmentFilter !== 'all' || showOnlyFavorites || showOnlyActive" 
+                (click)="resetFilters()">
+          <mat-icon>refresh</mat-icon>
+          Réinitialiser les filtres
+        </button>
+        
+        <button mat-raised-button color="primary" *ngIf="!searchText && departmentFilter === 'all' && !showOnlyFavorites && !showOnlyActive" 
+                (click)="openAddRhModal()">
+          <mat-icon>person_add</mat-icon>
+          Ajouter un RH
+        </button>
+      </div>
+    </div>
+    
+    <!-- Vue en grille -->
+    <div class="rh-grid" *ngIf="!isLoading && filteredRhList.length > 0 && viewMode === 'grid'">
+      <div class="rh-card" *ngFor="let rh of displayedRhs; let i = index" 
+           [class.highlight-focus]="rh.highlighted"
+           [routerLink]="['/RH', rh.id]">
+        <div class="card-header">
+          <div class="status-indicator" [class.active]="rh.statuts"></div>
+          <div class="profile-image-container">
+            <img [src]="getImageUrl(rh.imageUrl)" [alt]="rh.name + ' photo'">
+          </div>
+          <div class="favorite-badge" (click)="$event.stopPropagation(); toggleFavorite(rh)" matTooltip="{{ rh.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}">
+            <mat-icon>{{ rh.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+          </div>
+          
+          <!-- Navigation entre RHs -->
+          <div class="navigation-arrows" *ngIf="displayedRhs.length > 1">
+            <button class="arrow-btn" *ngIf="i > 0" 
+                    (click)="$event.stopPropagation(); focusRh(i - 1)" 
+                    matTooltip="RH précédent">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button class="arrow-btn" *ngIf="i < displayedRhs.length - 1" 
+                    (click)="$event.stopPropagation(); focusRh(i + 1)" 
+                    matTooltip="RH suivant">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
+          
+          <!-- Badge d'expérience -->
+          <div class="experience-badge" *ngIf="rh.yearsExperience && rh.yearsExperience > 0">
+            <span class="exp-value">{{ rh.yearsExperience }}</span>
+            <span class="exp-unit">ans</span>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <h3 class="rh-name">{{ rh.name }}</h3>
+          <!-- Nom d'utilisateur -->
+          <p class="username" *ngIf="rh.username">{{"@"}}{{ rh.username }}</p>
+          <div class="department-chip">{{ rh.departmentName }}</div>
+          <p class="position">{{ rh.position }}</p>
+          
+          <!-- Statut (Actif/Inactif) avec bouton pour changer l'état -->
+          <div class="status-toggle">
+            <span>Statut:</span>
+            <button class="status-button" 
+                   [class.active]="rh.statuts" 
+                   [class.inactive]="!rh.statuts"
+                   (click)="$event.stopPropagation(); toggleStatus(rh)">
+              {{ rh.statuts ? 'Actif' : 'Inactif' }}
+            </button>
+          </div>
+          
+          <div class="rh-details">
+            <div class="detail-item">
+              <mat-icon>email</mat-icon>
+              <span>{{ rh.email }}</span>
+            </div>
+            <div class="detail-item">
+              <mat-icon>phone</mat-icon>
+              <span>{{ rh.phone }}</span>
+            </div>
+            <!-- Date de début -->
+            <div class="detail-item" *ngIf="rh.startDate">
+              <mat-icon>event</mat-icon>
+              <span>Début: {{ rh.startDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          
+          <!-- Barre d'expérience -->
+          <div class="experience-bar" *ngIf="rh.yearsExperience && rh.yearsExperience > 0">
+            <div class="exp-label">Expérience</div>
+            <div class="progress-container">
+              <div class="progress-bar" [style.width]="getExperienceWidth(rh.yearsExperience) + '%'"></div>
+            </div>
+            <div class="exp-value">{{ rh.yearsExperience }} ans</div>
+          </div>
+        </div>
+        
+        <div class="card-actions">
+          <button mat-icon-button color="primary" matTooltip="Envoyer un email" 
+                  (click)="$event.stopPropagation(); contactRh(rh)">
+            <mat-icon>mail</mat-icon>
+          </button>
+          
+          <button mat-icon-button color="accent" matTooltip="Modifier" 
+                  (click)="editRh(rh, $event)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          
+          <button mat-icon-button color="warn" matTooltip="Supprimer" 
+                  (click)="$event.stopPropagation(); confirmDelete(rh)">
+            <mat-icon>delete</mat-icon>
+          </button>
+          
+          <button mat-icon-button matTooltip="{{ rh.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}" 
+                  (click)="$event.stopPropagation(); toggleFavorite(rh)">
+            <mat-icon>{{ rh.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Vue en liste -->
+    <div class="rh-list-view" *ngIf="!isLoading && filteredRhList.length > 0 && viewMode === 'list'">
+      <div class="list-header">
+        <div class="row">
+          <div class="col-name">Nom</div>
+          <div class="col-department">Département</div>
+          <div class="col-experience">Expérience</div>
+          <div class="col-status">Statut</div>
+          <div class="col-contact">Contact</div>
+          <div class="col-actions">Actions</div>
+        </div>
+      </div>
+      <div class="list-body">
+        <div class="rh-list-item" *ngFor="let rh of displayedRhs; let i = index" 
+             [class.highlight-focus]="rh.highlighted"
+             [class.active-rh]="rh.statuts"
+             [routerLink]="['/RH', rh.id]">
+          <div class="row">
+            <div class="col-name">
+              <div class="name-with-image">
+                <div class="list-image">
+                  <img [src]="getImageUrl(rh.imageUrl)" [alt]="rh.name + ' photo'">
+                  <div class="favorite-indicator" *ngIf="rh.isFavorite">
+                    <mat-icon>star</mat-icon>
+                  </div>
+                </div>
+                <div class="name-position">
+                  <h3>{{ rh.name }}</h3>
+                  <!-- Nom d'utilisateur -->
+                  <p class="username" *ngIf="rh.username">{{"@"}}{{ rh.username }}</p>
+                  <p>{{ rh.position }}</p>
+                  <!-- Date de début -->
+                  <div class="additional-info" *ngIf="rh.startDate">
+                    <div class="info-item">
+                      <mat-icon>event</mat-icon>
+                      <span>Depuis {{ rh.startDate | date:'MM/yyyy' }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-department">
+              <div class="department-chip">{{ rh.departmentName }}</div>
+            </div>
+            <div class="col-experience">
+              <div class="experience-compact" *ngIf="rh.yearsExperience && rh.yearsExperience > 0">
+                <mat-icon>work</mat-icon>
+                <span>{{ rh.yearsExperience }} ans d'expérience</span>
+              </div>
+            </div>
+            <!-- Colonne statut avec bouton pour changer l'état -->
+            <div class="col-status">
+              <button class="status-button" 
+                    [class.active]="rh.statuts" 
+                    [class.inactive]="!rh.statuts"
+                    (click)="$event.stopPropagation(); toggleStatus(rh)">
+                {{ rh.statuts ? 'Actif' : 'Inactif' }}
+              </button>
+            </div>
+            <div class="col-contact">
+              <div class="contact-info">
+                <div class="email"><mat-icon>email</mat-icon> {{ rh.email }}</div>
+                <div class="phone"><mat-icon>phone</mat-icon> {{ rh.phone }}</div>
+              </div>
+            </div>
+            <div class="col-actions">
+              <div class="list-actions">
+                <button mat-icon-button color="primary" matTooltip="Envoyer un email" 
+                        (click)="$event.stopPropagation(); contactRh(rh)">
+                  <mat-icon>mail</mat-icon>
+                </button>
+                <button mat-icon-button color="accent" matTooltip="Modifier" 
+                        (click)="editRh(rh, $event)">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button color="warn" matTooltip="Supprimer" 
+                        (click)="$event.stopPropagation(); confirmDelete(rh)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="{{ rh.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}" 
+                        (click)="$event.stopPropagation(); toggleFavorite(rh)">
+                  <mat-icon>{{ rh.isFavorite ? 'star' : 'star_border' }}</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="pagination-container" *ngIf="!isLoading && filteredRhList.length > 0">
+      <mat-paginator 
+        [length]="totalRhs"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        [pageIndex]="pageIndex"
+        (page)="onPageChange($event)"
+        aria-label="Sélectionner une page">
+      </mat-paginator>
+      <div class="results-count">
+        {{ filteredRhList.length }} RH{{ filteredRhList.length > 1 ? 's' : '' }} trouvé{{ filteredRhList.length > 1 ? 's' : '' }}
+      </div>
+    </div>
+  </div>
+</div>

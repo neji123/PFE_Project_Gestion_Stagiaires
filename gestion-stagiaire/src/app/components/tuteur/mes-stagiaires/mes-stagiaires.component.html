@@ -1,0 +1,170 @@
+<div class="stagiaires-container"style="margin: 0 7% 0 7% ">
+  <div class="header-section">
+    <h1 class="page-title">Mes Stagiaires</h1>
+    <div class="header-actions">
+      <button mat-flat-button class="ey-button" (click)="ouvrirDialogAffectation()">
+        <mat-icon>person_add</mat-icon> Ajouter un stagiaire
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner-wrapper">
+      <mat-spinner diameter="40" class="ey-spinner"></mat-spinner>
+    </div>
+    <p class="loading-text">Chargement des stagiaires...</p>
+  </div>
+  
+  <div *ngIf="error" class="error-alert">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+  
+  <div *ngIf="!loading && !error">
+    <!-- État vide -->
+    <div *ngIf="stagiaires.length === 0" class="empty-state">
+      <div class="empty-illustration">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="120" height="120" rx="60" fill="#F5F5F5"/>
+          <circle cx="60" cy="45" r="20" fill="#E0E0E0"/>
+          <rect x="30" y="70" width="60" height="30" rx="5" fill="#E0E0E0"/>
+          <path d="M50 80H70V85H50V80Z" fill="#FFE600"/>
+          <path d="M45 90H75V95H45V90Z" fill="#2E2E38" fill-opacity="0.5"/>
+        </svg>
+      </div>
+      <h2>Aucun stagiaire assigné</h2>
+      <p>Vous n'avez actuellement aucun stagiaire sous votre supervision.</p>
+      <div class="empty-actions">
+        <button mat-flat-button class="ey-button" (click)="ouvrirDialogAffectation()">
+          <mat-icon>person_add</mat-icon> Ajouter un stagiaire
+        </button>
+        <button mat-flat-button class="ey-button-secondary" (click)="refreshStagiaires()">
+          <mat-icon>refresh</mat-icon> Actualiser
+        </button>
+      </div>
+    </div>
+    
+    <!-- Liste des stagiaires -->
+    <div *ngIf="stagiaires.length > 0" class="stagiaires-grid">
+      <div *ngFor="let stagiaire of stagiaires; let i = index" class="stagiaire-card-container">
+        <div class="stagiaire-card" [ngStyle]="{'animation-delay': (i * 0.1) + 's'}">
+          <div class="card-header">
+            <!-- Utilisation conditionnelle du getImageUrl pour les profils avec image -->
+            <ng-container *ngIf="stagiaire.profilePictureUrl; else defaultAvatar">
+              <div class="stagiaire-avatar-img">
+                <img [src]="getImageUrl(stagiaire.profilePictureUrl)" 
+                     [alt]="stagiaire.firstName + ' ' + stagiaire.lastName"
+                     (error)="handleImageError($event)">
+              </div>
+            </ng-container>
+            <ng-template #defaultAvatar>
+              <div class="stagiaire-avatar" [style.background-color]="getAvatarColor(stagiaire.firstName, stagiaire.lastName)">
+                {{ getInitials(stagiaire.firstName, stagiaire.lastName) }}
+              </div>
+            </ng-template>
+            
+            <div class="stagiaire-status" [ngClass]="getStagiaireStatusClass(stagiaire)">
+              {{ getStagiaireStatus(stagiaire) }}
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <h3 class="stagiaire-name">{{ stagiaire.firstName }} {{ stagiaire.lastName }}</h3>
+            <p class="stagiaire-email">
+              <mat-icon>email</mat-icon>
+              {{ stagiaire.email }}
+            </p>
+            
+            <div class="stagiaire-timeline">
+              <div class="timeline-header">
+                <mat-icon>timeline</mat-icon>
+                <span>Période de stage</span>
+              </div>
+              <div class="timeline-dates">
+                <div class="date-item">
+                  <span class="date-label">Début:</span>
+                  <span class="date-value">{{ stagiaire.startDate ? (stagiaire.startDate | date:'dd MMM yyyy') : 'Non défini' }}</span>
+                </div>
+                <div class="date-item">
+                  <span class="date-label">Fin:</span>
+                  <span class="date-value">{{ stagiaire.endDate ? (stagiaire.endDate | date:'dd MMM yyyy') : 'Non défini' }}</span>
+                </div>
+              </div>
+              
+              <!-- Barre de progression du stage -->
+              <div class="stage-progress">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" [style.width.%]="getStagiaireProgress(stagiaire)"></div>
+                </div>
+                <div class="progress-label">{{ getStagiaireProgress(stagiaire) }}% complété</div>
+              </div>
+            </div>
+            
+            <!-- Statistiques du stagiaire -->
+           <!-- Remplacer le bloc des statistiques par celui-ci -->
+<div class="stagiaire-stats">
+  <div class="stat-item" *ngIf="stagiaire.note">
+    <div class="stat-icon">
+      <mat-icon>star</mat-icon>
+    </div>
+    <div class="stat-info">
+      <div class="stat-value">{{ stagiaire.note }}/20</div>
+      <div class="stat-label">Note</div>
+    </div>
+  </div>
+  <div class="stat-item clickable" 
+       [routerLink]="['/projects', getProjectId(stagiaire)]" 
+       *ngIf="getProjectId(stagiaire) !== 0">
+    <div class="stat-icon">
+      <mat-icon>view_kanban</mat-icon>
+    </div>
+    <div class="stat-info">
+      <div class="stat-value">{{ getProjectTitle(stagiaire) }}</div>
+      <div class="stat-label">Projet</div>
+    </div>
+  </div>
+  <div class="stat-item" *ngIf="getProjectId(stagiaire) === 0">
+    <div class="stat-icon">
+      <mat-icon>view_kanban</mat-icon>
+    </div>
+    <div class="stat-info">
+      <div class="stat-value">{{ getProjectTitle(stagiaire) }}</div>
+      <div class="stat-label">Projet</div>
+    </div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-icon">
+      <mat-icon>assignment_turned_in</mat-icon>
+    </div>
+    <div class="stat-info">
+      <div class="stat-value">{{ getTasksCompleted(stagiaire) }}</div>
+      <div class="stat-label">Tâches</div>
+    </div>
+  </div>
+</div>
+            
+            <div class="stagiaire-contact">
+              <mat-icon>phone</mat-icon>
+              <span>{{ stagiaire.phoneNumber || 'Non renseigné' }}</span>
+            </div>
+          </div>
+          
+          <div class="card-actions">
+            <button mat-icon-button class="action-button" title="Voir les détails" [routerLink]="['/stagiaire', stagiaire.id]">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button class="action-button" title="Évaluer"[routerLink]="['/ratings']">
+              <mat-icon>rate_review</mat-icon>
+            </button>
+            <button mat-icon-button class="action-button" title="Envoyer un message">
+              <mat-icon>chat</mat-icon>
+            </button>
+            <button mat-icon-button class="action-button action-danger" title="Retirer" (click)="retirerStagiaire(stagiaire.id)">
+              <mat-icon>person_remove</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

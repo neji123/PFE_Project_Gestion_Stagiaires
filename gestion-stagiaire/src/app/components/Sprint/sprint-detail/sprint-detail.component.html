@@ -1,0 +1,287 @@
+<div class="sprint-container">
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="40" class="ey-spinner"></mat-spinner>
+    <p class="loading-text">Chargement du sprint...</p>
+  </div>
+
+  <div *ngIf="error" class="error-alert">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+  </div>
+
+  <div *ngIf="!loading && !error && sprint" class="sprint-content">
+    <!-- En-tête du sprint avec design EY épuré et moderne -->
+    <div class="sprint-header-section">
+      <div class="sprint-header-overlay">
+        <div class="sprint-header-content">
+          <div class="sprint-title-section">
+            <div class="header-actions">
+              <button mat-button class="ey-btn ey-btn-tertiary" (click)="goToProject()">
+                <mat-icon>arrow_back</mat-icon> Retour au projet
+              </button>
+            </div>
+            <h1 class="sprint-title">{{ sprint.name }}</h1>
+            <p class="sprint-description">{{ sprint.description }}</p>
+
+            <div class="sprint-status-badge"
+              [ngClass]="{
+                'status-todo': sprint.status === 'Todo',
+                'status-in-progress': sprint.status === 'InProgress',
+                'status-done': sprint.status === 'Done'
+              }">
+              <mat-icon *ngIf="sprint.status === 'Todo'">schedule</mat-icon>
+              <mat-icon *ngIf="sprint.status === 'InProgress'">play_circle</mat-icon>
+              <mat-icon *ngIf="sprint.status === 'Done'">check_circle</mat-icon>
+              <span>{{ sprint.status === 'Todo' ? 'À faire' : (sprint.status === 'InProgress' ? 'En cours' : 'Terminé') }}</span>
+            </div>
+            
+            <div class="sprint-stats">
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <mat-icon>calendar_today</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">
+                    {{ sprint.startDate | date:'dd MMM' }} - {{ sprint.endDate | date:'dd MMM yyyy' }}
+                  </div>
+                  <div class="stat-label">Période</div>
+                </div>
+              </div>
+
+              <div class="stat-divider"></div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <mat-icon>checklist</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ tasks.length }}</div>
+                  <div class="stat-label">Tâches</div>
+                </div>
+              </div>
+
+              <div class="stat-divider"></div>
+
+              <div class="stat-item">
+                <div class="stat-icon">
+                  <mat-icon>done_all</mat-icon>
+                </div>
+                <div class="stat-info">
+                  <div class="stat-value">{{ doneTasks.length }}/{{ tasks.length }}</div>
+                  <div class="stat-label">Complétées</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="sprint-actions">
+            <button mat-button class="ey-btn ey-btn-primary ey-btn-lg" (click)="toggleTaskForm()">
+              <mat-icon>add_circle</mat-icon> Nouvelle tâche
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire d'ajout de tâche avec effet d'apparition -->
+    <div *ngIf="showTaskForm" class="task-form-section slide-up">
+      <div class="section-header">
+        <div class="section-title">
+          <mat-icon>add_task</mat-icon>
+          <h2>Nouvelle tâche</h2>
+        </div>
+        <button mat-icon-button class="close-button" (click)="toggleTaskForm()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      
+      <form [formGroup]="taskForm" (ngSubmit)="onSubmitTask()" class="task-form">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Titre</mat-label>
+            <input matInput formControlName="title" required>
+            <mat-error *ngIf="taskForm.get('title')?.errors?.['required']">Le titre est obligatoire</mat-error>
+            <mat-error *ngIf="taskForm.get('title')?.errors?.['minlength']">Le titre doit contenir au moins 3 caractères</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="form-field">
+            <mat-label>Assigné à</mat-label>
+            <mat-select formControlName="assignedToId">
+              <mat-option [value]="null">Non assigné</mat-option>
+              <mat-option *ngFor="let user of users" [value]="user.id">
+                {{ user.firstName }} {{ user.lastName }} ({{ user.role }})
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="form-field full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="3" required></textarea>
+            <mat-error *ngIf="taskForm.get('description')?.errors?.['required']">La description est obligatoire</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-button type="button" class="ey-btn ey-btn-tertiary" (click)="toggleTaskForm()">
+            Annuler
+          </button>
+          <button mat-button type="submit" class="ey-btn ey-btn-primary" [disabled]="taskForm.invalid || submittingTask">
+            <mat-spinner *ngIf="submittingTask" diameter="20" class="spinner-button"></mat-spinner>
+            <span *ngIf="!submittingTask">Créer la tâche</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Tableau Kanban des Tâches avec design EY amélioré -->
+    <div class="kanban-section">
+      <div class="section-header">
+        <div class="section-title">
+          <mat-icon>view_kanban</mat-icon>
+          <h2>Gestion des tâches</h2>
+        </div>
+        <button mat-button class="ey-btn ey-btn-primary" (click)="toggleTaskForm()">
+          <mat-icon>add_circle</mat-icon> Ajouter une tâche
+        </button>
+      </div>
+
+      <div class="kanban-board">
+        <!-- Colonne À faire -->
+        <div class="kanban-column">
+          <div class="kanban-column-header kanban-todo">
+            <h3>À faire</h3>
+            <div class="column-counter">{{ todoTasks.length }}</div>
+          </div>
+          
+          <div class="kanban-column-body">
+            <div *ngIf="todoTasks.length === 0" class="kanban-empty-state">
+              <mat-icon>inbox</mat-icon>
+              <p>Aucune tâche à faire</p>
+            </div>
+
+            <div *ngFor="let task of todoTasks" class="kanban-card">
+              <div class="card-header">
+                <h4 class="card-title">{{ task.title }}</h4>
+                <div class="card-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="todoMenu" class="card-menu-button">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #todoMenu="matMenu">
+                    <button mat-menu-item (click)="updateTaskStatus(task, TaskStatus.InProgress)">
+                      <mat-icon>play_arrow</mat-icon>
+                      <span>Démarrer</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              
+              <div class="card-content">
+                <p class="card-description">{{ task.description }}</p>
+                
+                <div *ngIf="task.assignedToId" class="card-assignee">
+                  <mat-icon class="assignee-icon">person</mat-icon>
+                  <span>{{ getUserName(task.assignedToId) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne En cours -->
+        <div class="kanban-column">
+          <div class="kanban-column-header kanban-progress">
+            <h3>En cours</h3>
+            <div class="column-counter">{{ inProgressTasks.length }}</div>
+          </div>
+          
+          <div class="kanban-column-body">
+            <div *ngIf="inProgressTasks.length === 0" class="kanban-empty-state">
+              <mat-icon>hourglass_empty</mat-icon>
+              <p>Aucune tâche en cours</p>
+            </div>
+
+            <div *ngFor="let task of inProgressTasks" class="kanban-card">
+              <div class="card-header">
+                <h4 class="card-title">{{ task.title }}</h4>
+                <div class="card-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="inProgressMenu" class="card-menu-button">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #inProgressMenu="matMenu">
+                    <button mat-menu-item (click)="updateTaskStatus(task, TaskStatus.Todo)">
+                      <mat-icon>pause</mat-icon>
+                      <span>Mettre en attente</span>
+                    </button>
+                    <button mat-menu-item (click)="updateTaskStatus(task, TaskStatus.Done)">
+                      <mat-icon>check</mat-icon>
+                      <span>Terminer</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              
+              <div class="card-content">
+                <p class="card-description">{{ task.description }}</p>
+                
+                <div *ngIf="task.assignedToId" class="card-assignee">
+                  <mat-icon class="assignee-icon">person</mat-icon>
+                  <span>{{ getUserName(task.assignedToId) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne Terminé -->
+        <div class="kanban-column">
+          <div class="kanban-column-header kanban-done">
+            <h3>Terminé</h3>
+            <div class="column-counter">{{ doneTasks.length }}</div>
+          </div>
+          
+          <div class="kanban-column-body">
+            <div *ngIf="doneTasks.length === 0" class="kanban-empty-state">
+              <mat-icon>check_circle</mat-icon>
+              <p>Aucune tâche terminée</p>
+            </div>
+
+            <div *ngFor="let task of doneTasks" class="kanban-card completed">
+              <div class="card-header">
+                <h4 class="card-title">{{ task.title }}</h4>
+                <div class="card-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="doneMenu" class="card-menu-button">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                  <mat-menu #doneMenu="matMenu">
+                    <button mat-menu-item (click)="updateTaskStatus(task, TaskStatus.InProgress)">
+                      <mat-icon>replay</mat-icon>
+                      <span>Réactiver</span>
+                    </button>
+                  </mat-menu>
+                </div>
+              </div>
+              
+              <div class="card-content">
+                <p class="card-description">{{ task.description }}</p>
+                
+                <div *ngIf="task.assignedToId" class="card-assignee">
+                  <mat-icon class="assignee-icon">person</mat-icon>
+                  <span>{{ getUserName(task.assignedToId) }}</span>
+                </div>
+                
+                <div class="card-tags">
+                  <div class="tag completed-tag">
+                    <mat-icon class="tag-icon">check_circle</mat-icon>
+                    <span>Complétée</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,163 @@
+// Variables EY
+$ey-yellow: #FFE600;
+$ey-blue: #41535F;
+$ey-light-gray: #F6F6FA;
+$ey-gray: #747480;
+$ey-black: #2E2E38;
+$ey-white: #FFFFFF;
+$ey-green: #36B37E;
+$ey-red: #FF5630;
+$shadow: 0 4px 16px rgba(65, 83, 95, 0.09);
+
+// Publication Create Styles
+.publication-create {
+  background: $ey-white;
+  border-radius: 14px;
+  box-shadow: $shadow;
+  padding: 32px 28px 24px 28px;
+  max-width: 600px;
+  margin: 32px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+
+  textarea[formControlName="content"] {
+    border: none;
+    outline: none;
+    resize: vertical;
+    min-height: 70px;
+    font-size: 1.1rem;
+    color: $ey-black;
+    background: $ey-light-gray;
+    border-radius: 8px;
+    padding: 16px 14px;
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(65, 83, 95, 0.04);
+    transition: box-shadow 0.2s;
+
+    &:focus {
+      box-shadow: 0 4px 16px rgba(65, 83, 95, 0.16);
+      background: lighten($ey-light-gray, 2%);
+    }
+
+    &::placeholder {
+      color: $ey-gray;
+      font-style: italic;
+      opacity: 0.9;
+    }
+  }
+
+  input[type="file"] {
+    margin-top: 12px;
+    font-size: 0.98rem;
+    color: $ey-blue;
+    background: none;
+
+    &::file-selector-button {
+      background: $ey-yellow;
+      color: $ey-black;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 18px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.18s;
+
+      &:hover {
+        background: darken($ey-yellow, 5%);
+      }
+    }
+  }
+
+  .attachments-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 8px;
+    margin-bottom: 4px;
+
+    div {
+      background: $ey-light-gray;
+      color: $ey-blue;
+      padding: 5px 14px;
+      border-radius: 16px;
+      font-size: 0.96rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(65, 83, 95, 0.06);
+
+      &::before {
+        content: '📎';
+        font-size: 1.1em;
+        margin-right: 6px;
+      }
+    }
+  }
+
+  button[type="submit"] {
+    margin-top: 10px;
+    align-self: flex-end;
+    padding: 8px 32px;
+    background: $ey-yellow;
+    color: $ey-black;
+    border: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1.09rem;
+    box-shadow: 0 2px 8px rgba(65, 83, 95, 0.07);
+    cursor: pointer;
+    letter-spacing: 0.4px;
+    transition: background 0.18s, box-shadow 0.18s;
+
+    &:hover:not(:disabled) {
+      background: darken($ey-yellow, 5%);
+      box-shadow: 0 6px 18px rgba(65, 83, 95, 0.13);
+    }
+    &:disabled {
+      background: $ey-light-gray;
+      color: $ey-gray;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+
+  .loading {
+    color: $ey-blue;
+    font-size: 1rem;
+    font-style: italic;
+    margin-left: 8px;
+    animation: pulse 1.2s infinite alternate;
+  }
+
+  .error {
+    color: $ey-red;
+    font-weight: 500;
+    font-size: 1rem;
+    margin-top: 8px;
+  }
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+// Responsive
+@media (max-width: 700px) {
+  .publication-create {
+    max-width: 98vw;
+    padding: 18px 6vw 16px 6vw;
+  }
+  .attachments-list div {
+    font-size: 0.91rem;
+    padding: 4px 10px;
+  }
+  button[type="submit"] {
+    width: 100%;
+    align-self: stretch;
+    padding: 10px 0;
+  }
+}

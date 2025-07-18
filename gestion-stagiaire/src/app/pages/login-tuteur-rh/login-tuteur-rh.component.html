@@ -1,0 +1,274 @@
+<div class="main" [ngClass]="{'active': isActive}">
+    <!-- Sign In Form -->
+    <div class="container-form sign-in">
+      <div class="brand-logo">
+        <!-- Logo EY en SVG - sans modification -->
+        <div class="ey-logo-svg">
+          <svg width="69" height="70" viewBox="0 0 69 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g id="Frame" clip-path="url(#clip0_682_22287)">
+              <path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M11.09 61.4H28.46V69.32H0.669983V34.9H20.37L24.98 42.82H11.1V48.5H23.66V55.72H11.1V61.4H11.09ZM46.94 34.9L41.04 46.13L35.16 34.9H23.64L35.77 55.72V69.32H46.17V55.72L58.3 34.9H46.94Z" fill="white" />
+              <path id="Vector_2" fill-rule="evenodd" clip-rule="evenodd" d="M68.67 12.81V0L0 24.83L68.67 12.81Z" fill="#FFE600" />
+            </g>
+            <defs>
+              <clipPath id="clip0_682_22287">
+                <rect width="68.67" height="69.32" fill="white" />
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      <h1 class="title">Espace Encadrants</h1>
+      <p class="p-title">Connexion à la plateforme de gestion des stagiaires EY <span class="badge-tuteur-rh">Tuteur & RH</span></p>
+  
+      <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()">
+        <div *ngIf="error" class="error-message" [class.account-inactive]="error.includes('Vous n\'êtes pas autorisé')">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ error }}
+        </div>
+        
+        <div class="input-box">
+          <i class="fa-regular fa-envelope"></i>
+          <input type="text" placeholder="Email" formControlName="username">
+          <div *ngIf="submittedLogin && loginControls['username'].errors" class="validation-error">
+            <div *ngIf="loginControls['username'].errors['required']">Email is required</div>
+          </div>
+        </div>
+  
+        <div class="input-box">
+          <i class="fa-regular" [ngClass]="{'fa-eye': !hideLoginPassword, 'fa-eye-slash': hideLoginPassword}" 
+             (click)="hideLoginPassword = !hideLoginPassword"></i>
+          <input [type]="hideLoginPassword ? 'password' : 'text'" placeholder="Password" formControlName="password">
+          <div *ngIf="submittedLogin && loginControls['password'].errors" class="validation-error">
+            <div *ngIf="loginControls['password'].errors['required']">Password is required</div>
+          </div>
+        </div>
+  
+        <div class="checkbox">
+          <div class="remember-me">
+            <input type="checkbox" id="rememberLogin" formControlName="remember">
+            <label for="rememberLogin">Remember for 30 days</label>
+          </div>
+          <div class="forgot-password-link">
+            <a [routerLink]="['/forgot-password']">Mot de passe oublié?</a>
+          </div>
+        </div>
+        
+        <button type="submit" class="input-submit" [disabled]="loading">
+          <span *ngIf="!loading">Sign In</span>
+          <div *ngIf="loading" class="spinner"></div>
+        </button>
+        
+        <div class="social-login-container">
+          <div class="separator">
+            <span>OU</span>
+          </div>
+          
+          <!-- Remplacez asl-google-signin-button par un div référencé -->
+          <div #googleBtn class="google-login-button"></div>
+        </div>
+        
+
+
+       
+
+      </form>
+    </div>
+
+    
+  
+    <!-- Sign Up Form -->
+    <div class="container-form sign-up">
+      <div class="brand-logo">
+        <!-- Logo EY en SVG -->
+        <div class="ey-logo-svg">
+          <svg width="69" height="70" viewBox="0 0 69 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g id="Frame" clip-path="url(#clip0_682_22287)">
+              <path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M11.09 61.4H28.46V69.32H0.669983V34.9H20.37L24.98 42.82H11.1V48.5H23.66V55.72H11.1V61.4H11.09ZM46.94 34.9L41.04 46.13L35.16 34.9H23.64L35.77 55.72V69.32H46.17V55.72L58.3 34.9H46.94Z" fill="white" />
+              <path id="Vector_2" fill-rule="evenodd" clip-rule="evenodd" d="M68.67 12.81V0L0 24.83L68.67 12.81Z" fill="#FFE600" />
+            </g>
+            <defs>
+              <clipPath id="clip0_682_22287">
+                <rect width="68.67" height="69.32" fill="white" />
+              </clipPath>
+            </defs>
+          </svg>
+        </div>
+      </div>
+      <h1 class="title">Rejoindre EY</h1>
+      <p class="p-title">Créez votre compte pour commencer</p>
+  
+      <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="signup-form">
+        <div *ngIf="error" class="error-message">
+          <i class="fas fa-exclamation-circle"></i>
+          {{ error }}
+        </div>
+        
+        <div *ngIf="loading && !dataLoaded" class="loading-spinner-container">
+          <div class="spinner"></div>
+          <p class="mt-2">Chargement en cours...</p>
+        </div>
+  
+        <div *ngIf="!loading || dataLoaded">
+          <!-- Informations d'identification -->
+          <div class="section-container">
+            <h5 class="section-title">Informations d'identification</h5>
+            <div class="input-box">
+              <i class="fa-regular fa-user"></i>
+              <input type="text" placeholder="Nom d'utilisateur" formControlName="username">
+              <div *ngIf="submittedRegister && registerControls['username'].errors" class="validation-error">
+                <div *ngIf="registerControls['username'].errors['required']">Ce champ est obligatoire</div>
+              </div>
+            </div>
+  
+            <div class="input-box">
+              <i class="fa-regular fa-envelope"></i>
+              <input type="email" placeholder="Email" formControlName="email">
+              <div *ngIf="submittedRegister && registerControls['email'].errors" class="validation-error">
+                <div *ngIf="registerControls['email'].errors['required']">Ce champ est obligatoire</div>
+                <div *ngIf="registerControls['email'].errors['email']">Veuillez entrer une adresse email valide</div>
+              </div>
+            </div>
+  
+            <div class="input-box">
+              <i class="fa-regular" [ngClass]="{'fa-eye': !hideRegisterPassword, 'fa-eye-slash': hideRegisterPassword}" 
+                (click)="hideRegisterPassword = !hideRegisterPassword"></i>
+              <input [type]="hideRegisterPassword ? 'password' : 'text'" placeholder="Mot de passe" formControlName="password">
+              <div *ngIf="submittedRegister && registerControls['password'].errors" class="validation-error">
+                <div *ngIf="registerControls['password'].errors['required']">Ce champ est obligatoire</div>
+                <div *ngIf="registerControls['password'].errors['minlength']">Le mot de passe doit contenir au moins 8 caractères</div>
+              </div>
+            </div>
+            
+            <div class="input-box">
+              <i class="fa-regular" [ngClass]="{'fa-eye': !hideRegisterPassword, 'fa-eye-slash': hideRegisterPassword}" 
+                (click)="hideRegisterPassword = !hideRegisterPassword"></i>
+              <input [type]="hideRegisterPassword ? 'password' : 'text'" placeholder="Confirmer le mot de passe" formControlName="confirmPassword">
+              <div *ngIf="submittedRegister && registerControls['confirmPassword'].errors" class="validation-error">
+                <div *ngIf="registerControls['confirmPassword'].errors['required']">Ce champ est obligatoire</div>
+              </div>
+              <div *ngIf="submittedRegister && registerForm.errors?.['passwordMismatch']" class="validation-error">
+                Les mots de passe ne correspondent pas
+              </div>
+            </div>
+          </div>
+  
+          <!-- Informations personnelles -->
+          <div class="section-container">
+            <h5 class="section-title">Informations personnelles</h5>
+            <div class="input-row">
+              <div class="input-box half-width">
+                <i class="fa-regular fa-user"></i>
+                <input type="text" placeholder="Prénom" formControlName="firstName">
+                <div *ngIf="submittedRegister && registerControls['firstName'].errors" class="validation-error">
+                  <div *ngIf="registerControls['firstName'].errors['required']">Ce champ est obligatoire</div>
+                </div>
+              </div>
+              
+              <div class="input-box half-width">
+                <i class="fa-regular fa-user"></i>
+                <input type="text" placeholder="Nom" formControlName="lastName">
+                <div *ngIf="submittedRegister && registerControls['lastName'].errors" class="validation-error">
+                  <div *ngIf="registerControls['lastName'].errors['required']">Ce champ est obligatoire</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="input-box">
+              <i class="fa-solid fa-phone"></i>
+              <input type="tel" placeholder="Numéro de téléphone" formControlName="phoneNumber">
+              <div *ngIf="submittedRegister && registerControls['phoneNumber'].errors" class="validation-error">
+                <div *ngIf="registerControls['phoneNumber'].errors['required']">Ce champ est obligatoire</div>
+              </div>
+            </div>
+  
+            <!-- Photo de profil -->
+            <div class="file-upload-container">
+              <div class="image-preview">
+                <img *ngIf="photoPreview" [src]="photoPreview" alt="Photo de profil" class="preview-image">
+                <div *ngIf="!photoPreview" class="image-placeholder">
+                  <i class="fa-regular fa-user"></i>
+                </div>
+              </div>
+              <label class="file-input-btn">
+                <i class="fa-regular fa-image"></i> Choisir une photo
+                <input type="file" (change)="onFileSelected($event)" accept="image/*" class="hidden-file-input">
+              </label>
+              <div class="file-hint">Photo de profil (optionnel)</div>
+            </div>
+          </div>
+  
+          <!-- Informations professionnelles - adapté pour tuteurs et RH -->
+          <div class="section-container">
+            <h5 class="section-title">Informations professionnelles</h5>
+            
+            <div class="input-box">
+              <select formControlName="departmentId" class="custom-select">
+                <option [ngValue]="null" disabled selected>Sélectionnez un département</option>
+                <option *ngFor="let dept of departments" [value]="dept.id">{{ dept.departmentName }}</option>
+              </select>
+              <div *ngIf="submittedRegister && registerControls['departmentId'].errors" class="validation-error">
+                <div *ngIf="registerControls['departmentId'].errors['required']">Ce champ est obligatoire</div>
+              </div>
+            </div>
+  
+            <!-- Sélection du rôle (RH ou Tuteur) -->
+            <div class="input-box">
+              <select formControlName="role" class="custom-select">
+                <option [ngValue]="null" disabled selected>Sélectionnez un rôle</option>
+                <option [value]="'RHs'">Ressources Humaines</option>
+                <option [value]="'Tuteur'">Tuteur</option>
+              </select>
+              <div *ngIf="submittedRegister && registerControls['role'].errors" class="validation-error">
+                <div *ngIf="registerControls['role'].errors['required']">Ce champ est obligatoire</div>
+              </div>
+            </div>
+  
+            <!-- Champ spécifique pour les tuteurs - ne s'affiche que si le rôle sélectionné est Tuteur -->
+            <div class="input-box" *ngIf="registerForm.get('role')?.value === 'Tuteur'">
+              <i class="fa-solid fa-briefcase"></i>
+              <input type="number" placeholder="Années d'expérience" formControlName="yearsExperience">
+              <div *ngIf="submittedRegister && registerForm.get('role')?.value === 'Tuteur' && registerControls['yearsExperience']?.errors && registerControls['yearsExperience']?.errors?.['required']">
+                <div class="validation-error">Ce champ est obligatoire pour les tuteurs</div>
+              </div>
+            </div>
+          </div>
+  
+          <div class="checkbox">
+            <div class="remember-me">
+              <input type="checkbox" id="rememberRegister" formControlName="remember">
+              <label for="rememberRegister">Remember for 30 days</label>
+            </div>
+            <a href="#" class="terms">Terms & Conditions</a>
+          </div>
+  
+          <button type="submit" class="input-submit" [disabled]="registerForm.invalid || loading">
+            <span *ngIf="!loading">Create Account</span>
+            <div *ngIf="loading" class="spinner"></div>
+          </button>
+        </div>
+      </form>
+    </div>
+  
+    <!-- Toggle Container -->
+    <div class="toggle-container">
+      <div class="ani">
+        <div class="toggle">
+          <div class="toggle-panel toggle-left">
+            <div class="toggle-content">
+              <h1>Espace Professionnels</h1>
+              <p>Connectez-vous avec vos identifiants pour accéder à votre espace Tuteur ou RH</p>
+              <button class="hidden" (click)="toggleActive(false)">Sign In</button>
+            </div>
+          </div>
+  
+          <div class="toggle-panel toggle-right">
+            <div class="toggle-content">
+              <h1>Espace Encadrants</h1>
+              <p>Créez votre compte professionnel pour accéder à la plateforme d'encadrement des stagiaires EY</p>
+              <button class="hidden" (click)="toggleActive(true)">Sign Up</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

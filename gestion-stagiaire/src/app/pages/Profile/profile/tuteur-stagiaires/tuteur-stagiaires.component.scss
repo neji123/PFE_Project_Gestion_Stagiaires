@@ -1,0 +1,445 @@
+// Variables EY
+$ey-yellow: #FFE600;
+$ey-dark-blue: #2E2E38;
+$ey-blue: #0076A8;
+$ey-light-gray: #F6F6FA;
+$ey-gray: #747480;
+$ey-black: #2E2E38;
+
+// Variables pour les statuts
+$status-active: #4CAF50;
+$status-incoming: #2196F3;
+$status-evaluation: #FF9800;
+$status-completed: #607D8B;
+
+// Mixins
+@mixin ey-box-shadow {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+@mixin ey-card {
+  background-color: white;
+  border-radius: 8px;
+  @include ey-box-shadow;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.ey-tuteur-stagiaires {
+  margin-bottom: 30px;
+  font-family: 'Roboto', sans-serif;
+  
+  // En-tête de section
+  .ey-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    
+    .ey-section-title {
+      display: flex;
+      align-items: center;
+      
+      h2 {
+        margin: 0;
+        font-size: 24px;
+        color: $ey-dark-blue;
+        font-weight: 500;
+      }
+      
+      .ey-badge {
+        background-color: $ey-yellow;
+        color: $ey-dark-blue;
+        border-radius: 16px;
+        padding: 4px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 12px;
+      }
+    }
+    
+    .ey-button {
+      transition: background-color 0.3s ease;
+    }
+  }
+  
+  // États de chargement, erreur et vide
+  .ey-loading-container, .ey-error-container, .ey-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    text-align: center;
+    background-color: $ey-light-gray;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    
+    mat-icon {
+      font-size: 48px;
+      height: 48px;
+      width: 48px;
+      margin-bottom: 16px;
+      color: $ey-gray;
+    }
+    
+    p {
+      color: $ey-gray;
+      margin: 8px 0 20px;
+      font-size: 14px;
+    }
+    
+    h3 {
+      color: $ey-dark-blue;
+      margin: 0;
+      font-weight: 500;
+    }
+  }
+  
+  .ey-error-container mat-icon {
+    color: #F44336;
+  }
+  
+  .ey-empty-state {
+    padding: 60px 20px;
+    
+    .ey-empty-icon {
+      background-color: rgba($ey-yellow, 0.1);
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      
+      mat-icon {
+        color: $ey-dark-blue;
+        font-size: 40px;
+        height: 40px;
+        width: 40px;
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  // Grille de stagiaires
+  .ey-stagiaires-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    
+    // Carte de stagiaire
+    .ey-stagiaire-card {
+      @include ey-card;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      
+      // Badge de statut
+      .ey-card-status {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+        z-index: 2;
+        
+        &.status-active {
+          background-color: $status-active;
+        }
+        
+        &.status-incoming {
+          background-color: $status-incoming;
+        }
+        
+        &.status-evaluation {
+          background-color: $status-evaluation;
+        }
+        
+        &.status-completed {
+          background-color: $status-completed;
+        }
+      }
+      
+      // Avatar du stagiaire
+      .ey-card-avatar {
+        display: flex;
+        justify-content: center;
+        padding: 24px 0 8px;
+        position: relative;
+        
+        .ey-avatar, .ey-profile-img {
+          width: 80px;
+          height: 80px;
+          border-radius: 50%;
+          @include ey-box-shadow;
+        }
+        
+        .ey-avatar {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-size: 28px;
+          font-weight: 500;
+          color: white;
+        }
+        
+        .ey-profile-img {
+          object-fit: cover;
+          border: 3px solid white;
+        }
+      }
+      
+      // Contenu principal de la carte
+      .ey-card-content {
+        padding: 16px 20px;
+        
+        .ey-stagiaire-name {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 500;
+          color: $ey-dark-blue;
+          text-align: center;
+        }
+        
+        .ey-stagiaire-email {
+          margin: 4px 0 16px;
+          color: $ey-gray;
+          font-size: 14px;
+          text-align: center;
+        }
+        
+        // Grille d'informations
+        .ey-info-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 16px;
+          margin-bottom: 20px;
+          
+          .ey-info-item {
+            display: flex;
+            align-items: flex-start;
+            
+            mat-icon {
+              font-size: 18px;
+              height: 18px;
+              width: 18px;
+              margin-right: 8px;
+              margin-top: 2px;
+              color: $ey-gray;
+            }
+            
+            .ey-info-text {
+              .ey-info-label {
+                display: block;
+                font-size: 12px;
+                color: $ey-gray;
+                margin-bottom: 2px;
+              }
+              
+              .ey-info-value {
+                font-size: 14px;
+                color: $ey-dark-blue;
+                font-weight: 500;
+              }
+            }
+          }
+        }
+        
+        // Section de progression
+        .ey-progress-section {
+          margin-bottom: 20px;
+          
+          .ey-progress-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: $ey-dark-blue;
+            margin-bottom: 8px;
+            
+            .ey-progress-percent {
+              font-weight: 500;
+            }
+          }
+          
+          .ey-progress-bar {
+            height: 6px;
+            border-radius: 3px;
+          }
+        }
+        
+        // Séparateur
+        .ey-divider {
+          margin: 16px 0;
+        }
+        
+        // Section projet
+        .ey-project-section {
+          margin-bottom: 16px;
+          
+          .ey-section-subtitle {
+            font-size: 16px;
+            font-weight: 500;
+            color: $ey-dark-blue;
+            margin: 0 0 12px;
+            display: flex;
+            align-items: center;
+            
+            mat-icon {
+              font-size: 18px;
+              height: 18px;
+              width: 18px;
+              margin-right: 8px;
+              color: $ey-blue;
+            }
+          }
+          
+          .ey-project-card {
+            background-color: rgba($ey-blue, 0.05);
+            border-radius: 8px;
+            padding: 16px;
+            
+            &.ey-no-project {
+              background-color: $ey-light-gray;
+              color: $ey-gray;
+            }
+            
+            .ey-project-title {
+              font-weight: 500;
+              margin-bottom: 12px;
+              color: $ey-dark-blue;
+            }
+            
+            .ey-project-sprints {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 8px;
+              font-size: 14px;
+              
+              .ey-sprints-label {
+                color: $ey-gray;
+              }
+              
+              .ey-sprints-value {
+                font-weight: 500;
+                color: $ey-dark-blue;
+              }
+            }
+            
+            .ey-project-progress {
+              position: relative;
+              
+              .ey-progress-bar {
+                height: 4px;
+                border-radius: 2px;
+              }
+              
+              .ey-progress-percent {
+                position: absolute;
+                right: 0;
+                top: -20px;
+                font-size: 12px;
+                font-weight: 500;
+                color: $ey-dark-blue;
+              }
+            }
+          }
+        }
+      }
+      
+      // Actions de la carte
+      .ey-card-actions {
+        padding: 16px 20px;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: auto;
+        
+        .ey-action-btn {
+          flex: 1;
+          
+          mat-icon {
+            margin-right: 4px;
+            font-size: 18px;
+            height: 18px;
+            width: 18px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Styles spécifiques pour les boutons EY
+::ng-deep {
+  .ey-tuteur-stagiaires {
+    .mat-mdc-flat-button.mat-primary {
+      background-color: $ey-blue;
+    }
+    
+    .mat-mdc-flat-button.mat-accent {
+      background-color: $ey-yellow;
+      color: $ey-dark-blue;
+    }
+    
+    .mat-mdc-stroked-button.mat-primary {
+      color: $ey-blue;
+      border-color: $ey-blue;
+    }
+    
+    .mat-mdc-icon-button {
+      color: $ey-blue;
+    }
+    
+    .mat-progress-bar-fill::after {
+      background-color: $ey-blue;
+    }
+    
+    .mat-progress-bar-buffer {
+      background-color: rgba($ey-blue, 0.2);
+    }
+    
+    .mat-accent .mat-progress-bar-fill::after {
+      background-color: $ey-yellow;
+    }
+    
+    .mat-accent .mat-progress-bar-buffer {
+      background-color: rgba($ey-yellow, 0.2);
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 599px) {
+  .ey-tuteur-stagiaires {
+    .ey-section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .ey-button {
+        margin-top: 12px;
+        align-self: flex-end;
+      }
+    }
+    
+    .ey-stagiaires-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .ey-card-content {
+      .ey-info-grid {
+        grid-template-columns: 1fr !important;
+      }
+    }
+  }
+}

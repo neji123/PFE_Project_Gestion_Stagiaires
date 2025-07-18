@@ -1,0 +1,162 @@
+<div class="ey-tuteur-stagiaires"*ngIf="hasTuteurAccess()">
+    <!-- En-tête de section -->
+    <div class="ey-section-header">
+      <div class="ey-section-title">
+        <h2>Mes Stagiaires</h2>
+        <span class="ey-badge" *ngIf="stagiaires.length > 0">
+          {{ stagiaires.length }} stagiaire{{ stagiaires.length > 1 ? 's' : '' }}
+        </span>
+      </div>
+      
+      <button mat-flat-button color="primary" routerLink="/tuteur/stagiaires" 
+              matTooltip="Voir la page complète des stagiaires" class="ey-button">
+        <mat-icon>people</mat-icon> Voir tous
+      </button>
+    </div>
+    
+    <!-- Indicateur de chargement -->
+    <div class="ey-loading-container" *ngIf="loading">
+      <mat-spinner diameter="36" color="accent"></mat-spinner>
+      <p>Chargement des stagiaires...</p>
+    </div>
+    
+    <!-- Message d'erreur -->
+    <div class="ey-error-container" *ngIf="error && !loading">
+      <mat-icon color="warn">error_outline</mat-icon>
+      <p>{{ error }}</p>
+    </div>
+    
+    <!-- État vide -->
+    <div class="ey-empty-state" *ngIf="!loading && !error && stagiaires.length === 0">
+      <div class="ey-empty-icon">
+        <mat-icon>people_outline</mat-icon>
+      </div>
+      <h3>Aucun stagiaire affecté</h3>
+      <p>Vous n'avez actuellement aucun stagiaire sous votre supervision.</p>
+      <button mat-flat-button color="primary" routerLink="/tuteur/stagiaires/affecter" class="ey-button">
+        <mat-icon>person_add</mat-icon> Affecter des stagiaires
+      </button>
+    </div>
+    
+    <!-- Grille de stagiaires -->
+    <div class="ey-stagiaires-grid" *ngIf="!loading && !error && stagiaires.length > 0">
+      <mat-card *ngFor="let stagiaire of stagiaires" class="ey-stagiaire-card">
+        <!-- En-tête de la carte avec badge de statut -->
+        <div class="ey-card-status" [ngClass]="getStagiaireStatusClass(stagiaire)">
+          {{ getStagiaireStatus(stagiaire) }}
+        </div>
+        
+        <!-- Photo/Avatar du stagiaire -->
+        <div class="ey-card-avatar">
+          <div class="ey-avatar" *ngIf="!stagiaire.profilePictureUrl" 
+               [style.background-color]="getAvatarColor(stagiaire.firstName, stagiaire.lastName)">
+            <span>{{ getInitials(stagiaire.firstName, stagiaire.lastName) }}</span>
+          </div>
+          <img *ngIf="stagiaire.profilePictureUrl" 
+               [src]="getImageUrl(stagiaire.profilePictureUrl)" 
+               alt="Photo de {{stagiaire.firstName}}"
+               class="ey-profile-img"
+               (error)="handleImageError($event)">
+        </div>
+        
+        <!-- Informations principales du stagiaire -->
+        <div class="ey-card-content">
+          <h3 class="ey-stagiaire-name">{{ stagiaire.firstName }} {{ stagiaire.lastName }}</h3>
+          <p class="ey-stagiaire-email">{{ stagiaire.email }}</p>
+          
+          <!-- Informations du stage -->
+          <div class="ey-info-grid">
+            <div class="ey-info-item">
+              <mat-icon>event</mat-icon>
+              <div class="ey-info-text">
+                <span class="ey-info-label">Début</span>
+                <span class="ey-info-value">{{ stagiaire.startDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+            
+            <div class="ey-info-item">
+              <mat-icon>event_busy</mat-icon>
+              <div class="ey-info-text">
+                <span class="ey-info-label">Fin</span>
+                <span class="ey-info-value">{{ stagiaire.endDate | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+            
+            <div class="ey-info-item">
+              <mat-icon>school</mat-icon>
+              <div class="ey-info-text">
+                <span class="ey-info-label">Université</span>
+                <span class="ey-info-value">{{ getUniversityName(stagiaire) }}</span>
+              </div>
+            </div>
+            
+            <div class="ey-info-item" *ngIf="getRemainingDays(stagiaire) !== null">
+              <mat-icon>schedule</mat-icon>
+              <div class="ey-info-text">
+                <span class="ey-info-label">Restant</span>
+                <span class="ey-info-value">{{ getRemainingDays(stagiaire) }} jours</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Progression du stage -->
+          <div class="ey-progress-section">
+            <div class="ey-progress-header">
+              <span>Progression du stage</span>
+              <span class="ey-progress-percent">{{ getStagiaireProgress(stagiaire) }}%</span>
+            </div>
+            <mat-progress-bar mode="determinate" 
+                              [value]="getStagiaireProgress(stagiaire)" 
+                              color="primary" 
+                              class="ey-progress-bar"></mat-progress-bar>
+          </div>
+          
+          <mat-divider class="ey-divider"></mat-divider>
+          
+          <!-- Informations du projet -->
+          <div class="ey-project-section">
+            <h4 class="ey-section-subtitle">
+              <mat-icon>work</mat-icon>
+              Projet assigné
+            </h4>
+            
+            <div class="ey-project-card" 
+                 [ngClass]="{'ey-no-project': getProject(stagiaire.id).title === 'Non assigné'}">
+              <div class="ey-project-title">{{ getProject(stagiaire.id).title }}</div>
+              
+              <ng-container *ngIf="getProject(stagiaire.id).title !== 'Non assigné'">
+                <div class="ey-project-sprints">
+                  <span class="ey-sprints-label">Sprints:</span>
+                  <span class="ey-sprints-value">
+                    {{ getProject(stagiaire.id).completedSprints }} / {{ getProject(stagiaire.id).totalSprints }}
+                  </span>
+                </div>
+                
+                <div class="ey-project-progress">
+                  <mat-progress-bar mode="determinate" 
+                                    [value]="getProject(stagiaire.id).progress" 
+                                    color="accent" 
+                                    class="ey-progress-bar"></mat-progress-bar>
+                  <span class="ey-progress-percent">{{ getProject(stagiaire.id).progress }}%</span>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Actions -->
+        <mat-card-actions class="ey-card-actions">
+          <button mat-stroked-button color="primary" [routerLink]="['/stagiaires', stagiaire.id]" class="ey-action-btn">
+            <mat-icon>visibility</mat-icon> Voir profil
+          </button>
+          
+          <button mat-flat-button color="accent" 
+                  [routerLink]="['/projets', getProject(stagiaire.id).id]" 
+                  [disabled]="getProject(stagiaire.id).title === 'Non assigné'"
+                  class="ey-action-btn">
+            <mat-icon>assignment</mat-icon> Voir projet
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+  </div>

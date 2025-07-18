@@ -1,0 +1,683 @@
+// EY Brand Variables
+$ey-yellow: #FFE600;
+$ey-dark-blue: #2E2E38;
+$ey-blue: #41535f;
+$ey-light-gray: #F6F6FA;
+$ey-gray: #747480;
+$ey-black: #2E2E38;
+$ey-white: #FFFFFF;
+$ey-green: #36B37E;
+$ey-red: #FF5630;
+
+// Additional colors for depth and highlights
+$ey-yellow-light: lighten($ey-yellow, 15%);
+$ey-yellow-dark: darken($ey-yellow, 10%);
+$ey-blue-light: lighten($ey-blue, 40%);
+$box-shadow-color: rgba($ey-black, 0.1);
+
+// Gradients
+$gradient-yellow: linear-gradient(135deg, $ey-yellow 0%, $ey-yellow-dark 100%);
+$gradient-blue: linear-gradient(135deg, $ey-blue 0%, $ey-dark-blue 100%);
+$gradient-light: linear-gradient(135deg, $ey-white 0%, $ey-light-gray 100%);
+
+// Sizing & Spacing
+$border-radius: 12px;
+$border-radius-sm: 8px;
+$border-radius-lg: 16px;
+$spacing-base: 1rem;
+$header-height: 70px;
+$sidebar-width: 260px;
+
+// Shadows
+$shadow-sm: 0 2px 8px rgba($ey-black, 0.06);
+$shadow-md: 0 4px 16px rgba($ey-black, 0.08);
+$shadow-lg: 0 8px 24px rgba($ey-black, 0.12);
+$shadow-highlight: 0 0 0 3px rgba($ey-yellow, 0.3);
+$card-hover-shadow: 0 8px 32px rgba($ey-black, 0.12);
+
+// Typography
+$font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// Transitions
+$transition-fast: 150ms ease-in-out;
+$transition-medium: 250ms ease-in-out;
+$transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+
+// Z-indices
+$z-index-header: 100;
+$z-index-tooltip: 1000;
+$z-index-modal: 2000;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card {
+  background: $ey-white;
+  border-radius: $border-radius;
+  box-shadow: $shadow-sm;
+  transition: box-shadow $transition-medium, transform $transition-medium;
+  overflow: hidden;
+  
+  &:hover {
+    box-shadow: $card-hover-shadow;
+    transform: translateY(-2px);
+  }
+}
+
+@mixin highlight-border($color: $ey-yellow) {
+  border-left: 3px solid $color;
+}
+
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Keyframe Animations
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+// Global Styles
+html, body {
+  font-family: $font-family;
+  color: $ey-black;
+  background-color: $ey-light-gray;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Dashboard Container
+.dashboard-container {
+  position: relative;
+  min-height: 100vh;
+  background-color: $ey-light-gray;
+  padding: $spacing-base * 2;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: $gradient-yellow;
+  }
+  
+  h1 {
+    position: relative;
+    font-weight: $font-weight-bold;
+    color: $ey-dark-blue;
+    margin-bottom: $spacing-base * 2.5; // Increased margin for better spacing
+    padding-bottom: 10px;
+    display: inline-block;
+    font-size: 2rem;
+    letter-spacing: -0.5px;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 60px;
+      height: 4px;
+      background-color: $ey-yellow;
+      border-radius: 2px;
+    }
+  }
+}
+
+// Loading Spinner
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+  border: 0.25rem solid $ey-blue-light;
+  border-right-color: $ey-blue;
+  border-radius: 50%;
+  animation: spinner 1s linear infinite;
+  
+  @keyframes spinner {
+    to { transform: rotate(360deg); }
+  }
+}
+
+// Error Alert
+.bg-red-100 {
+  background-color: rgba($ey-red, 0.1);
+  border-color: rgba($ey-red, 0.2);
+  
+  strong {
+    color: $ey-red;
+  }
+  
+  button {
+    transition: all $transition-fast;
+    
+    &:hover {
+      background-color: darken($ey-red, 10%);
+    }
+  }
+}
+
+// Stats Cards Section - ENHANCED SPACING
+.grid {
+  display: grid;
+  gap: $spacing-base * 2.5; // INCREASED GAP between cards
+  margin-bottom: $spacing-base * 3; // Added margin to separate from next section
+  
+  &.grid-cols-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  @media (min-width: 768px) {
+    &.md\:grid-cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    &.lg\:grid-cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    
+    &.lg\:grid-cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
+// Enhancement for Stat Cards
+:host ::ng-deep {
+  .stat-card {
+    @include card;
+    padding: $spacing-base * 1.75; // Increased padding
+    position: relative;
+    overflow: hidden;
+    border-radius: $border-radius-lg;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: space-between;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      width: 100%;
+      background: $gradient-yellow;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform $transition-medium;
+    }
+    
+    &:hover::after {
+      transform: scaleX(1);
+    }
+    
+    .icon-container {
+      border-radius: 12px;
+      width: 56px;
+      height: 56px;
+      @include flex-center;
+      transition: transform $transition-medium;
+      margin-bottom: 16px;
+      
+      &.bg-indigo-100 { background-color: rgba($ey-blue, 0.1); }
+      &.bg-pink-100 { background-color: rgba(#E91E63, 0.1); }
+      &.bg-yellow-100 { background-color: rgba($ey-yellow, 0.2); }
+      &.bg-green-100 { background-color: rgba($ey-green, 0.1); }
+    }
+    
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: $font-weight-bold;
+      margin-top: 0.5rem;
+      transition: transform $transition-medium;
+      color: $ey-dark-blue;
+      align-self: flex-end;
+      margin-right: 12px;
+      letter-spacing: -0.5px;
+    }
+    
+    .stat-label {
+      color: $ey-gray;
+      font-size: 1.1rem;
+      margin-top: 0.25rem;
+      font-weight: $font-weight-medium;
+      align-self: flex-start;
+    }
+    
+    &:hover {
+      .icon-container {
+        transform: scale(1.1);
+      }
+      
+      .stat-value {
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// Improved styles for Additional KPIs Section
+.bg-white {
+  @include card;
+  margin-bottom: $spacing-base * 2; // Increased margin between sections
+  padding: $spacing-base * 1.5;
+  
+  h2 {
+    font-weight: $font-weight-semibold;
+    position: relative;
+    margin-left: 1rem;
+    font-size: 1.25rem;
+    color: $ey-dark-blue;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid rgba($ey-yellow, 0.3);
+    padding-bottom: 0.5rem;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: -1rem;
+      top: 0.25rem;
+      height: 1rem;
+      width: 4px;
+      background-color: $ey-yellow;
+      border-radius: 2px;
+    }
+  }
+  
+  // Style customization for chart components
+  :host ::ng-deep {
+    .chart-container {
+      animation: fadeIn 0.3s ease-in-out;
+      transition: all $transition-medium;
+      
+      canvas {
+        max-width: 100%;
+        height: auto !important;
+      }
+    }
+  }
+}
+
+// GREATLY IMPROVED STYLES FOR KEY METRICS SECTIONS
+// This specifically addresses the issues with condensed text and poor spacing
+.flex.justify-between.items-center {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  margin-bottom: 12px;
+  border-radius: $border-radius-sm;
+  background-color: $ey-light-gray;
+  transition: all $transition-fast;
+  position: relative;
+  border-left: 3px solid transparent;
+  
+  // Add hover effect
+  &:hover {
+    background-color: darken($ey-light-gray, 3%);
+    border-left-color: $ey-yellow;
+    transform: translateX(5px);
+  }
+  
+  // The label on the left
+  span:first-child {
+    font-weight: $font-weight-medium;
+    font-size: 1rem;
+    color: $ey-dark-blue;
+    flex: 1;
+    position: relative;
+    padding-left: 8px;
+  }
+  
+  // The value/number on the right
+  span.font-bold {
+    font-size: 1.5rem;
+    font-weight: $font-weight-bold;
+    color: $ey-dark-blue;
+    margin-left: auto;
+    min-width: 50px;
+    text-align: right;
+    
+    // Different colors for different statuses
+    &.text-green-600 { color: $ey-green; }
+    &.text-red-600 { color: $ey-red; }
+    &.text-orange-600 { color: $ey-yellow-dark; }
+  }
+}
+
+// Special styling for the KPI titles with yellow bar
+h2.text-lg.font-semibold.mb-3 {
+  position: relative;
+  font-size: 1.25rem;
+  font-weight: $font-weight-bold;
+  margin-bottom: 1.5rem;
+  padding-bottom: 8px;
+  color: $ey-dark-blue;
+  border-bottom: 0;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background-color: $ey-yellow;
+    border-radius: 2px;
+  }
+}
+
+// Special styling for Types de Stage and Niveaux d'Études sections
+.bg-white:has(h2:contains("Types de Stage")),
+.bg-white:has(h2:contains("Niveaux d'Études")),
+.bg-white:has(h2:contains("Mouvements du Mois")) {
+  h2 {
+    margin-bottom: 24px;
+  }
+  
+  // Create a table-like display for metrics
+  .flex.justify-between.items-center {
+    position: relative;
+    padding: 14px 20px;
+    background-color: $ey-white;
+    border-bottom: 1px solid rgba($ey-gray, 0.1);
+    margin-bottom: 0;
+    border-left: 0;
+    
+    &:hover {
+      background-color: rgba($ey-light-gray, 0.5);
+      transform: translateX(0);
+    }
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 0;
+      background-color: $ey-yellow;
+      transition: height $transition-medium;
+    }
+    
+    &:hover::before {
+      height: 70%;
+    }
+    
+    // The label (improved)
+    span:first-child {
+      font-size: 1.05rem;
+      font-weight: $font-weight-regular;
+      color: $ey-dark-blue;
+      flex: 1;
+      padding-left: 0;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 50%;
+        border-bottom: 1px dotted rgba($ey-gray, 0.3);
+        margin: 0 60px;
+        z-index: 1;
+      }
+    }
+    
+    // The value/number (improved)
+    span.font-bold {
+      position: relative;
+      z-index: 2;
+      background-color: $ey-white;
+      padding: 0 8px;
+      min-width: 35px;
+      font-size: 1.25rem;
+      text-align: center;
+      border-radius: 4px;
+      
+      &:hover {
+        background-color: rgba($ey-yellow, 0.1);
+      }
+    }
+  }
+  
+  // Add special styling for the first item
+  .flex.justify-between.items-center:first-of-type {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+  }
+  
+  // Add special styling for the last item
+  .flex.justify-between.items-center:last-of-type {
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-bottom: 0;
+  }
+}
+
+// Tables styling
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  
+  th {
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.5px;
+    font-weight: $font-weight-semibold;
+    padding: 1rem 0.75rem;
+    position: sticky;
+    top: 0;
+    background-color: rgba($ey-light-gray, 0.9);
+    backdrop-filter: blur(4px);
+    border-bottom: 2px solid rgba($ey-gray, 0.2);
+    z-index: 10;
+  }
+  
+  td {
+    padding: 1rem 0.75rem;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba($ey-gray, 0.1);
+    
+    // Status indicators
+    .px-2.inline-flex.text-xs.leading-5.font-semibold.rounded-full {
+      padding: 0.35rem 0.75rem;
+      border-radius: 50px;
+      
+      &.bg-red-100 {
+        background-color: rgba($ey-red, 0.1);
+        color: darken($ey-red, 10%);
+      }
+      
+      &.bg-orange-100 {
+        background-color: rgba($ey-yellow, 0.2);
+        color: darken($ey-yellow-dark, 15%);
+      }
+      
+      &.bg-green-100 {
+        background-color: rgba($ey-green, 0.1);
+        color: darken($ey-green, 10%);
+      }
+      
+      &.bg-indigo-100 {
+        background-color: rgba($ey-blue, 0.1);
+        color: darken($ey-blue, 10%);
+      }
+    }
+  }
+  
+  tr {
+    transition: background-color $transition-fast;
+    
+    &:hover {
+      background-color: rgba($ey-light-gray, 0.5);
+    }
+  }
+  
+  button {
+    font-weight: $font-weight-medium;
+    padding: 0.25rem 0.5rem;
+    border-radius: $border-radius-sm;
+    transition: all $transition-fast;
+    
+    &.text-green-600 {
+      &:hover {
+        background-color: rgba($ey-green, 0.1);
+      }
+    }
+    
+    &.text-red-600 {
+      &:hover {
+        background-color: rgba($ey-red, 0.1);
+      }
+    }
+  }
+}
+
+// Empty state styling
+.flex.justify-center.items-center.h-32.text-gray-500 {
+  padding: 2rem;
+  background-color: rgba($ey-light-gray, 0.5);
+  border-radius: $border-radius;
+  color: $ey-gray;
+  font-weight: $font-weight-medium;
+}
+
+// Recent Activities Section
+.space-y-4 > div.flex.items-center.border-b.pb-3 {
+  padding: 0.75rem 0;
+  animation: fadeIn $transition-medium, slideUp $transition-medium;
+  transition: all $transition-medium;
+  
+  &:hover {
+    transform: translateX(5px);
+  }
+  
+  // Activity indicators
+  div.p-2.rounded {
+    width: 40px;
+    height: 40px;
+    @include flex-center;
+    
+    &.bg-green-100 { background-color: rgba($ey-green, 0.1); }
+    &.bg-blue-100 { background-color: rgba($ey-blue, 0.1); }
+    &.bg-purple-100 { background-color: rgba(#9C27B0, 0.1); }
+    &.bg-yellow-100 { background-color: rgba($ey-yellow, 0.2); }
+    &.bg-red-100 { background-color: rgba($ey-red, 0.1); }
+  }
+  
+  // Activity text
+  .ml-3 {
+    p.font-medium {
+      font-weight: $font-weight-medium;
+    }
+    
+    p.text-xs.text-gray-500 {
+      margin-top: 0.25rem;
+      font-size: 0.75rem;
+    }
+  }
+}
+
+// Add subtle animations to all cards on page load
+.grid > div, .bg-white {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: cardFadeIn 0.5s forwards;
+  
+  @for $i from 1 through 20 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.05}s;
+    }
+  }
+  
+  @keyframes cardFadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+// Responsive Adjustments
+@media (max-width: 767px) {
+  .dashboard-container {
+    padding: $spacing-base;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .overflow-x-auto {
+    margin: 0 -$spacing-base;
+    padding: 0 $spacing-base;
+  }
+  
+  :host ::ng-deep {
+    .stat-card {
+      .stat-value {
+        font-size: 1.5rem;
+      }
+    }
+  }
+  
+  // Adjust KPI item spacing on mobile
+  .flex.justify-between.items-center {
+    padding: 12px 15px;
+    
+    span:first-child {
+      font-size: 0.95rem;
+      
+      &::after {
+        margin: 0 40px;
+      }
+    }
+    
+    span.font-bold {
+      font-size: 1.1rem;
+    }
+  }
+
+  // Adjust grid gap on mobile
+  .grid {
+    gap: $spacing-base * 1.5;
+    margin-bottom: $spacing-base * 2;
+  }
+}

@@ -1,0 +1,842 @@
+// Variables EY
+$ey-yellow: #FFE600;
+$ey-dark-blue: #2E2E38;
+$ey-blue: #41535f;
+$ey-light-gray: #F6F6FA;
+$ey-gray: #747480;
+$ey-white: #FFFFFF;
+$ey-green: #36B37E;
+$ey-red: #FF5630;
+
+// Variables dérivées pour le design
+$gradient-primary: linear-gradient(135deg, $ey-dark-blue 0%, $ey-blue 100%);
+$gradient-accent: linear-gradient(135deg, $ey-yellow 0%, #F4D03F 100%);
+$gradient-success: linear-gradient(135deg, $ey-green 0%, #2ECC71 100%);
+$gradient-light: linear-gradient(135deg, $ey-white 0%, $ey-light-gray 100%);
+
+// Shadows modernes
+$shadow-sm: 0 2px 4px rgba($ey-dark-blue, 0.08);
+$shadow-md: 0 4px 12px rgba($ey-dark-blue, 0.12);
+$shadow-lg: 0 8px 24px rgba($ey-dark-blue, 0.15);
+$shadow-xl: 0 12px 40px rgba($ey-dark-blue, 0.18);
+
+// Transitions
+$transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Breakpoints
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+
+.attestation-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, $ey-light-gray 50%, #e2e8f0 100%);
+  padding: 2rem 1rem;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  @media (max-width: $breakpoint-md) {
+    padding: 1rem 0.5rem;
+  }
+}
+
+.attestation-card {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: $ey-white;
+  border-radius: 24px;
+  box-shadow: $shadow-xl;
+  overflow: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: $gradient-accent;
+    z-index: 1;
+  }
+
+  .card-header {
+    background: $gradient-primary;
+    color: $ey-white;
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba($ey-yellow, 0.1) 0%, transparent 70%);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(45deg, $ey-white, $ey-yellow);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+
+      @media (max-width: $breakpoint-md) {
+        font-size: 2rem;
+      }
+    }
+
+    p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      position: relative;
+      z-index: 2;
+      margin-bottom: 2rem;
+    }
+
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      position: relative;
+      z-index: 2;
+
+      @media (max-width: $breakpoint-sm) {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .mode-btn {
+        padding: 0.875rem 2rem;
+        border: 2px solid rgba($ey-white, 0.3);
+        background: rgba($ey-white, 0.1);
+        color: $ey-white;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: $transition-smooth;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        i {
+          font-size: 1.1rem;
+        }
+
+        &:hover {
+          background: rgba($ey-white, 0.2);
+          border-color: rgba($ey-white, 0.5);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba($ey-dark-blue, 0.3);
+        }
+
+        &.active {
+          background: $gradient-accent;
+          border-color: $ey-yellow;
+          color: $ey-dark-blue;
+          transform: scale(1.05);
+          box-shadow: 0 8px 25px rgba($ey-yellow, 0.4);
+
+          &:hover {
+            transform: scale(1.05) translateY(-2px);
+          }
+        }
+      }
+    }
+  }
+
+  .card-content {
+    padding: 2.5rem;
+
+    @media (max-width: $breakpoint-md) {
+      padding: 1.5rem;
+    }
+  }
+}
+
+// Mode automatique avec filtres
+.auto-mode {
+  .loading-container {
+    text-align: center;
+    padding: 3rem;
+    color: $ey-gray;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid $ey-light-gray;
+      border-top: 4px solid $ey-yellow;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    p {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+  }
+
+  // Section des filtres
+  .filters-section {
+    margin-bottom: 2rem;
+
+    h3 {
+      color: $ey-dark-blue;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &::before {
+        content: '';
+        width: 4px;
+        height: 24px;
+        background: $gradient-accent;
+        border-radius: 2px;
+      }
+    }
+
+    .filters-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 1.5rem;
+      align-items: end;
+
+      @media (max-width: $breakpoint-lg) {
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      @media (max-width: $breakpoint-sm) {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .search-field, .filter-field, .reset-field {
+      label {
+        display: block;
+        color: $ey-dark-blue;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+      }
+    }
+
+    .search-input-container {
+      position: relative;
+
+      .search-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        border: 2px solid $ey-light-gray;
+        border-radius: 12px;
+        font-size: 1rem;
+        background: $ey-white;
+        transition: $transition-smooth;
+
+        &:focus {
+          outline: none;
+          border-color: $ey-yellow;
+          box-shadow: 0 0 0 3px rgba($ey-yellow, 0.1);
+          transform: translateY(-1px);
+        }
+
+        &::placeholder {
+          color: $ey-gray;
+        }
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: $ey-gray;
+        font-size: 1.1rem;
+      }
+    }
+
+    .filter-select {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid $ey-light-gray;
+      border-radius: 12px;
+      font-size: 1rem;
+      background: $ey-white;
+      transition: $transition-smooth;
+      cursor: pointer;
+
+      &:focus {
+        outline: none;
+        border-color: $ey-yellow;
+        box-shadow: 0 0 0 3px rgba($ey-yellow, 0.1);
+      }
+    }
+
+    .reset-btn {
+      padding: 1rem 1.5rem;
+      background: $gradient-primary;
+      color: $ey-white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: $transition-smooth;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-md;
+      }
+
+      i {
+        font-size: 1rem;
+      }
+    }
+
+    .search-results {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, rgba($ey-yellow, 0.05) 0%, rgba($ey-light-gray, 0.5) 100%);
+      border-radius: 12px;
+      border-left: 4px solid $ey-yellow;
+
+      .results-count {
+        color: $ey-dark-blue;
+        font-weight: 600;
+        margin: 0;
+
+        span {
+          color: $ey-gray;
+          font-weight: 400;
+        }
+      }
+    }
+  }
+
+  // Sélecteur de stagiaire
+  .stagiaire-selector {
+    .selected-stagiaire {
+      background: $gradient-light;
+      border: 2px solid $ey-yellow;
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+      box-shadow: $shadow-md;
+
+      .selected-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1rem;
+
+        h4 {
+          color: $ey-dark-blue;
+          font-weight: 700;
+          margin: 0;
+          flex: 1;
+        }
+
+        .clear-btn {
+          background: $ey-red;
+          color: $ey-white;
+          border: none;
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: $transition-fast;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          &:hover {
+            transform: scale(1.1);
+            box-shadow: $shadow-sm;
+          }
+        }
+      }
+
+      .selected-details {
+        .selected-main {
+          margin-bottom: 1rem;
+
+          h5 {
+            color: $ey-dark-blue;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0 0 0.25rem 0;
+          }
+
+          .username {
+            color: $ey-gray;
+            font-weight: 500;
+            font-size: 0.95rem;
+          }
+        }
+
+        .selected-info {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 0.75rem;
+
+          @media (max-width: $breakpoint-sm) {
+            grid-template-columns: 1fr;
+          }
+
+          .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba($ey-gray, 0.2);
+
+            .label {
+              color: $ey-gray;
+              font-weight: 600;
+              font-size: 0.9rem;
+            }
+
+            .value {
+              color: $ey-dark-blue;
+              font-weight: 500;
+              text-align: right;
+            }
+          }
+        }
+      }
+    }
+
+    .dropdown-container {
+      h4 {
+        color: $ey-dark-blue;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+
+      .stagiaires-dropdown {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 2px solid $ey-light-gray;
+        border-radius: 12px;
+        background: $ey-white;
+
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+          background: $ey-light-gray;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: $ey-gray;
+          border-radius: 3px;
+
+          &:hover {
+            background: $ey-blue;
+          }
+        }
+
+        .dropdown-item {
+          padding: 1.25rem;
+          border-bottom: 1px solid $ey-light-gray;
+          cursor: pointer;
+          transition: $transition-fast;
+          position: relative;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          &:hover {
+            background: linear-gradient(135deg, rgba($ey-yellow, 0.05) 0%, rgba($ey-light-gray, 0.3) 100%);
+            transform: translateX(4px);
+            border-left: 4px solid $ey-yellow;
+          }
+
+          .item-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+
+            .item-name {
+              strong {
+                color: $ey-dark-blue;
+                font-size: 1.1rem;
+                font-weight: 700;
+              }
+
+              .item-username {
+                color: $ey-gray;
+                font-size: 0.9rem;
+                margin-left: 0.5rem;
+              }
+            }
+
+            .item-department {
+              background: $gradient-primary;
+              color: $ey-white;
+              padding: 0.25rem 0.75rem;
+              border-radius: 20px;
+              font-size: 0.8rem;
+              font-weight: 600;
+            }
+          }
+
+          .item-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            color: $ey-gray;
+            font-size: 0.9rem;
+
+            .item-period {
+              font-weight: 600;
+            }
+
+            .item-duration {
+              color: $ey-blue;
+              font-weight: 500;
+            }
+          }
+
+          .item-extra {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+
+            .item-university {
+              color: $ey-gray;
+              font-style: italic;
+            }
+
+            .item-stage {
+              background: $gradient-accent;
+              color: $ey-dark-blue;
+              padding: 0.2rem 0.6rem;
+              border-radius: 12px;
+              font-weight: 600;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Messages d'état
+  .no-results, .no-stagiaires {
+    text-align: center;
+    padding: 3rem;
+    color: $ey-gray;
+
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: $ey-blue;
+    }
+
+    p {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+    }
+
+    .reset-btn {
+      background: $gradient-primary;
+      color: $ey-white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: $transition-smooth;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: $shadow-md;
+      }
+    }
+  }
+}
+
+// Mode manuel
+.manual-mode {
+  .form-field {
+    margin-bottom: 1.5rem;
+
+    label {
+      display: block;
+      color: $ey-dark-blue;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid $ey-light-gray;
+      border-radius: 12px;
+      font-size: 1rem;
+      transition: $transition-smooth;
+      background: $ey-white;
+
+      &:focus {
+        outline: none;
+        border-color: $ey-yellow;
+        box-shadow: 0 0 0 3px rgba($ey-yellow, 0.1);
+        transform: translateY(-1px);
+      }
+
+      &.invalid {
+        border-color: $ey-red;
+        box-shadow: 0 0 0 3px rgba($ey-red, 0.1);
+      }
+
+      &::placeholder {
+        color: $ey-gray;
+      }
+    }
+  }
+
+  .date-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    @media (max-width: $breakpoint-sm) {
+      grid-template-columns: 1fr;
+    }
+  }
+}
+
+// Boutons de génération
+.button-container {
+  margin-top: 2rem;
+  text-align: center;
+
+  .generate-btn, button[type="submit"] {
+    background: $gradient-success;
+    color: $ey-white;
+    border: none;
+    padding: 1.25rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: $transition-smooth;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: $shadow-md;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba($ey-white, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    &:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: $shadow-lg;
+    }
+
+    &:disabled {
+      background: $ey-gray;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+
+      &:hover::before {
+        width: 0;
+        height: 0;
+      }
+    }
+
+    i {
+      font-size: 1.2rem;
+      z-index: 1;
+      position: relative;
+    }
+
+    span {
+      z-index: 1;
+      position: relative;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba($ey-white, 0.3);
+      border-top: 2px solid $ey-white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+  }
+}
+
+// Messages d'alerte
+.messages {
+  margin-top: 1.5rem;
+
+  .error-alert, .success-alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    position: relative;
+    border-left: 4px solid;
+    backdrop-filter: blur(10px);
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0.75rem;
+      left: 1rem;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      opacity: 0.7;
+    }
+  }
+
+  .error-alert {
+    background: linear-gradient(135deg, rgba($ey-red, 0.1) 0%, rgba($ey-red, 0.05) 100%);
+    color: darken($ey-red, 10%);
+    border-left-color: $ey-red;
+
+    &::before {
+      background: $ey-red;
+    }
+  }
+
+  .success-alert {
+    background: linear-gradient(135deg, rgba($ey-green, 0.1) 0%, rgba($ey-green, 0.05) 100%);
+    color: darken($ey-green, 10%);
+    border-left-color: $ey-green;
+
+    &::before {
+      background: $ey-green;
+    }
+  }
+}
+
+// Animations
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// Responsive améliorations
+@media (max-width: $breakpoint-lg) {
+  .attestation-card {
+    margin: 1rem;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: $breakpoint-md) {
+  .attestation-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .attestation-card .card-header {
+    padding: 2rem 1.5rem 1.5rem;
+  }
+}
+
+@media (max-width: $breakpoint-sm) {
+  .button-container .generate-btn,
+  .button-container button[type="submit"] {
+    width: 100%;
+    padding: 1rem 2rem;
+  }
+}
+
+// Animation d'entrée pour les éléments
+.auto-mode, .manual-mode {
+  animation: slideIn 0.6s ease-out;
+}
+
+.dropdown-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+// Améliorations d'accessibilité
+.mode-btn:focus,
+.search-input:focus,
+.filter-select:focus,
+.generate-btn:focus,
+button[type="submit"]:focus {
+  outline: 2px solid $ey-yellow;
+  outline-offset: 2px;
+}
+
+// États de survol améliorés
+.dropdown-item:focus-visible {
+  outline: 2px solid $ey-yellow;
+  outline-offset: -2px;
+}
+
+// Style pour les écrans haute résolution
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .attestation-card::before {
+    height: 8px;
+  }
+}

@@ -1,0 +1,137 @@
+<app-sidebar [isVisible]="isSidebarVisible" (visibilityChange)="onSidebarVisibilityChange($event)"></app-sidebar>
+
+<div class="main-content" [class.sidebar-open]="isSidebarVisible">
+  <div class="timeline-container">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Tableau de Bord - Suivi des Rapports de Stage</mat-card-title>
+        <mat-card-subtitle>Suivez vos échéances, soumettez vos rapports et consultez leur statut d'approbation</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <div *ngIf="isLoading" class="loading-container">
+          <mat-spinner [diameter]="40"></mat-spinner>
+          <p>Chargement de votre tableau de bord...</p>
+        </div>
+        
+        <div *ngIf="error" class="error-container">
+          <mat-icon color="warn">error</mat-icon>
+          <p>{{ error }}</p>
+          <button mat-raised-button color="primary" (click)="loadUserInfo()">Réessayer</button>
+        </div>
+        
+        <div *ngIf="!isLoading && !error && timeline" class="timeline-content">
+          <!-- Informations d'accompagnement -->
+          <div class="timeline-info">
+            <div class="info-content">
+              <mat-icon>info</mat-icon>
+              <span>Ce tableau montre toutes les étapes de votre stage et les documents à soumettre. Les rapports soumis doivent être approuvés par votre tuteur ou le service RH.</span>
+            </div>
+            <div class="action-buttons">
+              <button mat-raised-button color="primary" [routerLink]="['/documents']" class="documents-button">
+                <mat-icon>description</mat-icon>
+                Mes Documents
+              </button>
+            </div>
+          </div>
+          
+          <!-- Timeline principale -->
+          <div class="timeline-stepper">
+            <div *ngFor="let step of timeline.steps; let i = index" class="timeline-step">
+              <div class="step-connector" *ngIf="i > 0"></div>
+              
+              <div class="step-content" [ngClass]="getStatusClass(step)">
+                <div class="step-icon">
+                  <mat-icon>{{ step.iconClass }}</mat-icon>
+                </div>
+                
+                <div class="step-details">
+                  <h3>{{ step.name }}</h3>
+                  <p class="step-date">{{ step.date | date:'dd/MM/yyyy' }}</p>
+                  <p class="step-status" [ngClass]="getStatusClass(step)">
+                    {{ getStatusText(step) }}
+                  </p>
+                  
+                  <!-- Nouvelles informations sur l'approbation -->
+                  <div *ngIf="step.isApproved || step.isRejected" class="approval-info">
+                    <p *ngIf="step.isApproved" class="approval-details approved">
+                      <mat-icon>check_circle</mat-icon>
+                      <span>Approuvé <span *ngIf="step.submissionDate">le {{ step.submissionDate | date:'dd/MM/yyyy' }}</span></span>
+                    </p>
+                    <p *ngIf="step.isRejected" class="approval-details rejected">
+                      <mat-icon>cancel</mat-icon>
+                      <span>Rejeté <span *ngIf="step.submissionDate">le {{ step.submissionDate | date:'dd/MM/yyyy' }}</span></span>
+                    </p>
+                    
+                    <!-- Approbateur -->
+                    <p *ngIf="getApproverInfo(step)" class="approver-info">
+                      <mat-icon>person</mat-icon>
+                      <span>Par {{ getApproverInfo(step) }}</span>
+                    </p>
+                    
+                    <!-- Feedback -->
+                    <div *ngIf="step.reportId && getFeedback(step.reportId)" class="feedback-container">
+                      <p class="feedback-label">Commentaire:</p>
+                      <div class="feedback-content">
+                        {{ getFeedback(step.reportId) }}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Actions -->
+                  <div class="step-actions">
+                    <ng-container *ngIf="step.isCompleted && step.reportId">
+                      <button mat-stroked-button color="primary" (click)="viewReport(step.reportId)">
+                        <mat-icon>visibility</mat-icon> Voir le document
+                      </button>
+                      
+                      <!-- Bouton de re-soumission pour les rapports rejetés -->
+                      <button *ngIf="step.isRejected" mat-raised-button color="accent" (click)="openUploadDialog(step)">
+                        <mat-icon>refresh</mat-icon> Soumettre à nouveau
+                      </button>
+                    </ng-container>
+                    
+                    <ng-container *ngIf="!step.isCompleted">
+                      <button mat-raised-button color="primary" (click)="openUploadDialog(step)" 
+                              [disabled]="step.isUpcoming && getRemainingDays(step.date) > 14">
+                        <mat-icon>cloud_upload</mat-icon> Soumettre
+                      </button>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Légende -->
+          <div class="timeline-legend">
+            <div class="legend-item approved">
+              <div class="legend-dot"></div>
+              <span>Approuvé</span>
+            </div>
+            <div class="legend-item pending-approval">
+              <div class="legend-dot"></div>
+              <span>En attente d'approbation</span>
+            </div>
+            <div class="legend-item rejected">
+              <div class="legend-dot"></div>
+              <span>Rejeté</span>
+            </div>
+            <div class="legend-item completed">
+              <div class="legend-dot"></div>
+              <span>Complété</span>
+            </div>
+            <div class="legend-item current">
+              <div class="legend-dot"></div>
+              <span>À faire maintenant</span>
+            </div>
+            <div class="legend-item upcoming">
+              <div class="legend-dot"></div>
+              <span>À venir</span>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

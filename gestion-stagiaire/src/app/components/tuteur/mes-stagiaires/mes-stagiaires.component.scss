@@ -1,0 +1,613 @@
+// Variables pour les couleurs EY
+$ey-yellow: #FFE600;
+$ey-dark-gray: #2E2E38;
+$ey-light-gray: #747480;
+$ey-white: #FFFFFF;
+$ey-black: #000000;
+$ey-background: #F6F6FA;
+
+// Variables pour les états des stagiaires
+$status-active: #4CAF50;
+$status-incoming: #2196F3;
+$status-completed: #9E9E9E;
+$status-evaluation: #FF9800;
+
+.stagiaires-container {
+  padding: 30px;
+  background-color: $ey-background;
+  min-height: calc(100vh - 64px); // Hauteur totale moins la navbar
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  
+  .page-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $ey-dark-gray;
+    margin: 0;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 60px;
+      height: 4px;
+      background-color: $ey-yellow;
+    }
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 15px;
+  }
+}
+
+// Bouton style EY
+.ey-button {
+  background-color: $ey-yellow !important;
+  color: $ey-black !important;
+  font-weight: 600 !important;
+  border-radius: 4px !important;
+  padding: 0 24px !important;
+  height: 44px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+  
+  &:hover {
+    background-color: darken($ey-yellow, 10%) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px) !important;
+  }
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+.ey-button-secondary {
+  background-color: $ey-white !important;
+  color: $ey-dark-gray !important;
+  border: 1px solid $ey-dark-gray !important;
+  font-weight: 600 !important;
+  border-radius: 4px !important;
+  padding: 0 24px !important;
+  height: 44px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease !important;
+  
+  &:hover {
+    background-color: $ey-dark-gray !important;
+    color: $ey-white !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px) !important;
+  }
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+}
+
+// Chargement et erreurs
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  
+  .spinner-wrapper {
+    background-color: $ey-white;
+    border-radius: 50%;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .ey-spinner {
+    ::ng-deep .mat-mdc-progress-spinner .mdc-circular-progress__indeterminate-circle-graphic {
+      stroke: $ey-yellow !important;
+    }
+  }
+  
+  .loading-text {
+    font-size: 16px;
+    color: $ey-light-gray;
+    font-weight: 500;
+  }
+}
+
+.error-alert {
+  display: flex;
+  align-items: center;
+  background-color: #FFEBEE;
+  color: #D32F2F;
+  padding: 16px 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  
+  mat-icon {
+    margin-right: 12px;
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+  }
+  
+  span {
+    font-weight: 500;
+  }
+}
+
+// État vide
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: $ey-white;
+  border-radius: 12px;
+  padding: 60px 30px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  
+  .empty-illustration {
+    margin-bottom: 24px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: $ey-dark-gray;
+    margin-bottom: 16px;
+  }
+  
+  p {
+    font-size: 16px;
+    color: $ey-light-gray;
+    max-width: 500px;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+  
+  .empty-actions {
+    display: flex;
+    gap: 16px;
+    
+    @media (max-width: 576px) {
+      flex-direction: column;
+    }
+  }
+}
+
+// Grille de stagiaires
+.stagiaires-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 30px;
+}
+
+.stagiaire-card-container {
+  perspective: 1000px;
+}
+
+.stagiaire-card {
+  background-color: $ey-white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+  animation: fadeIn 0.5s ease forwards;
+  opacity: 0;
+  transform: translateY(20px);
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  &:hover {
+    transform: translateY(-10px) rotateX(2deg) rotateY(2deg);
+    box-shadow: 0 20px 30px rgba(0, 0, 0, 0.12);
+    
+    .card-header .stagiaire-avatar,
+    .card-header .stagiaire-avatar-img {
+      transform: scale(1.1);
+    }
+    
+    .progress-bar-fill {
+      background-image: linear-gradient(90deg, $ey-yellow, darken($ey-yellow, 20%));
+    }
+  }
+}
+
+// En-tête de la carte
+.card-header {
+  padding: 20px;
+  background-color: $ey-dark-gray;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  
+  // Avatar du stagiaire (initiales)
+  .stagiaire-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    color: $ey-black;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    border: 3px solid $ey-yellow;
+  }
+  
+  // Avatar du stagiaire (image)
+  .stagiaire-avatar-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid $ey-yellow;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+    background-color: #f0f0f0;
+    
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+  
+  // Badge de statut
+  .stagiaire-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $ey-white;
+    
+    &.status-active {
+      background-color: $status-active;
+    }
+    
+    &.status-incoming {
+      background-color: $status-incoming;
+    }
+    
+    &.status-completed {
+      background-color: $status-completed;
+    }
+    
+    &.status-evaluation {
+      background-color: $status-evaluation;
+    }
+  }
+}
+
+.card-body {
+  padding: 20px;
+  flex-grow: 1;
+  
+  .stagiaire-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: $ey-dark-gray;
+    margin-top: 0;
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+  
+  .stagiaire-email {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: $ey-light-gray;
+    margin-bottom: 20px;
+    
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}
+
+// Timeline de la période de stage
+.stagiaire-timeline {
+  background-color: #F8F9FA;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  
+  .timeline-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    
+    mat-icon {
+      color: $ey-dark-gray;
+    }
+    
+    span {
+      font-weight: 600;
+      font-size: 14px;
+      color: $ey-dark-gray;
+    }
+  }
+  
+  .timeline-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+    
+    .date-item {
+      min-width: 120px;
+      
+      .date-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: $ey-light-gray;
+        display: block;
+        margin-bottom: 4px;
+      }
+      
+      .date-value {
+        font-size: 14px;
+        color: $ey-dark-gray;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// Barre de progression du stage
+.stage-progress {
+  margin-top: 12px;
+  
+  .progress-bar {
+    height: 6px;
+    background-color: #E0E0E0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 8px;
+    
+    .progress-bar-fill {
+      height: 100%;
+      background-color: $ey-yellow;
+      border-radius: 3px;
+      transition: width 0.4s ease, background-image 0.4s ease;
+    }
+  }
+  
+  .progress-label {
+    font-size: 12px;
+    color: $ey-light-gray;
+    text-align: right;
+    font-weight: 500;
+  }
+}
+
+// Statistiques du stagiaire
+.stagiaire-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  
+  .stat-item {
+    flex: 1;
+    min-width: calc(33% - 8px);
+    background-color: #F8F9FA;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    
+    &:hover {
+      background-color: rgba($ey-yellow, 0.1);
+      transform: translateY(-3px);
+    }
+    
+    .stat-icon {
+      min-width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba($ey-yellow, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      mat-icon {
+        color: $ey-dark-gray;
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+    
+    .stat-info {
+      flex: 1;
+      
+      .stat-value {
+        font-size: 14px;
+        font-weight: 700;
+        color: $ey-dark-gray;
+        line-height: 1.2;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      
+      .stat-label {
+        font-size: 12px;
+        color: $ey-light-gray;
+      }
+    }
+  }
+}
+
+.stagiaire-contact {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: $ey-light-gray;
+  font-size: 14px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #EEEEEE;
+  
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: $ey-light-gray;
+  }
+}
+
+// Actions de la carte
+.card-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  background-color: #F5F5F5;
+  border-top: 1px solid #E0E0E0;
+  
+  .action-button {
+    color: $ey-light-gray;
+    transition: color 0.3s ease, transform 0.3s ease;
+    
+    &:hover {
+      color: $ey-dark-gray;
+      transform: translateY(-2px);
+    }
+    
+    &.action-danger:hover {
+      color: #D32F2F;
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .stagiaires-container {
+    padding: 20px;
+  }
+  
+  .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+    margin-bottom: 20px;
+    
+    .page-title {
+      font-size: 28px;
+    }
+    
+    .header-actions {
+      width: 100%;
+      
+      .ey-button {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  }
+  
+  .stagiaires-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .stagiaire-stats {
+    .stat-item {
+      min-width: calc(50% - 6px);
+      
+      .stat-info {
+        .stat-value {
+          font-size: 13px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .stagiaire-stats {
+    flex-direction: column;
+    
+    .stat-item {
+      width: 100%;
+    }
+  }
+}
+.stagiaire-stats {
+  .stat-item.clickable {
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba($ey-yellow, 0);
+      transition: background-color 0.3s ease;
+      z-index: 0;
+      border-radius: 8px;
+    }
+    
+    &:hover {
+      background-color: rgba($ey-yellow, 0.15);
+      transform: translateY(-3px);
+      
+      &::before {
+        background-color: rgba($ey-yellow, 0.05);
+      }
+      
+      .stat-icon {
+        background-color: rgba($ey-yellow, 0.3);
+      }
+      
+      .stat-value {
+        color: darken($ey-dark-gray, 10%);
+        text-decoration: underline;
+      }
+    }
+    
+    .stat-icon,
+    .stat-info {
+      position: relative;
+      z-index: 1;
+    }
+  }
+}

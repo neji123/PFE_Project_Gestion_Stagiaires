@@ -1,0 +1,722 @@
+/* src/app/components/project/project-list/project-list.component.scss */
+
+// Variables pour les couleurs d'EY
+$ey-yellow: #FFE600;
+$ey-dark-blue: #2E2E38;
+$ey-blue: #0076A8;
+$ey-light-gray: #F6F6FA;
+$ey-gray: #747480;
+$ey-black: #2E2E38;
+
+.project-list-container {
+  padding: 2rem 0;
+  background-color: $ey-light-gray;
+  min-height: 80vh;
+}
+
+.header-section {
+  margin-bottom: 2rem;
+}
+
+.section-title {
+  font-weight: 700;
+  color: $ey-black;
+  font-size: 1.8rem;
+  position: relative;
+  padding-bottom: 0.5rem;
+  margin-left: 2%;
+  &:after {
+   content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 4px;
+    background-color: $ey-yellow;
+  }
+}
+//    
+
+.create-btn {
+  background-color: $ey-blue;
+  border-color: $ey-blue;
+  font-weight: 600;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 10px rgba(0, 118, 168, 0.2);
+  
+  &:hover {
+    background-color: darken($ey-blue, 10%);
+    box-shadow: 0 4px 15px rgba(0, 118, 168, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  i {
+    font-size: 1.1rem;
+  }
+
+}
+  .right-new{
+    margin-right: 2%;
+  }
+// Sélecteur de vue (grille/liste)
+.view-toggle {
+  display: flex;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  .toggle-btn {
+    background-color: white;
+    border: 1px solid $ey-light-gray;
+    padding: 0.5rem 0.8rem;
+    cursor: pointer;
+    color: $ey-gray;
+    transition: all 0.3s ease;
+    
+    &:first-child {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+      border-right: none;
+    }
+    
+    &:last-child {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+      border-left: none;
+    }
+    
+    &.active {
+      background-color: $ey-blue;
+      color: white;
+      border-color: $ey-blue;
+    }
+    
+    &:hover:not(.active) {
+      background-color: rgba($ey-blue, 0.1);
+      color: $ey-blue;
+    }
+    
+    i {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.search-filter-container {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  margin: 0 8% 0 8%;
+  .form-control, .form-select {
+    height: 45px;
+    border-radius: 6px;
+    border-color: $ey-light-gray;
+    
+    &:focus {
+      box-shadow: 0 0 0 0.25rem rgba($ey-blue, 0.15);
+      border-color: $ey-blue;
+    }
+  }
+  
+  .input-group-text {
+    border-color: $ey-light-gray;
+  }
+}
+
+// Project cards
+.project-card {
+  position: relative;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    
+    .project-actions {
+      opacity: 1;
+    }
+  }
+  
+  &.highlight-focus {
+    animation: card-focus 1s ease;
+  }
+}
+
+@keyframes card-focus {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+  50% {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border: 2px solid $ey-yellow;
+  }
+  100% {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+    border: none;
+  }
+}
+
+.project-image-container {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+  
+  .navigation-arrows {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    
+    .arrow {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: $ey-black;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s ease;
+      z-index: 2;
+      
+      &:hover {
+        background-color: white;
+        transform: scale(1.1);
+      }
+      
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+  
+  &:hover .navigation-arrows {
+    opacity: 1;
+  }
+}
+
+.project-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.project-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $ey-light-gray;
+  color: $ey-gray;
+  
+  i {
+    font-size: 2.5rem;
+  }
+}
+
+.project-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 0.35rem 0.75rem;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 1;
+  
+  &.badge-status-planned {
+    background-color: rgba($ey-blue, 0.9);
+    color: white;
+  }
+  
+  &.badge-status-progress {
+    background-color: rgba($ey-yellow, 0.9);
+    color: $ey-black;
+  }
+  
+  &.badge-status-unplanned {
+    background-color: rgba($ey-gray, 0.9);
+    color: white;
+  }
+}
+
+.project-content {
+  padding: 1.25rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-title {
+  color: $ey-black;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  font-size: 1.15rem;
+}
+
+.project-description {
+  color: $ey-gray;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  flex-grow: 1;
+}
+
+.project-meta {
+  margin-top: auto;
+}
+
+.project-meta-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  color: $ey-gray;
+  margin-bottom: 0.5rem;
+  
+  i {
+    color: $ey-blue;
+    margin-right: 0.5rem;
+    font-size: 1rem;
+  }
+}
+
+.project-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.75rem;
+  background-color: rgba($ey-light-gray, 0.7);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  transition: opacity 0.3s ease;
+}
+
+.btn-action {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  
+  i {
+    font-size: 0.9rem;
+  }
+  
+  &.btn-view {
+    background-color: white;
+    color: $ey-blue;
+    border: 1px solid $ey-blue;
+    
+    &:hover {
+      background-color: $ey-blue;
+      color: white;
+    }
+  }
+  
+  &.btn-edit {
+    background-color: white;
+    color: $ey-yellow;
+    border: 1px solid $ey-yellow;
+    
+    &:hover {
+      background-color: $ey-yellow;
+      color: $ey-black;
+    }
+  }
+  
+  &.btn-delete {
+    background-color: white;
+    color: #dc3545;
+    border: 1px solid #dc3545;
+    
+    &:hover {
+      background-color: #dc3545;
+      color: white;
+    }
+  }
+}
+
+// Empty state
+.empty-state {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.empty-state-content {
+  max-width: 500px;
+  margin: 0 auto;
+  background-color: white;
+  padding: 3rem 2rem;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  color: $ey-gray;
+  margin-bottom: 1rem;
+}
+
+// Spinner
+.ey-blue {
+  color: $ey-blue;
+}
+
+// Pagination
+.pagination-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.custom-pagination {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  
+  .pagination-arrow {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid $ey-blue;
+    color: $ey-blue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    font-size: 1.2rem;
+    
+    &:hover:not(:disabled) {
+      background-color: $ey-blue;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: $ey-gray;
+      color: $ey-gray;
+    }
+  }
+  
+  .pagination-pages {
+    display: flex;
+    gap: 0.3rem;
+    
+    button {
+      min-width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      background-color: white;
+      border: 1px solid $ey-light-gray;
+      color: $ey-black;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      
+      &:hover:not(:disabled):not(.active) {
+        border-color: $ey-blue;
+        background-color: rgba($ey-blue, 0.1);
+      }
+      
+      &.active {
+        background-color: $ey-blue;
+        border-color: $ey-blue;
+        color: white;
+        font-weight: bold;
+      }
+      
+      &.dots {
+        border: none;
+        background-color: transparent;
+        cursor: default;
+      }
+      
+      &:disabled {
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+.page-indicator {
+  color: $ey-gray;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+// Vue liste
+.project-list-view {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  margin-bottom: 2rem;
+  
+  .list-header {
+    background-color: $ey-light-gray;
+    padding: 0 1rem;
+    color: $ey-black;
+    font-size: 0.9rem;
+    
+    .row {
+      margin: 0;
+    }
+  }
+  
+  .list-body {
+    .project-list-item {
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid $ey-light-gray;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background-color: rgba($ey-light-gray, 0.5);
+      }
+      
+      &.highlight-focus {
+        animation: list-item-focus 1s ease;
+      }
+      
+      h5 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: $ey-black;
+      }
+      
+      .project-list-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 6px;
+        overflow: hidden;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+        
+        .placeholder {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: $ey-light-gray;
+          color: $ey-gray;
+          
+          i {
+            font-size: 1.5rem;
+          }
+        }
+      }
+      
+      .status-badge {
+        display: inline-block;
+        padding: 0.35rem 0.75rem;
+        border-radius: 30px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        
+        &.badge-status-planned {
+          background-color: rgba($ey-blue, 0.15);
+          color: $ey-blue;
+        }
+        
+        &.badge-status-progress {
+          background-color: rgba($ey-yellow, 0.3);
+          color: darken($ey-yellow, 40%);
+        }
+        
+        &.badge-status-unplanned {
+          background-color: rgba($ey-gray, 0.15);
+          color: $ey-gray;
+        }
+      }
+      
+      .action-buttons {
+        display: flex;
+        
+        .btn {
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0;
+          &:hover {
+            background-color: $ey-light-gray;
+          }
+          
+          &:first-child:hover {
+            color: $ey-blue;
+          }
+          
+          &:nth-child(2):hover {
+            color: $ey-yellow;
+          }
+          
+          &:last-child:hover {
+            color: #dc3545;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes list-item-focus {
+  0% {
+    background-color: rgba($ey-light-gray, 0.5);
+  }
+  50% {
+    background-color: rgba($ey-yellow, 0.3);
+  }
+  100% {
+    background-color: rgba($ey-light-gray, 0.5);
+  }
+}
+
+// Empty search results
+.empty-search-results {
+  .empty-search-content {
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 8px;
+    
+    i {
+      color: $ey-gray;
+    }
+    
+    .btn-outline-primary {
+      color: $ey-blue;
+      border-color: $ey-blue;
+      
+      &:hover {
+        background-color: $ey-blue;
+        color: white;
+      }
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 992px) {
+  .row-cols-lg-4 {
+    gap: 1.5rem;
+  }
+  
+  .view-toggle {
+    margin-right: 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.5rem;
+  }
+  
+  .project-list-container {
+    padding: 1.5rem 0;
+  }
+  
+  .project-card {
+    margin-bottom: 1rem;
+  }
+  
+  .custom-pagination {
+    .pagination-pages {
+      button {
+        min-width: 30px;
+        height: 30px;
+        font-size: 0.85rem;
+      }
+    }
+  }
+  
+  .project-list-view {
+    .list-header {
+      display: none;
+    }
+    
+    .project-list-item {
+      flex-direction: column;
+      
+      .col-md-5, .col-md-2, .col-md-3, .col-md-2 {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+      
+      .action-buttons {
+        justify-content: flex-end;
+      }
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .d-flex.justify-content-between.align-items-center {
+    flex-direction: column;
+    align-items: flex-start !important;
+    
+    .d-flex.align-items-center {
+      width: 100%;
+      margin-top: 1rem;
+      justify-content: space-between;
+    }
+  }
+  
+  .search-filter-container {
+    .row {
+      row-gap: 0.75rem !important;
+    }
+  }
+  
+  .project-actions {
+    opacity: 1;
+  }
+  
+  .custom-pagination {
+    .pagination-pages {
+      button:not(.active):not(:first-child):not(:last-child):not(.dots) {
+        display: none;
+      }
+    }
+  }
+}

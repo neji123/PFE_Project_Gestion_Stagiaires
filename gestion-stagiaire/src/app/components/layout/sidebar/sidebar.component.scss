@@ -1,0 +1,467 @@
+// Variables EY
+$ey-yellow: #FFE600;
+$ey-dark-blue: #2E2E38;
+$ey-blue: #0076A8;
+$ey-light-gray: #F6F6FA;
+$ey-gray: #747480;
+$ey-black: #2E2E38;
+$ey-white: #FFFFFF;
+
+// Autres variables
+$sidebar-width: 280px;
+$sidebar-collapsed-width: 0px;
+$hover-zone-width: 10px;
+$header-height: 80px; // Même hauteur que votre navbar
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 12px rgba(0, 0, 0, 0.12);
+$transition-speed: 0.3s;
+
+// Container pour la sidebar et la zone de survol
+.sidebar-container {
+  position: relative;
+  z-index: 990; // Inférieur à la navbar (1000)
+}
+
+// Zone sensible qui déclenche l'apparition de la sidebar
+.hover-zone {
+  position: fixed;
+  top: $header-height; // Commence sous la navbar
+  left: 0;
+  width: $hover-zone-width;
+  height: calc(100vh - #{$header-height});
+  z-index: 990;
+  background-color: transparent;
+}
+
+// Style principal de la sidebar
+.sidebar {
+  position: fixed;
+  top: $header-height; // Commence sous la navbar
+  left: 0;
+  width: $sidebar-width;
+  height: calc(100vh - #{$header-height});
+  background-color: $ey-white;
+  box-shadow: $shadow-md;
+  transition: all $transition-speed ease;
+  transform: translateX(-100%);
+  display: flex;
+  flex-direction: column;
+  z-index: 990;
+  
+  &.visible {
+    transform: translateX(0);
+    animation: slideIn $transition-speed ease forwards;
+  }
+  
+  // Header réduit
+  .sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid rgba($ey-gray, 0.2);
+    background-color: $ey-white;
+    min-height: 40px;
+    flex-shrink: 0;
+    
+    .close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: $ey-gray;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      border-radius: 50%;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        color: $ey-yellow;
+      }
+      
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+}
+
+// Nouveau : Conteneur scrollable pour le contenu de la sidebar
+.sidebar-scrollable-content {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: thin;
+  scrollbar-color: $ey-gray $ey-white;
+  
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: $ey-white;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: $ey-gray;
+    border-radius: 4px;
+  }
+}
+
+// Section profil utilisateur
+.sidebar-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 20px;
+  background: linear-gradient(to bottom, $ey-light-gray, $ey-white);
+  animation: fadeIn 0.6s ease;
+  flex-shrink: 0;
+  
+  .profile-image-container {
+    position: relative;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+    
+    .profile-image {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid $ey-white;
+      box-shadow: 0 0 0 2px $ey-yellow;
+    }
+    
+    .profile-badge {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background-color: $ey-yellow;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: $shadow-sm;
+      
+      mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        color: $ey-black;
+      }
+    }
+  }
+  
+  .profile-info {
+    text-align: center;
+    width: 100%;
+    
+    .username {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: $ey-black;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .user-role {
+      font-size: 14px;
+      color: $ey-gray;
+      margin-top: 4px;
+    }
+  }
+}
+
+// Menu de navigation principal
+.sidebar-menu {
+  flex: 1;
+  padding: 0 0 10px;
+  
+  .menu-section {
+    margin-bottom: 15px;
+    
+    .section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      color: $ey-black;
+      margin: 12px 20px 8px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      
+      li {
+        cursor: pointer;
+        position: relative;
+        transition: background-color 0.2s ease;
+        
+        &:hover {
+          background-color: $ey-light-gray;
+          
+          &::before {
+            opacity: 1;
+          }
+        }
+        
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 100%;
+          width: 4px;
+          background-color: $ey-yellow;
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        
+        &.active {
+          background-color: $ey-light-gray;
+          font-weight: 500;
+          
+          &::before {
+            opacity: 1;
+          }
+          
+          .menu-item {
+            color: $ey-black;
+            
+            mat-icon {
+              color: $ey-yellow;
+            }
+          }
+        }
+        
+        .menu-item {
+          display: flex;
+          align-items: center;
+          padding: 10px 20px;
+          color: $ey-black;
+          transition: all 0.2s ease;
+          
+          mat-icon {
+            margin-right: 16px;
+            color: $ey-gray;
+            transition: color 0.2s ease;
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+          }
+          
+          span {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Pied de page de la sidebar
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba($ey-gray, 0.2);
+  background-color: $ey-white;
+  flex-shrink: 0;
+  
+  .logout-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    background-color: #ff4545;
+    border: none;
+    border-radius: 4px;
+    color: $ey-white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: darken(#ff4545, 10%);
+    }
+    
+    mat-icon {
+      margin-right: 8px;
+    }
+  }
+  
+  .toggle-theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: $ey-black;
+    font-size: 14px;
+    padding: 8px 0;
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+}
+
+// Bouton flottant pour montrer la sidebar
+.show-sidebar-btn {
+  position: fixed;
+  top: 90px; // Juste en dessous de la navbar
+  left: 15px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: $ey-black;
+  border: 2px solid $ey-yellow;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 989;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: $ey-yellow;
+    transform: scale(1.1);
+    
+    mat-icon {
+      color: $ey-black;
+    }
+  }
+  
+  mat-icon {
+    color: $ey-yellow;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// Animation de la sidebar
+@keyframes slideIn {
+  from { transform: translateX(-100%); opacity: 0.8; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// Mode sombre
+.sidebar.dark-theme {
+  background-color: $ey-black;
+  
+  .sidebar-header {
+    background-color: $ey-black;
+  }
+  
+  .sidebar-scrollable-content {
+    scrollbar-color: $ey-gray $ey-black;
+    
+    &::-webkit-scrollbar-track {
+      background: $ey-black;
+    }
+  }
+  
+  .sidebar-profile {
+    background: linear-gradient(to bottom, darken($ey-black, 3%), $ey-black);
+    
+    .profile-image-container .profile-image {
+      border: 3px solid $ey-black;
+    }
+    
+    .profile-info .username {
+      color: $ey-white;
+    }
+  }
+  
+  .sidebar-menu {
+    .menu-section {
+      .section-title {
+        color: $ey-gray;
+      }
+      
+      ul li {
+        &:hover {
+          background-color: lighten($ey-black, 10%);
+        }
+        
+        &.active {
+          background-color: lighten($ey-black, 5%);
+          
+          .menu-item {
+            color: $ey-white;
+          }
+        }
+        
+        .menu-item {
+          color: $ey-white;
+        }
+      }
+    }
+  }
+  
+  .sidebar-footer {
+    background-color: $ey-black;
+    border-top: 1px solid rgba($ey-gray, 0.2);
+    
+    .toggle-theme {
+      color: $ey-white;
+    }
+  }
+}
+
+// Styles responsives
+@media (max-width: 1024px) {
+  .sidebar {
+    width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 280px;
+  }
+  
+  .hover-zone {
+    display: none; // Désactiver le hover sur mobile
+  }
+  
+  .sidebar.visible {
+    left: 0;
+  }
+  
+  // Au lieu d'animer la largeur, on utilise une transition de gauche à droite
+  .sidebar {
+    transform: translateX(-100%);
+    
+    &.visible {
+      transform: translateX(0);
+    }
+  }
+  
+  .show-sidebar-btn {
+    top: $header-height + 10px;
+  }
+}
